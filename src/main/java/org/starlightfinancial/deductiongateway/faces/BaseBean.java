@@ -3,14 +3,6 @@ package org.starlightfinancial.deductiongateway.faces;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
 import com.mongodb.gridfs.GridFSDBFile;
-import forward.chuwa.microcredit.model.*;
-import forward.chuwa.microcredit.service.CreditApplyService;
-import forward.chuwa.microcredit.service.CustomerService;
-import forward.chuwa.microcredit.service.SystemService;
-import forward.chuwa.microcredit.utility.DictionaryType;
-import forward.chuwa.microcredit.utility.HashType;
-import forward.chuwa.microcredit.utility.Options;
-import forward.chuwa.microcredit.utility.Utility;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -21,7 +13,7 @@ import org.primefaces.model.StreamedContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.starlightfinancial.deductiongateway.service.SystemService;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -71,19 +63,7 @@ public class BaseBean {
 	}
 
 	@Autowired
-	protected SessionBean sessionBean;
-
-	@Autowired
-	private GridFsTemplate gridFsTemplate;
-
-	@Autowired
 	protected SystemService systemService;
-
-	@Autowired
-	private CreditApplyService creditApplyService;
-
-	@Autowired
-	private CustomerService customerService;
 
 	public String[] getParameters(String key) {
 		return FacesContext.getCurrentInstance().getExternalContext()
