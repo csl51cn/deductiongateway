@@ -30,7 +30,7 @@ public class HttpClientUtil {
         Map map = new HashMap();
         PostMethod postMethod = null;
         try {
-            String url = Utility.SEND_BANK_URL;//"http://bianmin-test.chinapay.com/cpeduinterface/OrderGet.do";
+            String url = Utility.SEND_BANK_URL;
             postMethod = new PostMethod(url);
 
             //   填入各个表单域的值
@@ -60,18 +60,17 @@ public class HttpClientUtil {
                     new NameValuePair("Priv1", Priv1),
                     new NameValuePair("CustomIp", CustomIp),    //绑定固定IP
                     new NameValuePair("ChkValue", ChkValue)
-
             };
+
             //将表单的值放入postMethod中
             postMethod.setRequestBody(data);
             postMethod.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "utf-8");
             postMethod.addRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             //执行postMethod
-            int statusCode = 0;
-            statusCode = httpClient.executeMethod(postMethod);
-            //   取得按回的内容
+            int statusCode = httpClient.executeMethod(postMethod);
+            //取得按回的内容
             if (statusCode == HttpStatus.SC_OK) {
-                String str = "";
+                String str;
                 try {
                     str = postMethod.getResponseBodyAsString();
                     if (str.indexOf("失败原因:") != -1) {
@@ -80,7 +79,6 @@ public class HttpClientUtil {
                         map.put("status", "0");
                     } else {
                         boolean flag = checkReponseData(str, pubPath, MerId);
-
                         String ShareDataR = checkReponseShareData(str);
                         if (flag) {
                             map.put(OrdId, "1,订单交易成功," + ShareDataR);
@@ -93,7 +91,6 @@ public class HttpClientUtil {
                     String result = null;
                     String rsData1 = null;
                     String rsData2 = null;
-                    String rresult = null;
                     BigDecimal rsAmount1 = new BigDecimal("0.00");
                     BigDecimal rsAmount2 = new BigDecimal("0.00");
                     String t = map.get(OrdId).toString();
@@ -143,28 +140,24 @@ public class HttpClientUtil {
             postMethod.releaseConnection();
         }
         return map;
-
     }
 
 
-    public List<Map> sendInformation(List<GoPayBean> messages, String path, ContractService contractService,
-                                     int contractId, String customerNo, String customerName, String contractNo, BigDecimal mount1, BigDecimal mount2, String orderDesc,
-                                     int staffId, String ormid) {
-
-        String chkValue = "";//签名数据
+    /**
+     * @param messages
+     * @param path
+     * @param contractService
+     * @param staffId
+     * @return
+     */
+    public List<Map> sendInformation(List<GoPayBean> messages, String path, ContractService contractService, int staffId) {
+        String chkValue;//签名数据
         List<Map> results = new ArrayList<Map>();
-        Map result = null;
-
+        Map result;
         try {
-
-            //批量发送扣款通信相关的对象
-//			   httpClient = new HttpClient();
-//			   String url = Utility.SEND_BANK_URL;//"http://bianmin-test.chinapay.com/cpeduinterface/OrderGet.do";
-//			   postMethod = new PostMethod(url);
             int contractid = 0;
             for (GoPayBean goPay : messages) {
                 try {
-                    result = new HashMap();
                     StringBuffer sb = new StringBuffer();
                     sb.append(goPay.getMerId());
                     sb.append(goPay.getBusiId());
@@ -195,27 +188,10 @@ public class HttpClientUtil {
                     if (chkValue == null || "".equals(chkValue) || chkValue.length() != 256) {
                         return null;
                     }
-                    if (goPay.getContractId() != null && !"".equals(goPay.getContractId().trim())) {
-                        contractId = Integer.parseInt(goPay.getContractId());
-                    }
-                    if (goPay.getCustomerNo() != null && !"".equals(goPay.getCustomerNo().trim())) {
-                        customerNo = goPay.getCustomerNo();
-                    }
-                    if (goPay.getContractNo() != null && !"".equals(goPay.getContractNo().trim())) {
-                        contractNo = goPay.getContractNo();
-                    }
-                    if (goPay.getSplitData1() != null) {
-                        mount1 = goPay.getSplitData1().movePointLeft(2);
-                    }
-                    if (goPay.getSplitData2() != null) {
-                        mount2 = goPay.getSplitData2().movePointLeft(2);
-                    }
-                    if (goPay.getShareData() != null && goPay.getShareData().trim().length() > 0) {
-                        ormid = goPay.getShareData().substring(goPay.getShareData().indexOf(";") + 1, goPay.getShareData().lastIndexOf("^") - 1);
-                    }
                     if (goPay.getContractId() != null) {
                         contractid = Integer.parseInt(goPay.getContractId());
                     }
+
                     result = sendMessage(goPay.getMerId(), goPay.getBusiId(), goPay.getOrdId(), goPay.getOrdAmt(), goPay.getCuryId(), goPay.getVersion(),
                             goPay.getBgRetUrl(), goPay.getPageRetUrl(), goPay.getGateId(), goPay.getParam1(), goPay.getParam2(), goPay.getParam3(), goPay.getParam4(), goPay.getParam5(),
                             goPay.getParam6(), goPay.getParam7(), goPay.getParam8(), goPay.getParam9(), goPay.getParam10(), goPay.getOrdDesc(), goPay.getShareType(),
@@ -225,15 +201,12 @@ public class HttpClientUtil {
                     results.add(result);
                 } catch (Exception e) {
                     e.printStackTrace();
-
                 }
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return results;
-
     }
 
 
@@ -254,20 +227,10 @@ public class HttpClientUtil {
 
         }
         //PayStat表示交易状态，只有"1001"表示支付成功，其他状态均表示未成功的交易。因此验证签名数据通过后，还需要判定交易状态代码是否为"1001"
-        if (map.get("PayStat") != null && "1001".equals(map.get("PayStat").toString())) {
-            // 得到待签名数据
-//			    GoPayBean bean= getGoPayBean(   map);
-//				String forSignData = this.getSignData(bean);
-//				boolean b =check(forSignData, bean.getChkValue(),pubPath,merId);
-//				if(b){
-//					return true;
-//				}else{
-//					return false;
-//				}
+        if (map.get("PayStat") != null && "1001".equals(map.get("PayStat").toString()))
             return true;
-        } else {
+        else
             return false;
-        }
     }
 
     /**

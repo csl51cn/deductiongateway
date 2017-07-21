@@ -4,15 +4,17 @@ package org.starlightfinancial.deductiongateway.faces;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.starlightfinancial.deductiongateway.model.CreApMainServiceData;
 import org.starlightfinancial.deductiongateway.model.GoPayBean;
+import org.starlightfinancial.deductiongateway.model.SysAutoNum;
 import org.starlightfinancial.deductiongateway.service.ContractService;
+import org.starlightfinancial.deductiongateway.service.CreApMainServiceDataService;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.utility.HashType;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
-import javax.faces.context.FacesContext;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,9 @@ public class MortgageDeductionFaces extends BaseBean {
     @Autowired
     private SystemService systemService;
 
+    @Autowired
+    private CreApMainServiceDataService creApMainServiceDataService;
+
     private HttpClientUtil httpClientUtil;
 
     private List<HashType> listCustomer;
@@ -44,7 +49,8 @@ public class MortgageDeductionFaces extends BaseBean {
      */
     public String saveMortgageDeductions() {
 
-        String path = FacesContext.getCurrentInstance().getExternalContext().getRealPath("WEB-INF\\classes");
+//        String path = FacesContext.getCurrentInstance().getExternalContext().getRealPath("WEB-INF\\classes");
+        String path = "";
         List<HashType> list = new ArrayList<HashType>();
 
         int[] ids = getIntParameters("deleteIds");
@@ -61,24 +67,17 @@ public class MortgageDeductionFaces extends BaseBean {
             }
         }
         List<GoPayBean> messages = new ArrayList<GoPayBean>();
-        String splitData = "";
-        boolean flag = false;
-        HashType loanRePlan = null;
+        String splitData;
+        boolean flag;
+        HashType loanRePlan;
         for (int i = 0; i < list.size(); i++) {
             String contactNo = "";
             loanRePlan = list.get(i);
             GoPayBean goPayBean = new GoPayBean();
             goPayBean.setContractId(loanRePlan.getValue11());//设置合同编号
-
-            String OrdId = MerSeq.tickOrder();
-            goPayBean.setMerId(Utility.SEND_BANK_MERID);
-            goPayBean.setBusiId("");
-            goPayBean.setOrdId(OrdId);
-
             //计算账户管理费
             goPayBean.setCustomerNo(loanRePlan.getValue2());//设置客户编号
             goPayBean.setCustomerName(loanRePlan.getValue());//设置客户名称
-
             goPayBean.setContractNo(loanRePlan.getValue10());//设置合同编号
             goPayBean.setOrgManagerId(contactNo);//设置服务费的管理公司
             goPayBean.setRePlanId(loanRePlan.getValue12());//设置还款计划的id
@@ -92,7 +91,6 @@ public class MortgageDeductionFaces extends BaseBean {
             if (amount2 != null && !"".equals(amount2)) {
                 m2 = new BigDecimal(amount2).movePointRight(2).intValue();
             }
-
             goPayBean.setOrdAmt(m1 + m2 + "");
             //  splitData="00145111^"+m1+";00145112^"+m2+";";
             int orgId = -1;
@@ -118,6 +116,8 @@ public class MortgageDeductionFaces extends BaseBean {
             goPayBean.setSplitData1(new BigDecimal(amount1));
             if (!"".equals(amount2))
                 goPayBean.setSplitData2(new BigDecimal(amount2));
+            goPayBean.setBusiId("");
+            goPayBean.setOrdId(MerSeq.tickOrder());
             goPayBean.setOrgManagerId(contactNo);//设置服务费的管理公司
             goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
             goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
@@ -125,30 +125,18 @@ public class MortgageDeductionFaces extends BaseBean {
             goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
             goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
             goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-            if (loanRePlan.getParam1() != null && !"".equals(loanRePlan.getParam1()) &&
-                    loanRePlan.getParam2() != null && !"".equals(loanRePlan.getParam2()) &&
-                    loanRePlan.getParam3() != null && !"".equals(loanRePlan.getParam3()) &&
-                    loanRePlan.getParam4() != null && !"".equals(loanRePlan.getParam4())
-                    && loanRePlan.getParam5() != null && !"".equals(loanRePlan.getParam5())
-                    && loanRePlan.getParam6() != null && !"".equals(loanRePlan.getParam6())) {
-                goPayBean.setParam1(loanRePlan.getParam1());//开户行号
-                goPayBean.setParam2(loanRePlan.getParam2());//卡折标志
-                goPayBean.setParam3(loanRePlan.getParam3());//卡号/折号
-                goPayBean.setParam4(loanRePlan.getParam4());//持卡人姓名
-                goPayBean.setParam5(loanRePlan.getParam5());//证件类型
-                goPayBean.setParam6(loanRePlan.getParam6()); //证件号
-
-            } else {
-                flag = queryByContractId(Integer.parseInt(loanRePlan.getKey()), goPayBean);
-                if (!flag) {
-                    goPayBean.setParam1(goPayBean.getParam1());//开户行号
-                    goPayBean.setParam2(goPayBean.getParam2());//卡折标志
-                    goPayBean.setParam3(goPayBean.getParam3());//卡号/折号
-                    goPayBean.setParam4(goPayBean.getParam4());//持卡人姓名
-                    goPayBean.setParam5(goPayBean.getParam5());//证件类型
-                    goPayBean.setParam6(goPayBean.getParam6()); //证件号
-                }
-            }
+//            goPayBean.setParam1(loanRePlan.getParam1());//开户行号
+//            goPayBean.setParam2(loanRePlan.getParam2());//卡折标志
+//            goPayBean.setParam3(loanRePlan.getParam3());//卡号/折号
+//            goPayBean.setParam4(loanRePlan.getParam4());//持卡人姓名
+//            goPayBean.setParam5(loanRePlan.getParam5());//证件类型
+//            goPayBean.setParam6(loanRePlan.getParam6()); //证件号
+            goPayBean.setParam1("0410");//开户行号
+            goPayBean.setParam2("0");//卡折标志
+            goPayBean.setParam3("6216261000000000018");//卡号/折号
+            goPayBean.setParam4("全渠道");//持卡人姓名
+            goPayBean.setParam5("01");//证件类型
+            goPayBean.setParam6("341126197709218366"); //证件号
             goPayBean.setParam7("");
             goPayBean.setParam8("");
             goPayBean.setParam9("");
@@ -165,20 +153,11 @@ public class MortgageDeductionFaces extends BaseBean {
         }
 
         try {
-            List<Map> result = httpClientUtil.sendInformation(messages, path, contractService, Integer.parseInt(loanRePlan.getValue11()),
-                    loanRePlan.getValue2(), loanRePlan.getValue(), loanRePlan.getValue10(), null, null, null,
-                    sessionBean.getStaffId(), null);
-
-
+            List<Map> result = httpClientUtil.sendInformation(messages, path, contractService, 1);
         } catch (Exception e) {
             e.printStackTrace();
             super.showMessage(0, "代扣款失败！");
-
         }
-
         return "";
-
     }
-
-
 }

@@ -22,7 +22,6 @@ public class ContractServiceImpl extends BaseServiceImpl implements
         mortgageDeductionDao.executeUpdate("delete from CUS_MORTGAGEDEUCTION where type='1'");
     }
 
-    @Override
     public MortgageDeduction addMortgageDeduction(int applyMainId,
                                                   String ordId, String customerNo, String customerName,
                                                   String contractNo, String param1, String param2, String param3,
