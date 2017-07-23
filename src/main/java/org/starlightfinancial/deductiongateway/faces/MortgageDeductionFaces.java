@@ -2,7 +2,6 @@ package org.starlightfinancial.deductiongateway.faces;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.model.CreApMainServiceData;
 import org.starlightfinancial.deductiongateway.model.GoPayBean;
@@ -26,7 +25,6 @@ import java.util.Map;
  * @author sili.chen
  */
 @Service("mortgageDeductionFaces")
-@Scope("view")
 public class MortgageDeductionFaces extends BaseBean {
 
     @Autowired
@@ -48,11 +46,23 @@ public class MortgageDeductionFaces extends BaseBean {
      * @return
      */
     public String saveMortgageDeductions() {
+        listCustomer = new ArrayList<HashType>();
+        HashType hashType = new HashType();
+        hashType.setKey("280610");
+        hashType.setValue11("123");
+        hashType.setValue2("123");
+        hashType.setValue("123");
+        hashType.setValue10("123");
+        hashType.setValue12("");
+        hashType.setValue7("0.1");
+        hashType.setValue8("0");
+
+        listCustomer.add(hashType);
 
 //        String path = FacesContext.getCurrentInstance().getExternalContext().getRealPath("WEB-INF\\classes");
-        String path = "";
+        String path = "D:\\ideaProjects\\deductiongateway\\src\\main\\resources";
         List<HashType> list = new ArrayList<HashType>();
-
+        list.add(listCustomer.get(0));
         int[] ids = getIntParameters("deleteIds");
         String reIds = "";
         if (ids != null && ids.length > 0) {
@@ -94,15 +104,18 @@ public class MortgageDeductionFaces extends BaseBean {
             goPayBean.setOrdAmt(m1 + m2 + "");
             //  splitData="00145111^"+m1+";00145112^"+m2+";";
             int orgId = -1;
-            CreApMainServiceData creApMainServiceData = creApMainServiceDataService.getCreApMainServiceData(Integer.parseInt(loanRePlan.getKey()));
+//            CreApMainServiceData creApMainServiceData = creApMainServiceDataService.getCreApMainServiceData(Integer.parseInt(loanRePlan.getKey()));
+            CreApMainServiceData creApMainServiceData = null;
             if (creApMainServiceData != null) {
                 orgId = creApMainServiceData.getOrgManagerId();
             }
             //取商户号
-            SysAutoNum sysAutoNum = systemService.loadSysAutoNum(orgId, "5");
+//            SysAutoNum sysAutoNum = systemService.loadSysAutoNum(orgId, "5");
+            SysAutoNum sysAutoNum = new SysAutoNum();
 
             if (sysAutoNum != null) {
                 contactNo = sysAutoNum.getNowNo();
+                contactNo = "00160808";
             }
             //商户分账数据
             splitData = "00145111^" + m1;

@@ -15,6 +15,7 @@ public class MortgageDeductionFacesTest {
 
     @org.junit.Test
     public void saveMortgageDeductions() throws Exception {
+        mortgageDeductionFaces.saveMortgageDeductions();
     }
 
 }
