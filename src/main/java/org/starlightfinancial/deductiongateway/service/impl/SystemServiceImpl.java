@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.dao.SysAutoNumDao;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class SystemServiceImpl implements SystemService {
     @Autowired
     private SysAutoNumDao sysAutoNumDao;
