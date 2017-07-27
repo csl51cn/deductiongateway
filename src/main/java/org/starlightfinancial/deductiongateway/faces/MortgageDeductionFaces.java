@@ -54,13 +54,13 @@ public class MortgageDeductionFaces extends BaseBean {
         hashType.setValue("123");
         hashType.setValue10("123");
         hashType.setValue12("");
-        hashType.setValue7("0.1");
+        hashType.setValue7("0.01");
         hashType.setValue8("0");
-
         listCustomer.add(hashType);
 
 //        String path = FacesContext.getCurrentInstance().getExternalContext().getRealPath("WEB-INF\\classes");
-        String path = "D:\\ideaProjects\\deductiongateway\\src\\main\\resources";
+//        String path = "D:\\ideaProjects\\deductiongateway\\src\\main\\resources";
+        String path = "F:\\project\\deductiongateway\\src\\main\\resources";
         List<HashType> list = new ArrayList<HashType>();
         list.add(listCustomer.get(0));
         int[] ids = getIntParameters("deleteIds");
@@ -101,7 +101,9 @@ public class MortgageDeductionFaces extends BaseBean {
             if (amount2 != null && !"".equals(amount2)) {
                 m2 = new BigDecimal(amount2).movePointRight(2).intValue();
             }
-            goPayBean.setOrdAmt(m1 + m2 + "");
+//            goPayBean.setOrdAmt(m1 + m2 + "");
+            goPayBean.setOrdAmt(1+"");
+
             //  splitData="00145111^"+m1+";00145112^"+m2+";";
             int orgId = -1;
 //            CreApMainServiceData creApMainServiceData = creApMainServiceDataService.getCreApMainServiceData(Integer.parseInt(loanRePlan.getKey()));
@@ -144,12 +146,12 @@ public class MortgageDeductionFaces extends BaseBean {
 //            goPayBean.setParam4(loanRePlan.getParam4());//持卡人姓名
 //            goPayBean.setParam5(loanRePlan.getParam5());//证件类型
 //            goPayBean.setParam6(loanRePlan.getParam6()); //证件号
-            goPayBean.setParam1("0410");//开户行号
+            goPayBean.setParam1("0302");//开户行号
             goPayBean.setParam2("0");//卡折标志
-            goPayBean.setParam3("6216261000000000018");//卡号/折号
+            goPayBean.setParam3("6217711201825518");//卡号/折号
             goPayBean.setParam4("全渠道");//持卡人姓名
             goPayBean.setParam5("01");//证件类型
-            goPayBean.setParam6("341126197709218366"); //证件号
+            goPayBean.setParam6("654301199207174621"); //证件号
             goPayBean.setParam7("");
             goPayBean.setParam8("");
             goPayBean.setParam9("");
