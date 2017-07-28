@@ -27,3 +27,4 @@ Maven*.xml
 .idea
 target
 wechat.properties
+*.xls
