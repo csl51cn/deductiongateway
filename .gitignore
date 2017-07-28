@@ -28,3 +28,4 @@ Maven*.xml
 target
 wechat.properties
 *.xls
+*.key
