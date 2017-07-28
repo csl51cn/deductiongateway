@@ -7,33 +7,39 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.starlightfinancial.deductiongateway.model.GoPayBean;
-import org.starlightfinancial.deductiongateway.model.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.service.ContractService;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.starlightfinancial.deductiongateway.domain.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class HttpClientUtil {
 
+    @Autowired
+    private MortgageDeductionRepository mortgageDeductionRepository;
+
     private Map sendMessage(String MerId, String BusiId, String OrdId, String OrdAmt, String CuryId, String Version, String BgRetUrl, String PageRetUrl,
                             String GateId, String Param1, String Param2, String Param3, String Param4, String Param5, String Param6, String Param7, String Param8,
-                            String Param9, String Param10, String OrdDesc, String ShareType, String ShareData, String Priv1, String CustomIp, String ChkValue
-            , String pubPath, ContractService contractService,
-                            int contractId, String customerNo, String customerName, String contractNo, BigDecimal mount1, BigDecimal mount2, String orderDesc,
-                            int staffId, String ormid, String rePlanId) throws Exception {
-
+                            String Param9, String Param10, String OrdDesc, String ShareType, String ShareData, String Priv1, String CustomIp, String ChkValue,
+                            String pubPath, int contractId, String customerNo, String customerName, String contractNo,
+                            BigDecimal mount1, BigDecimal mount2, String orderDesc, int staffId, String ormid, String rePlanId) throws Exception {
         //批量发送扣款通信相关的对象
         HttpClient httpClient = new HttpClient();
         Map map = new HashMap();
         PostMethod postMethod = null;
-        try {
-            String url = Utility.SEND_BANK_URL;
-            postMethod = new PostMethod(url);
+        String url = Utility.SEND_BANK_URL;
+        postMethod = new PostMethod(url);
 
-            //   填入各个表单域的值
+        try {
+            // 填入各个表单域的值
             NameValuePair[] data = {
                     new NameValuePair("MerId", MerId),          //商户号
                     new NameValuePair("BusiId", BusiId),        //业务号，可选
@@ -70,58 +76,10 @@ public class HttpClientUtil {
             int statusCode = httpClient.executeMethod(postMethod);
             //取得按回的内容
             if (statusCode == HttpStatus.SC_OK) {
-                String str;
                 try {
-                    str = postMethod.getResponseBodyAsString();
-                    if (str.indexOf("失败原因:") != -1) {
-                        String error = str.substring(str.indexOf("失败原因:") + 5, str.indexOf("<br") - 1);
-                        map.put(OrdId, "0," + error);
-                        map.put("status", "0");
-                    } else {
-                        boolean flag = checkReponseData(str, pubPath, MerId);
-                        String ShareDataR = checkReponseShareData(str);
-                        if (flag) {
-                            map.put(OrdId, "1,订单交易成功," + ShareDataR);
-                            map.put("status", "1");
-                        } else {
-                            map.put(OrdId, "0,返回的数据签名验证失败," + ShareDataR);
-                            map.put("status", "0");
-                        }
-                    }
-                    String result = null;
-                    String rsData1 = null;
-                    String rsData2 = null;
-                    BigDecimal rsAmount1 = new BigDecimal("0.00");
-                    BigDecimal rsAmount2 = new BigDecimal("0.00");
-                    String t = map.get(OrdId).toString();
-                    String[] datas = t.split(",");
-                    if (datas != null && datas.length == 3) {
-                        result = datas[2];
-                    }
-                    String rsdata[] = result != null ? result.split(";") : null;
-                    if (rsdata != null && rsdata.length > 0) {
-                        if (rsdata[0].indexOf("^") != -1) {
-                            rsData1 = rsdata[0].substring(rsdata[0].indexOf("^") + 1, rsdata[0].length());
-                        }
-                        if (rsdata.length > 1) {
-                            if (rsdata[1].indexOf("^") != -1) {
-                                rsData2 = rsdata[1].substring(rsdata[1].indexOf("^") + 1, rsdata[1].length());
-                            }
-                        }
-                    }
-                    if (rsData1 != null) {
-                        rsAmount1 = new BigDecimal(rsData1);
-                    }
-                    if (rsData2 != null) {
-                        rsAmount2 = new BigDecimal(rsData2);
-                    }
-
-                    if (customerName == null) {
-                        customerName = Param4;
-                    }
-                    MortgageDeduction mortgageDeduction = contractService.addMortgageDeduction(contractId, OrdId, customerNo, customerName, contractNo, Param1, Param2, Param3,
-                            Param4, Param5, Param6, Utility.SEND_BANK_MERID, mount1, Utility.SEND_BANK_CURYID, orderDesc, ShareType, mount2, staffId, new Date(),
-                            datas[0], datas[1], "0", "0", ormid, rsAmount1, rsAmount2, postMethod.getResponseBodyAsString());
+                    String str = postMethod.getResponseBodyAsString();
+                    MortgageDeduction mortgageDeduction = new MortgageDeduction();
+                    mortgageDeduction = mortgageDeductionRepository.save(mortgageDeduction);
                     if (mortgageDeduction != null) {
                         map.put("mresultid", mortgageDeduction.getId() + "");
                         map.put("mount1", mount1 + "");
@@ -139,6 +97,7 @@ public class HttpClientUtil {
         } finally {
             postMethod.releaseConnection();
         }
+
         return map;
     }
 
@@ -146,65 +105,61 @@ public class HttpClientUtil {
     /**
      * @param messages
      * @param path
-     * @param contractService
      * @param staffId
      * @return
      */
-    public List<Map> sendInformation(List<GoPayBean> messages, String path, ContractService contractService, int staffId) {
+    public List<Map> sendInformation(List<GoPayBean> messages, String path, int staffId) {
         String chkValue;//签名数据
         List<Map> results = new ArrayList<Map>();
         Map result;
-        try {
-            int contractid = 0;
-            for (GoPayBean goPay : messages) {
-                try {
-                    StringBuffer sb = new StringBuffer();
-                    sb.append(goPay.getMerId());
-                    sb.append(goPay.getBusiId());
-                    sb.append(goPay.getOrdId());
-                    sb.append(goPay.getOrdAmt());
-                    sb.append(goPay.getCuryId());
-                    sb.append(goPay.getVersion());
-                    sb.append(goPay.getBgRetUrl());
-                    sb.append(goPay.getPageRetUrl());
-                    sb.append(goPay.getGateId());
-                    sb.append(goPay.getParam1());
-                    sb.append(goPay.getParam2());
-                    sb.append(goPay.getParam3());
-                    sb.append(goPay.getParam4());
-                    sb.append(goPay.getParam5());
-                    sb.append(goPay.getParam6());
-                    sb.append(goPay.getParam7());
-                    sb.append(goPay.getParam8());
-                    sb.append(goPay.getParam9());
-                    sb.append(goPay.getParam10());
-                    sb.append(goPay.getShareType());
-                    sb.append(goPay.getShareData());
-                    sb.append(goPay.getPriv1());
-                    sb.append(goPay.getCustomIp());
+        int contractid = 0;
 
-                    //加密数据
-                    chkValue = sign(goPay.getMerId(), sb.toString(), path);
-                    if (chkValue == null || "".equals(chkValue) || chkValue.length() != 256) {
-                        return null;
-                    }
-                    if (goPay.getContractId() != null) {
-                        contractid = Integer.parseInt(goPay.getContractId());
-                    }
-
-                    result = sendMessage(goPay.getMerId(), goPay.getBusiId(), goPay.getOrdId(), goPay.getOrdAmt(), goPay.getCuryId(), goPay.getVersion(),
-                            goPay.getBgRetUrl(), goPay.getPageRetUrl(), goPay.getGateId(), goPay.getParam1(), goPay.getParam2(), goPay.getParam3(), goPay.getParam4(), goPay.getParam5(),
-                            goPay.getParam6(), goPay.getParam7(), goPay.getParam8(), goPay.getParam9(), goPay.getParam10(), goPay.getOrdDesc(), goPay.getShareType(),
-                            goPay.getShareData(), goPay.getPriv1(), goPay.getCustomIp(), chkValue, path, contractService,
-                            contractid, goPay.getCustomerNo(), goPay.getCustomerName(), goPay.getContractNo(), goPay.getSplitData1(), goPay.getSplitData2(),
-                            goPay.getOrdDesc(), staffId, goPay.getOrgManagerId(), goPay.getRePlanId());
-                    results.add(result);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        for (GoPayBean goPay : messages) {
+            try {
+                StringBuffer sb = new StringBuffer();
+                if (StringUtils.isNotBlank(goPay.getContractId())) {
+                    contractid = Integer.parseInt(goPay.getContractId());
                 }
+                sb.append(goPay.getMerId());
+                sb.append(goPay.getBusiId());
+                sb.append(goPay.getOrdId());
+                sb.append(goPay.getOrdAmt());
+                sb.append(goPay.getCuryId());
+                sb.append(goPay.getVersion());
+                sb.append(goPay.getBgRetUrl());
+                sb.append(goPay.getPageRetUrl());
+                sb.append(goPay.getGateId());
+                sb.append(goPay.getParam1());
+                sb.append(goPay.getParam2());
+                sb.append(goPay.getParam3());
+                sb.append(goPay.getParam4());
+                sb.append(goPay.getParam5());
+                sb.append(goPay.getParam6());
+                sb.append(goPay.getParam7());
+                sb.append(goPay.getParam8());
+                sb.append(goPay.getParam9());
+                sb.append(goPay.getParam10());
+                sb.append(goPay.getShareType());
+                sb.append(goPay.getShareData());
+                sb.append(goPay.getPriv1());
+                sb.append(goPay.getCustomIp());
+
+                //加密数据
+                chkValue = sign(goPay.getMerId(), sb.toString(), path);
+                if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
+                    return null;
+                }
+
+                result = sendMessage(goPay.getMerId(), goPay.getBusiId(), goPay.getOrdId(), goPay.getOrdAmt(), goPay.getCuryId(), goPay.getVersion(),
+                        goPay.getBgRetUrl(), goPay.getPageRetUrl(), goPay.getGateId(), goPay.getParam1(), goPay.getParam2(), goPay.getParam3(), goPay.getParam4(), goPay.getParam5(),
+                        goPay.getParam6(), goPay.getParam7(), goPay.getParam8(), goPay.getParam9(), goPay.getParam10(), goPay.getOrdDesc(), goPay.getShareType(),
+                        goPay.getShareData(), goPay.getPriv1(), goPay.getCustomIp(), chkValue, path,
+                        contractid, goPay.getCustomerNo(), goPay.getCustomerName(), goPay.getContractNo(), goPay.getSplitData1(), goPay.getSplitData2(),
+                        goPay.getOrdDesc(), staffId, goPay.getOrgManagerId(), goPay.getRePlanId());
+                results.add(result);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return results;
     }

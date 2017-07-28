@@ -1,7 +1,6 @@
-package org.starlightfinancial.deductiongateway.model;
+package org.starlightfinancial.deductiongateway.domain;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -9,13 +8,11 @@ import java.util.Date;
 /**
  * 记录贷扣的情况的数据
  *
- * @author DELL
+ * @author sili.chen
  */
-@Entity
-@Table(name = "CUS_MORTGAGEDEUCTION")
-public class MortgageDeduction implements Serializable {
+@Entity(name = "BU_MORTGAGEDEUCTION")
+public class MortgageDeduction {
 
-    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
@@ -23,65 +20,64 @@ public class MortgageDeduction implements Serializable {
     @Column(name = "apid")
     private int applyMainId;
 
-    @Column(name = "OrdId")
+    @Column(name = "ordid")
     private String ordId;
 
-    @Column(name = "customerNo")
+    @Column(name = "customerno")
     private String customerNo;
 
-    @Column(name = "customerName")
+    @Column(name = "customername")
     private String customerName;
 
-    @Column(name = "contractNo")
+    @Column(name = "contractno")
     private String contractNo;
 
-    @Column(name = "Param1")
+    @Column(name = "param1")
     private String param1;
 
-    @Column(name = "Param2")
+    @Column(name = "param2")
     private String param2;
 
-    @Column(name = "Param3")
+    @Column(name = "param3")
     private String param3;
 
-    @Column(name = "Param4")
+    @Column(name = "param4")
     private String param4;
 
-    @Column(name = "Param5")
+    @Column(name = "param5")
     private String param5;
 
-    @Column(name = "Param6")
+    @Column(name = "param6")
     private String param6;
 
-    @Column(name = "MerId")
+    @Column(name = "merid")
     private String merId;
 
-    @Column(name = "splitData1")
+    @Column(name = "splitdata1")
     private BigDecimal splitData1;
 
-    @Column(name = "CuryId")
+    @Column(name = "curyid")
     private String curyId;
 
-    @Column(name = "orderDesc")
+    @Column(name = "orderdesc")
     private String orderDesc;
 
-    @Column(name = "splitType")
+    @Column(name = "splittype")
     private String splitType;
 
-    @Column(name = "splitData2")
+    @Column(name = "splitdata2")
     private BigDecimal splitData2;
 
-
-    @Column(name = "creat_id")
+    @Column(name = "creatid")
     private int creatId;
 
-    @Column(name = "create_date")
+    @Column(name = "createdate")
     private Date createDate;
 
     @Column(name = "issuccess")
     private String issuccess;
 
-    @Column(name = "errorResult")
+    @Column(name = "errorresult")
     private String errorResult;
 
     @Column(name = "isoffs")
@@ -96,21 +92,20 @@ public class MortgageDeduction implements Serializable {
     @Column(name = "result")
     private String result;
 
-    @Column(name = "rsplitData1")
+    @Column(name = "rsplitdata1")
     private BigDecimal rsplitData1;
 
-    @Column(name = "rsplitData2")
+    @Column(name = "rsplitdata2")
     private BigDecimal rsplitData2;
 
-    @Column(name = "plan_No")
+    @Column(name = "planno")
     private int planNo;
 
-    @Transient
-    String PlitData1;
-    @Transient
-    String PlitData2;
-
     public MortgageDeduction() {
+    }
+
+    public MortgageDeduction(int applyMainId) {
+        this.applyMainId = applyMainId;
     }
 
     public int getId() {
@@ -129,6 +124,13 @@ public class MortgageDeduction implements Serializable {
         this.applyMainId = applyMainId;
     }
 
+    public String getOrdId() {
+        return ordId;
+    }
+
+    public void setOrdId(String ordId) {
+        this.ordId = ordId;
+    }
 
     public String getCustomerNo() {
         return customerNo;
@@ -153,7 +155,6 @@ public class MortgageDeduction implements Serializable {
     public void setContractNo(String contractNo) {
         this.contractNo = contractNo;
     }
-
 
     public String getParam1() {
         return param1;
@@ -203,6 +204,22 @@ public class MortgageDeduction implements Serializable {
         this.param6 = param6;
     }
 
+    public String getMerId() {
+        return merId;
+    }
+
+    public void setMerId(String merId) {
+        this.merId = merId;
+    }
+
+    public BigDecimal getSplitData1() {
+        return splitData1;
+    }
+
+    public void setSplitData1(BigDecimal splitData1) {
+        this.splitData1 = splitData1;
+    }
+
     public String getCuryId() {
         return curyId;
     }
@@ -227,41 +244,12 @@ public class MortgageDeduction implements Serializable {
         this.splitType = splitType;
     }
 
-
-    public BigDecimal getSplitData1() {
-        return splitData1;
-    }
-
-    public void setSplitData1(BigDecimal splitData1) {
-        this.splitData1 = splitData1;
-    }
-
     public BigDecimal getSplitData2() {
         return splitData2;
     }
 
     public void setSplitData2(BigDecimal splitData2) {
         this.splitData2 = splitData2;
-    }
-
-    public static long getSerialversionuid() {
-        return serialVersionUID;
-    }
-
-    public String getMerId() {
-        return merId;
-    }
-
-    public void setMerId(String merId) {
-        this.merId = merId;
-    }
-
-    public String getOrdId() {
-        return ordId;
-    }
-
-    public void setOrdId(String ordId) {
-        this.ordId = ordId;
     }
 
     public int getCreatId() {
@@ -320,6 +308,14 @@ public class MortgageDeduction implements Serializable {
         this.target = target;
     }
 
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
     public BigDecimal getRsplitData1() {
         return rsplitData1;
     }
@@ -336,14 +332,6 @@ public class MortgageDeduction implements Serializable {
         this.rsplitData2 = rsplitData2;
     }
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
-
     public int getPlanNo() {
         return planNo;
     }
@@ -351,22 +339,4 @@ public class MortgageDeduction implements Serializable {
     public void setPlanNo(int planNo) {
         this.planNo = planNo;
     }
-
-    public String getPlitData1() {
-        return PlitData1;
-    }
-
-    public void setPlitData1(String plitData1) {
-        PlitData1 = plitData1;
-    }
-
-    public String getPlitData2() {
-        return PlitData2;
-    }
-
-    public void setPlitData2(String plitData2) {
-        PlitData2 = plitData2;
-    }
-
-
 }
