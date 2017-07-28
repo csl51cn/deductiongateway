@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway.model;
+package org.starlightfinancial.deductiongateway.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name = "CRE_AP_MAIN_SERVICE")
 public class CreApMainServiceData implements Serializable {
 
     private static final long serialVersionUID = 1L;
