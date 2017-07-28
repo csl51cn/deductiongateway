@@ -80,8 +80,6 @@ public class HttpClientUtil {
                     latch.countDown();
                     try {
                         String content = EntityUtils.toString(response.getEntity(), "UTF-8");
-                        System.out.println(" response content is : " + content);
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
