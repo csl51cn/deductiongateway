@@ -42,14 +42,14 @@ public class ApplicationTest {
     public void test() throws Exception {
 
 //        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId("789");
-//        System.out.println(mortgageDeduction.getContractNo());
+//        System.out.println(mortgageDeduction.getParam1());
 
 //        List<SysDict> list = sysDictRepository.findByDicType("726");
 //        System.out.println(list.size());
 
-        File file = new File("src/main/resources/代扣粘贴模版.xls");
-        mortgageDeductionService.importCustomerData(file, 14);
-        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAAndCreatId("1", 14);
+//        File file = new File("src/main/resources/代扣粘贴模版.xls");
+//        mortgageDeductionService.importCustomerData(file, 14);
+        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
         mortgageDeductionService.saveMortgageDeductions(list);
 
     }

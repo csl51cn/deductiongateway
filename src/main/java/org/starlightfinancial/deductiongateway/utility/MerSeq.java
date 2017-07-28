@@ -2,15 +2,10 @@ package org.starlightfinancial.deductiongateway.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 
 public class MerSeq {
 
     public static int seq = 0;
-
-    public static int getSeq() {
-        return seq;
-    }
 
     public static int tickSeq() {
         return seq++;
@@ -34,24 +29,10 @@ public class MerSeq {
         return sb.toString();
     }
 
-    public static Date curDate = new Date();
-
-    public static String getOrder() {
-        int n = getSeq();
-        String ns = format(n, 4);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
-        return sdf.format(curDate) + ns;
-    }
-
     public static String tickOrder() {
         int n = tickSeq();
         String ns = format(n, 4);
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         return sdf.format(new Date()) + ns;
-    }
-
-    public static int getRandom(int n) {
-        Random r = new Random(System.currentTimeMillis());
-        return r.nextInt(n);
     }
 }
