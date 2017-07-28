@@ -10,5 +10,5 @@ import java.util.List;
 public interface MortgageDeductionRepository extends JpaRepository<MortgageDeduction, Integer> {
     MortgageDeduction findByOrdId(String ordId);
 
-    List<MortgageDeduction> findByTypeAAndCreatId(String type, int creatId);
+    List<MortgageDeduction> findByTypeAndCreatId(String type, int creatId);
 }

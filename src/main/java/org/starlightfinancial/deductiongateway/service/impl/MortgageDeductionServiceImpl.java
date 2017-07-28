@@ -20,6 +20,7 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
@@ -66,7 +67,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
     }
 
-    private void readXls(File uploadedFile, int staffId) {
+    private void readXls(File uploadedFile, int staffId) throws IllegalAccessException, NoSuchFieldException, IOException {
         try {
             POIFSFileSystem poifsFileSystem = new POIFSFileSystem(new FileInputStream(uploadedFile));
             HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
@@ -172,6 +173,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw e;
         }
     }
 
@@ -212,8 +214,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             if (StringUtils.isNotBlank(goPayBean.getOrgManagerId())) {
                 splitData += ";" + goPayBean.getOrgManagerId() + "^" + m2 + ";";
             }
-            splitData = "00145111^" + m1 + ";00145112^" + m2 + ";";
-//            splitData = "00010001^1;00010002^1";
+//            splitData = "00145111^" + m1 + ";00145112^" + m2 + ";";
+            splitData = "00010001^1;00010002^1";
 
             goPayBean.setSplitData1(new BigDecimal(amount1));
             goPayBean.setSplitData2(new BigDecimal(amount2));
@@ -231,18 +233,18 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 //            goPayBean.setParam4(loanRePlan.getParam4());//持卡人姓名
 //            goPayBean.setParam5(loanRePlan.getParam5());//证件类型
 //            goPayBean.setParam6(loanRePlan.getParam6()); //证件号
-//            goPayBean.setParam1("0410");//开户行号
-//            goPayBean.setParam2("0");//卡折标志
-//            goPayBean.setParam3("6216261000000000018");//卡号/折号
-//            goPayBean.setParam4("全渠道");//持卡人姓名
-//            goPayBean.setParam5("01");//证件类型
-//            goPayBean.setParam6("341126197709218366"); //证件号
-            goPayBean.setParam1("0302");//开户行号
+            goPayBean.setParam1("0410");//开户行号
             goPayBean.setParam2("0");//卡折标志
-            goPayBean.setParam3("621771120182551");//卡号/折号
-            goPayBean.setParam4("郝琪");//持卡人姓名
+            goPayBean.setParam3("6216261000000000018");//卡号/折号
+            goPayBean.setParam4("全渠道");//持卡人姓名
             goPayBean.setParam5("01");//证件类型
-            goPayBean.setParam6("654301199207174621"); //证件号
+            goPayBean.setParam6("341126197709218366"); //证件号
+//            goPayBean.setParam1("0302");//开户行号
+//            goPayBean.setParam2("0");//卡折标志
+//            goPayBean.setParam3("621771120182551");//卡号/折号
+//            goPayBean.setParam4("郝琪");//持卡人姓名
+//            goPayBean.setParam5("01");//证件类型
+//            goPayBean.setParam6("654301199207174621"); //证件号
             goPayBean.setParam7("");
             goPayBean.setParam8("");
             goPayBean.setParam9("");
@@ -253,6 +255,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             goPayBean.setPriv1("");
             goPayBean.setCustomIp("");
             messages.add(goPayBean);
+            this.goPayBeanToMortgageDeduction(mortgageDeduction, goPayBean);
         }
 
         HttpClientUtil httpClientUtil = new HttpClientUtil();
@@ -264,5 +267,15 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
 
         return null;
+    }
+
+    private void goPayBeanToMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
+        mortgageDeduction.setOrdId(goPayBean.getOrdId());
+        mortgageDeduction.setMerId(goPayBean.getMerId());
+        mortgageDeduction.setCuryId(goPayBean.getCuryId());
+        mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
+        mortgageDeduction.setPlanNo(0);
+        mortgageDeduction.setType("0");
+        mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
     }
 }

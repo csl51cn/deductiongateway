@@ -2,23 +2,26 @@ package org.starlightfinancial.deductiongateway.utility;
 
 
 import chinapay.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.starlightfinancial.deductiongateway.domain.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 
 public class HttpClientUtil {
@@ -28,77 +31,98 @@ public class HttpClientUtil {
 
     private Map sendMessage(String MerId, String BusiId, String OrdId, String OrdAmt, String CuryId, String Version, String BgRetUrl, String PageRetUrl,
                             String GateId, String Param1, String Param2, String Param3, String Param4, String Param5, String Param6, String Param7, String Param8,
-                            String Param9, String Param10, String OrdDesc, String ShareType, String ShareData, String Priv1, String CustomIp, String ChkValue,
-                            String pubPath, int contractId, String customerNo, String customerName, String contractNo,
-                            BigDecimal mount1, BigDecimal mount2, String orderDesc, int staffId, String ormid, String rePlanId) throws Exception {
+                            String Param9, String Param10, String OrdDesc, String ShareType, String ShareData, String Priv1, String CustomIp, String ChkValue)
+            throws Exception {
         //批量发送扣款通信相关的对象
-        HttpClient httpClient = new HttpClient();
         Map map = new HashMap();
-        PostMethod postMethod = null;
+        CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
         String url = Utility.SEND_BANK_URL;
-        postMethod = new PostMethod(url);
-
+        HttpPost httpPost = new HttpPost(url);
+        CountDownLatch latch = new CountDownLatch(1);
         try {
             // 填入各个表单域的值
-            NameValuePair[] data = {
-                    new NameValuePair("MerId", MerId),          //商户号
-                    new NameValuePair("BusiId", BusiId),        //业务号，可选
-                    new NameValuePair("OrdId", OrdId),          //订单号
-                    new NameValuePair("OrdAmt", OrdAmt),        //金额
-                    new NameValuePair("CuryId", CuryId),        //币种
-                    new NameValuePair("Version", Version),      //版本号，由银联提供
-                    new NameValuePair("BgRetUrl", BgRetUrl),    //后台通知URL
-                    new NameValuePair("PageRetUrl", PageRetUrl),//前台返回URL
-                    new NameValuePair("GateId", GateId),        //网关ID，由银联提供
-                    new NameValuePair("Param1", Param1),        //开户行
-                    new NameValuePair("Param2", Param2),        //卡折标志
-                    new NameValuePair("Param3", Param3),        //卡号/折号
-                    new NameValuePair("Param4", Param4),        //持卡人姓名
-                    new NameValuePair("Param5", Param5),        //证件类型
-                    new NameValuePair("Param6", Param6),        //证件号
-                    new NameValuePair("Param7", Param7),
-                    new NameValuePair("Param8", Param8),
-                    new NameValuePair("Param9", Param9),
-                    new NameValuePair("Param10", Param10),
-                    new NameValuePair("OrdDesc", OrdDesc),      //订单描述
-                    new NameValuePair("ShareType", ShareType),
-                    new NameValuePair("ShareData", ShareData),
-                    new NameValuePair("Priv1", Priv1),
-                    new NameValuePair("CustomIp", CustomIp),    //绑定固定IP
-                    new NameValuePair("ChkValue", ChkValue)
-            };
+            List<NameValuePair> nvps = new ArrayList<>();
+            nvps.add(new BasicNameValuePair("MerId", MerId));//商户号
+            nvps.add(new BasicNameValuePair("BusiId", BusiId));//业务号，可选
+            nvps.add(new BasicNameValuePair("OrdId", OrdId));//订单号
+            nvps.add(new BasicNameValuePair("OrdAmt", OrdAmt));//金额
+            nvps.add(new BasicNameValuePair("CuryId", CuryId));//币种
+            nvps.add(new BasicNameValuePair("Version", Version));//版本号，由银联提供
+            nvps.add(new BasicNameValuePair("BgRetUrl", BgRetUrl));//后台通知URL
+            nvps.add(new BasicNameValuePair("PageRetUrl", PageRetUrl));//前台返回URL
+            nvps.add(new BasicNameValuePair("GateId", GateId));//网关ID，由银联提供
+            nvps.add(new BasicNameValuePair("Param1", Param1));//开户行
+            nvps.add(new BasicNameValuePair("Param2", Param2));//卡折标志
+            nvps.add(new BasicNameValuePair("Param3", Param3));//卡号/折号
+            nvps.add(new BasicNameValuePair("Param4", Param4));//持卡人姓名
+            nvps.add(new BasicNameValuePair("Param5", Param5));//证件类型
+            nvps.add(new BasicNameValuePair("Param6", Param6));//证件号
+            nvps.add(new BasicNameValuePair("Param7", Param7));
+            nvps.add(new BasicNameValuePair("Param8", Param8));
+            nvps.add(new BasicNameValuePair("Param9", Param9));
+            nvps.add(new BasicNameValuePair("Param10", Param10));
+            nvps.add(new BasicNameValuePair("OrdDesc", OrdDesc));//订单描述
+            nvps.add(new BasicNameValuePair("ShareType", ShareType));
+            nvps.add(new BasicNameValuePair("ShareData", ShareData));
+            nvps.add(new BasicNameValuePair("Priv1", Priv1));
+            nvps.add(new BasicNameValuePair("CustomIp", CustomIp));
+            nvps.add(new BasicNameValuePair("ChkValue", ChkValue));
 
             //将表单的值放入postMethod中
-            postMethod.setRequestBody(data);
-            postMethod.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "utf-8");
-            postMethod.addRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+            httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            httpclient.start();
+
             //执行postMethod
-            int statusCode = httpClient.executeMethod(postMethod);
-            //取得按回的内容
-            if (statusCode == HttpStatus.SC_OK) {
-                try {
-                    String str = postMethod.getResponseBodyAsString();
-                    MortgageDeduction mortgageDeduction = new MortgageDeduction();
-                    mortgageDeduction = mortgageDeductionRepository.save(mortgageDeduction);
-                    if (mortgageDeduction != null) {
-                        map.put("mresultid", mortgageDeduction.getId() + "");
-                        map.put("mount1", mount1 + "");
-                        map.put("mount2", mount2 + "");
-                        map.put("contractId", contractId + "");
-                        map.put("rePlanId", rePlanId);
+            httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
+
+                public void completed(final HttpResponse response) {
+                    latch.countDown();
+                    try {
+                        String content = EntityUtils.toString(response.getEntity(), "UTF-8");
+                        System.out.println(" response content is : " + content);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    throw e;
                 }
+
+                public void failed(final Exception ex) {
+                    latch.countDown();
+                    close(httpclient);
+                }
+
+                public void cancelled() {
+                    latch.countDown();
+                    close(httpclient);
+                }
+            });
+
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
         } catch (Exception e) {
             throw e;
         } finally {
-            postMethod.releaseConnection();
+            close(httpclient);
         }
-
         return map;
+    }
+
+    /**
+     * 关闭client对象
+     *
+     * @param client
+     */
+    private static void close(CloseableHttpAsyncClient client) {
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -112,14 +136,10 @@ public class HttpClientUtil {
         String chkValue;//签名数据
         List<Map> results = new ArrayList<Map>();
         Map result;
-        int contractid = 0;
 
         for (GoPayBean goPay : messages) {
             try {
                 StringBuffer sb = new StringBuffer();
-                if (StringUtils.isNotBlank(goPay.getContractId())) {
-                    contractid = Integer.parseInt(goPay.getContractId());
-                }
                 sb.append(goPay.getMerId());
                 sb.append(goPay.getBusiId());
                 sb.append(goPay.getOrdId());
@@ -153,9 +173,7 @@ public class HttpClientUtil {
                 result = sendMessage(goPay.getMerId(), goPay.getBusiId(), goPay.getOrdId(), goPay.getOrdAmt(), goPay.getCuryId(), goPay.getVersion(),
                         goPay.getBgRetUrl(), goPay.getPageRetUrl(), goPay.getGateId(), goPay.getParam1(), goPay.getParam2(), goPay.getParam3(), goPay.getParam4(), goPay.getParam5(),
                         goPay.getParam6(), goPay.getParam7(), goPay.getParam8(), goPay.getParam9(), goPay.getParam10(), goPay.getOrdDesc(), goPay.getShareType(),
-                        goPay.getShareData(), goPay.getPriv1(), goPay.getCustomIp(), chkValue, path,
-                        contractid, goPay.getCustomerNo(), goPay.getCustomerName(), goPay.getContractNo(), goPay.getSplitData1(), goPay.getSplitData2(),
-                        goPay.getOrdDesc(), staffId, goPay.getOrgManagerId(), goPay.getRePlanId());
+                        goPay.getShareData(), goPay.getPriv1(), goPay.getCustomIp(), chkValue);
                 results.add(result);
             } catch (Exception e) {
                 e.printStackTrace();
