@@ -8,7 +8,7 @@ import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.dao.BaseDao;
@@ -159,9 +159,9 @@ public class BaseDaoImpl<T> extends HibernateDaoSupport implements BaseDao<T> {
 
     @SuppressWarnings("unchecked")
     public <T2> T2 queryForObject(String condition, Class<T2> requiredType) {
-        //object = (T2) getSession().createQuery(MessageFormat.format("from " + requiredType.getSimpleName() + " t where {0} ", condition)).uniqueResult();
+        //object = (T2) getSessionFactory().getCurrentSession().createQuery(MessageFormat.format("from " + requiredType.getSimpleName() + " t where {0} ", condition)).uniqueResult();
         String hql = MessageFormat.format("from {0} t where {1} ", requiredType.getSimpleName(), condition);
-        List<T2> list = getSession().createQuery(hql).list();
+        List<T2> list = getSessionFactory().getCurrentSession().createQuery(hql).list();
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -176,7 +176,7 @@ public class BaseDaoImpl<T> extends HibernateDaoSupport implements BaseDao<T> {
     public List<T> pageQuery(String condition, int start, int length) {
         List<T> t = new ArrayList<T>();
         try {
-            Query query = getSession().createQuery(
+            Query query = getSessionFactory().getCurrentSession().createQuery(
                     MessageFormat.format(HQL_QUERY, condition));
             query.setFirstResult(start);
             query.setMaxResults(length);
@@ -202,40 +202,40 @@ public class BaseDaoImpl<T> extends HibernateDaoSupport implements BaseDao<T> {
     }
 
     public T refresh(T obj) {
-        getSession().flush();
-        getSession().refresh(obj);
+        getSessionFactory().getCurrentSession().flush();
+        getSessionFactory().getCurrentSession().refresh(obj);
         return obj;
     }
 
     public void clearSession() {
-        getSession().flush();
-        getSession().clear();
+        getSessionFactory().getCurrentSession().flush();
+        getSessionFactory().getCurrentSession().clear();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public List<Map> executeSQL(String condition) {
-        return getSession().createSQLQuery(condition)
+        return getSessionFactory().getCurrentSession().createSQLQuery(condition)
                 .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
 
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Map<String, Object> queryForMap(String condition) {
-        return (Map) getSession().createSQLQuery(condition)
+        return (Map) getSessionFactory().getCurrentSession().createSQLQuery(condition)
                 .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).uniqueResult();
 
     }
 
     public void executeUpdate(String sql) {
-        getSession().createSQLQuery(sql).executeUpdate();
+        getSessionFactory().getCurrentSession().createSQLQuery(sql).executeUpdate();
     }
 
     public int queryForInt(String sql) {
-        return (Integer) getSession().createSQLQuery(sql).uniqueResult();
+        return (Integer) getSessionFactory().getCurrentSession().createSQLQuery(sql).uniqueResult();
     }
 
     public BigDecimal queryForBigDecimal(String sql) {
-        return (BigDecimal) getSession().createSQLQuery(sql).uniqueResult();
+        return (BigDecimal) getSessionFactory().getCurrentSession().createSQLQuery(sql).uniqueResult();
     }
 
     /**
@@ -243,7 +243,7 @@ public class BaseDaoImpl<T> extends HibernateDaoSupport implements BaseDao<T> {
      */
     @SuppressWarnings("unchecked")
     public <T3> List<T3> queryForList(String sql, Class<T3> requiredType) {
-        SQLQuery query = getSession().createSQLQuery(sql);
+        SQLQuery query = getSessionFactory().getCurrentSession().createSQLQuery(sql);
         query.setResultTransformer(Transformers.aliasToBean(requiredType));
         return query.list();
     }
