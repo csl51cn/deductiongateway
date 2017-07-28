@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.*;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.DictionaryType;
@@ -18,8 +19,6 @@ import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -41,7 +40,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
 
-    public void importCustomerData(File uploadedFile, int staffId) {
+    public void importCustomerData(MultipartFile uploadedFile, int staffId) {
         try {
             if (null == uploadedFile) {
                 log.info("");
@@ -67,9 +66,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
     }
 
-    private void readXls(File uploadedFile, int staffId) throws IllegalAccessException, NoSuchFieldException, IOException {
+    private void readXls(MultipartFile uploadedFile, int staffId) throws IllegalAccessException, NoSuchFieldException, IOException {
         try {
-            POIFSFileSystem poifsFileSystem = new POIFSFileSystem(new FileInputStream(uploadedFile));
+            POIFSFileSystem poifsFileSystem = new POIFSFileSystem(uploadedFile.getInputStream());
             HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
             HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(0);
 
@@ -177,7 +176,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
     }
 
-    private void readXlsx(File uploadedFile, int staffId) {
+    private void readXlsx(MultipartFile uploadedFile, int staffId) {
 
     }
 
