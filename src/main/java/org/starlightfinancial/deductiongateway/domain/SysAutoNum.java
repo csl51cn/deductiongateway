@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway.model;
+package org.starlightfinancial.deductiongateway.domain;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -7,7 +7,6 @@ import java.io.Serializable;
  * The persistent class for the SYS_DICT database table.
  */
 @Entity
-@Table(name = "SYS_AUTO_NUM")
 public class SysAutoNum implements Serializable {
     private static final long serialVersionUID = 1L;
 

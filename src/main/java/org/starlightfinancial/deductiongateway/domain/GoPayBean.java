@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway.model;
+package org.starlightfinancial.deductiongateway.domain;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
