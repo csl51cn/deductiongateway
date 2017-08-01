@@ -39,11 +39,6 @@
                         <div class="clearfix"></div>
                     </fieldset>
                 </form>
-                <div style="display: none">
-                    <button id="failBtn" class="btn btn-primary noty"
-                            data-noty-options='{"text":"登录失败,用户名或密码错误","layout":"center","type":"error"}'>
-                    </button>
-                </div>
             </div><!--/span-->
         </div><!--/row-->
 
@@ -53,13 +48,12 @@
 </div><!--/fluid-row-->
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
-<script  type="text/javascript">
+<script  type="text/javascript" th:inline="javascript">
     $(function () {
-        $("#failBtn").click();
-//        var msg = [[${session.msg}]];
-//        if (msg != null) {
-//            $("#failBtn").click();
-//        }
+        var msg = [[${session.msg}]];
+        if (msg != null) {
+            noty({'text':msg, 'layout': 'center', 'type': 'error',"timeout":"3000"});
+        }
     })
 </script>
 <!--end : JavaScript-->

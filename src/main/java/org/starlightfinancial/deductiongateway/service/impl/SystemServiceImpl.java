@@ -21,6 +21,7 @@ public class SystemServiceImpl implements SystemService {
 
     /**
      * 根据登录名和密码查询用户
+     *
      * @param loginName
      * @param password
      * @return
@@ -35,7 +36,6 @@ public class SystemServiceImpl implements SystemService {
         List<SysUser> listSysUser = sysUserRepository.findByLoginNameAndLoginPasswordAndDeleteFlag(loginName, de_password, "0");
         if (listSysUser.size() > 0) {
             return listSysUser.get(0);
-
         } else {
             return null;
         }

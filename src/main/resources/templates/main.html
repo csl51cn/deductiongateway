@@ -3,7 +3,7 @@
 <head>
     <title>主页面</title>
     <title th:include="common :: #header" th:remove="tag"></title>
-    <link href="/css/jquery.noty.css" rel="stylesheet" >
+    <link href="/css/jquery.noty.css" rel="stylesheet">
 </head>
 <body>
 <!-- start: Header -->
@@ -24,8 +24,9 @@
                     <!-- start: User Dropdown -->
                     <li class="dropdown">
                         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="halflings-icon white user"></i><div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
-                            <span class="caret" ></span>
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li class="dropdown-menu-title">
@@ -92,19 +93,11 @@
                                     <label class="control-label" for="uploadify">文件上传</label>
                                     <div class="controls">
                                         <input class="input-file uniform_on" id="uploadify" type="file">
-                                        <div id="fileQueue" ></div>
+                                        <div id="fileQueue"></div>
                                     </div>
                                 </div>
                             </fieldset>
                         </form>
-                    </div>
-                    <div style="display: none">
-                        <button id="successBtn" class="btn btn-primary noty"
-                                data-noty-options='{"text":"文件上传成功","layout":"center","type":"information"}'>
-                        </button>
-                        <button id="failBtn" class="btn btn-primary noty"
-                                data-noty-options='{"text":"文件上传失败","layout":"center","type":"error"}'>
-                        </button>
                     </div>
                 </div><!--/span-->
 
@@ -117,14 +110,14 @@
 </div><!--/#content.span10-->
 </div><!--/fluid-row-->
 
-<footer >
+<footer>
     <p>
         <span style="text-align:left;float:left">版权所有 2017 重庆两江新区润通小额贷款有限公司 </span>
     </p>
 </footer>
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
-<script type="text/javascript" >
+<script type="text/javascript">
     $(function () {
         $("#uploadify").uploadify({
             //注:这里uploadify为html标签，文件输入框id
@@ -140,7 +133,7 @@
             removeCompleted: true,
             queueSizeLimit: 999,
             fileSizeLimit: '100MB',
-            fileTypeExts: '*.xls',
+            fileTypeExts: '*.xls;*.xlsx',
             height: 30,
             width: 190,
             successTimeout: 30,
@@ -148,9 +141,9 @@
             uploadLimit: 100,
             onUploadSuccess: function (file, data, response) {
                 if ("1" == data) {
-                    $("#successBtn").click();
+                    noty({'text': file.name + '上传成功', 'layout': 'center', 'type': 'information',"timeout":"3000"});
                 } else {
-                    $("#failBtn").click();
+                    noty({'text': file.name + '上传失败', 'layout': 'center', 'type': 'error',"timeout":"3000"});
                 }
             },
         });

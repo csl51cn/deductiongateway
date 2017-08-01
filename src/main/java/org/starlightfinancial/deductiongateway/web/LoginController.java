@@ -24,13 +24,14 @@ public class LoginController {
             session.setAttribute("loginUser", loginUser);
             return "main";
         }
-        session.setAttribute("msg","登录失败,用户名或密码错误");
+        session.setAttribute("msg","登录失败,用户名或密码错误/账户不可用");
         return "login";
     }
 
     @RequestMapping("/logout.do")
     public  String  logout(HttpSession session){
         session.removeAttribute("loginUser");
+        session.removeAttribute("msg");
         return  "login";
     }
     

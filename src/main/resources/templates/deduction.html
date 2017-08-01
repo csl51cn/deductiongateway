@@ -198,7 +198,7 @@
             var starDate = $("#startDate").val();
             var endDate = $("#endDate").val();
             if (starDate == "") {
-                starDate =date;
+                starDate = date;
             }
             if (endDate == "") {
                 endDate = date;
@@ -246,7 +246,14 @@
         <!--执行代扣按钮功能-->
         $("#deductionBtn").click(function () {
             var allTableData = $('#table').bootstrapTable('getData');
-
+            $.ajax({
+                url:"/mortgageDeductionController/deduct.do",
+                method:"POST",
+                data:allTableData,
+                success:function(data){
+                    noty({text:"成功"});
+                }
+            })
         });
     })
 </script>

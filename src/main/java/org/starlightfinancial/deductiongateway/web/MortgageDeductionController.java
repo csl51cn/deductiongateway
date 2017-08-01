@@ -69,7 +69,7 @@ public class MortgageDeductionController {
     }
 
 
-    @RequestMapping(value="/mortgageDeductionController/saveMortgageDeductions.do")
+    @RequestMapping(value="/mortgageDeductionController/deduct.do")
     public  String  saveMortgageDeductions (List<MortgageDeduction> list){
         System.out.println(list);
         return null;
