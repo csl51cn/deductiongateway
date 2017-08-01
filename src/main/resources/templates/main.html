@@ -3,6 +3,7 @@
 <head>
     <title>主页面</title>
     <title th:include="common :: #header" th:remove="tag"></title>
+    <link href="/css/jquery.noty.css" rel="stylesheet" >
 </head>
 <body>
 <!-- start: Header -->
@@ -23,8 +24,8 @@
                     <!-- start: User Dropdown -->
                     <li class="dropdown">
                         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="halflings-icon white user"></i> admin
-                            <span class="caret"></span>
+                            <i class="halflings-icon white user"></i><div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret" ></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li class="dropdown-menu-title">
@@ -123,12 +124,12 @@
 </footer>
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
-<script type="text/javascript">
+<script type="text/javascript" >
     $(function () {
         $("#uploadify").uploadify({
             //注:这里uploadify为html标签，文件输入框id
             swf: 'css/uploadify.swf',
-            uploader: '${basePath}/mortgageDeductionController/upload.do',
+            uploader: '/mortgageDeductionController/upload.do',
             cancelImg: '/img/uploadify-cancel.png',
             buttonText: '浏览',
             fileObjName: 'uploadFile',

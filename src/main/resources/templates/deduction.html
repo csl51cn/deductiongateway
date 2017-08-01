@@ -3,6 +3,8 @@
 <head>
     <title>执行代扣</title>
     <title th:include="common :: #header" th:remove="tag"></title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
 </head>
 <body>
 <!-- start: Header -->
@@ -83,7 +85,7 @@
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white user"></i><span class="break"></span>Members</h2>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>执行代扣</h2>
                     </div>
                     <div class="box-content">
                         <div>
@@ -91,16 +93,19 @@
                                 <table class="table-bordered">
                                     <tr with="33%">
                                         <td>开始日期</td>
-                                        <td><input size="16" type="text" id="datetimeStart" class="form_datetime"
-                                                   name="datetimeStart"/></td>
+                                        <td><input size="16" type="text" id="startDate" class="form_datetime"
+                                                   name="startDate"/></td>
                                         <td>结束日期</td>
                                         <td>
-                                            <input size="16" type="text" id="datetimeEnd" class="form_datetime"
-                                                   name="datetimeEnd"/></td>
+                                            <input size="16" type="text" id="endDate" class="form_datetime"
+                                                   name="endDate"/></td>
                                         <td>客户名称</td>
                                         <td>
                                             <input type="text" class="" id="customerName" name="customerName"/></td>
-                                        <td><input type="button"  id="queryBtn" value="查询" /></td>
+                                        <td>
+                                            <input type="button" id="queryBtn" value="查询"/>
+                                            <input type="button" id="deductionBtn" value="执行代扣"/>
+                                        </td>
                                     </tr>
                                 </table>
                             </form>
@@ -115,7 +120,7 @@
         <!-- end: Content -->
     </div><!--/#content.span10-->
 </div><!--/fluid-row-->
-<footer >
+<footer>
     <p>
         <span style="text-align:left;float:left">版权所有 2017 重庆两江新区润通小额贷款有限公司 </span>
     </p>
@@ -126,11 +131,13 @@
 <script src="/js/bootstrap-table-zh-CN.js"></script>
 <script src="/js/bootstrap-datetimepicker.min.js"></script>
 <script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
-<script src="/js/jquery.serializejson.min.js"></script>
+
+
 <script type="text/javascript">
-    var  columns = [{
+    var columns = [{
         field: 'id',
-        title: 'id'
+        title: 'id',
+        checkbox: true
     }, {
         field: 'contractNo',
         title: '合同编号'
@@ -138,22 +145,19 @@
         field: 'customerName',
         title: '客户名称'
     }, {
-        field: 'Param1',
+        field: 'param1',
         title: '开户行'
     }, {
-        field: 'Param2',
+        field: 'param2',
         title: '卡折标志'
     }, {
-        field: 'Param3',
+        field: 'param3',
         title: '银行卡号'
     }, {
-        field: 'Param4',
-        title: '持卡人姓名'
-    }, {
-        field: 'Param5',
+        field: 'param5',
         title: '证件类型'
     }, {
-        field: 'Param6',
+        field: 'param6',
         title: '证件号码'
     }, {
         field: 'splitData1',
@@ -162,50 +166,88 @@
         field: 'splitData2',
         title: '分账数据2'
     }, {
-        field: 'splitData2',
+        field: 'target',
         title: '服务费管理公司'
     }];
     $(function () {
-        $('#table').bootstrapTable({
-            sidePagination: "server",
-            cache: false,
-            height:600,
-            pagination: true,
-            columns: columns
-        });
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/mortgageDeductionController/queryDeductionData.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 10,
+                pageList: [10, 20, 100, 200, 500],
+                clickToSelect: true, //单击选中行
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns
+            });
+        };
+        initTable();
+        function FormatDate(strTime) {
+            var date = new Date(strTime);
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        }
 
-        $('#table').bootstrapTable('hideColumn', 'id');
-        $("#datetimeStart").datetimepicker({
+        function queryParams() {
+            var date = FormatDate(new Date())
+            var starDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            if (starDate == "") {
+                starDate =date;
+            }
+            if (endDate == "") {
+                endDate = date;
+            }
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                startDate: starDate,
+                endDate: endDate,
+                customerName: $("#customerName").val(),
+                type: 0
+            }
+        };
+
+        $("#startDate").datetimepicker({
             format: 'yyyy-mm-dd',
             minView: 'month',
             language: 'zh-CN',
             autoclose: true,
-            startDate: new Date('1900:01:01')
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
         }).on("click", function () {
-            $("#datetimeStart").datetimepicker("setEndDate", $("#datetimeEnd").val())
+            $("#startDate").datetimepicker("setEndDate", $("#endDate").val())
         });
-        $("#datetimeEnd").datetimepicker({
+        $("#endDate").datetimepicker({
             format: 'yyyy-mm-dd',
             minView: 'month',
             language: 'zh-CN',
+            todayBtn: true,
             autoclose: true,
-            startDate: new Date('1900:01:01')
+            startDate: new Date('1900-01-01')
         }).on("click", function () {
-            $("#datetimeEnd").datetimepicker("setStartDate", $("#datetimeStart").val())
+            $("#endDate").datetimepicker("setStartDate", $("#startDate").val())
         });
+        <!--设置默认时间_当天-->
+        $('#startDate').datetimepicker("setValue");
+        $('#endDate').datetimepicker("setValue");
+        <!--查询按钮功能-->
         $("#queryBtn").click(function () {
-            var cd =$("#form").serializeJSON();
-            $.ajax({
-                url:"/mortgageDeductionController/queryDeductionResult.do",
-                type:"POST",
-                data:$("#form").serializeJSON(),
-                dataType: "json",
-                success:function(data){
-                    $('#table').bootstrapTable("load",data);
-                }
-
+            $('#table').bootstrapTable('refresh', {
+                url: '/mortgageDeductionController/queryDeductionData.do',
+                query: queryParams()
             })
-        })
+        });
+        <!--执行代扣按钮功能-->
+        $("#deductionBtn").click(function () {
+            var allTableData = $('#table').bootstrapTable('getData');
+
+        });
     })
 </script>
 <!-- end: JavaScript-->
