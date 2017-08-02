@@ -10,15 +10,20 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.*;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
-import org.starlightfinancial.deductiongateway.utility.DictionaryType;
-import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
-import org.starlightfinancial.deductiongateway.utility.MerSeq;
-import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.utility.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -47,17 +52,17 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 return;
             }
             if (!StringUtils
-                    .endsWith(uploadedFile.getName(), ".xls") && !StringUtils
-                    .endsWith(uploadedFile.getName(), ".xlsx")) {
+                    .endsWith(uploadedFile.getOriginalFilename(), ".xls") && !StringUtils
+                    .endsWith(uploadedFile.getOriginalFilename(), ".xlsx")) {
                 log.info("");
                 return;
             }
 
             if (StringUtils
-                    .endsWith(uploadedFile.getName(), ".xls")) {
+                    .endsWith(uploadedFile.getOriginalFilename(), ".xls")) {
                 this.readXls(uploadedFile, staffId);
             } else if (StringUtils
-                    .endsWith(uploadedFile.getName(), ".xlsx")) {
+                    .endsWith(uploadedFile.getOriginalFilename(), ".xlsx")) {
                 this.readXlsx(uploadedFile, staffId);
             }
         } catch (Exception e) {
@@ -260,6 +265,67 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
         return null;
     }
+
+    @Override
+    public PageBean queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
+        PageRequest pageRequest = buildPageRequest(pageBean);
+        Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
+            @Override
+            public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<Predicate>();
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+                //客户名非空判断。不为空则加此条件
+                if (StringUtils.isNotEmpty(customerName)) {
+                    predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
+                }
+
+                predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(type.split(","))));
+                predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
+                return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
+
+            }
+        };
+        Page<MortgageDeduction> page = mortgageDeductionRepository.findAll(specification, pageRequest);
+
+        long count = mortgageDeductionRepository.count(specification);
+
+        if (page.hasContent()) {
+            List<MortgageDeduction> mortgageDeductionList = page.getContent();
+            List<SysDict> sysDicts = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
+            for (MortgageDeduction mortgageDeduction : mortgageDeductionList) {
+
+                //处理证件类型
+                for (SysDict sysDict : sysDicts) {
+                    if (mortgageDeduction.getParam5().equals(sysDict.getDicKey())) {
+                        mortgageDeduction.setParam5(sysDict.getDicValue());
+                    }
+                }
+
+                //处理服务费管理公司
+                if (mortgageDeduction.getTarget() != null && "00145112".equals(mortgageDeduction.getTarget().trim())) {
+                    mortgageDeduction.setTarget("铠岳");
+                } else {
+                    mortgageDeduction.setTarget("润坤");
+                }
+            }
+            pageBean.setRows(mortgageDeductionList);
+            pageBean.setTotal(count);
+            return pageBean;
+        }
+        return null;
+    }
+
+    /**
+     * 创建分页请求.
+     */
+    private PageRequest buildPageRequest(PageBean pageBean) {
+        Integer pageNumber = pageBean.getPageNumber();
+        Integer pageSize = pageBean.getPageSize();
+        Sort sort = new Sort(Sort.Direction.ASC, "id");
+        return new PageRequest(pageNumber - 1, pageSize, sort);
+    }
+
 
     private void goPayBeanToMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
         mortgageDeduction.setOrdId(goPayBean.getOrdId());

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>润通代扣系统</title>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <style type="text/css">
+        body {
+            background: url(/img/bg-login.jpg) !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid-full">
+    <div class="row-fluid">
+
+        <div class="row-fluid">
+            <div class="login-box">
+                <div class="icons">
+                    <a href="#"><i class="halflings-icon home"></i></a>
+                    <a href="#"><i class="halflings-icon cog"></i></a>
+                </div>
+                <h2>登陆代扣账号</h2>
+                <form class="form-horizontal" action="/login.do" method="post">
+                    <fieldset>
+
+                        <div class="input-prepend" title="loginName">
+                            <span class="add-on"><i class="halflings-icon user"></i></span>
+                            <input class="input-large span10" name="loginName" id="loginName" type="text"
+                                   placeholder="请输入用户名"/>
+                        </div>
+                        <div class="clearfix"></div>
+
+                        <div class="input-prepend" title="Password">
+                            <span class="add-on"><i class="halflings-icon lock"></i></span>
+                            <input class="input-large span10" name="password" id="password" type="password"
+                                   placeholder="请输入密码"/>
+                        </div>
+                        <div class="clearfix"></div>
+
+                        <label class="remember" for="remember"><input type="checkbox" id="remember" />下次自动登陆</label>
+
+                        <div class="button-login">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                        <div class="clearfix"></div>
+                    </fieldset>
+                </form>
+                <hr>
+                <h3>Forgot Password?</h3>
+                <p>
+                    No problem, <a href="#">click here</a> to get a new password.
+                </p>
+            </div><!--/span-->
+        </div><!--/row-->
+
+
+    </div><!--/.fluid-container-->
+
+</div><!--/fluid-row-->
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script  type="text/javascript" th:inline="javascript">
+    $(function () {
+        var msg = [[${session.msg}]];
+        if (msg != null) {
+            noty({'text':msg, 'layout': 'center', 'type': 'error',"timeout":"3000"});
+        }
+    })
+</script>
+<!--end : JavaScript-->
+</body>
+</html>
