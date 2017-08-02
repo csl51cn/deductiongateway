@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>登录</title>
+    <title>润通代扣系统</title>
     <title th:include="common :: #header" th:remove="tag"></title>
     <style type="text/css">
         body {
@@ -15,7 +15,11 @@
 
         <div class="row-fluid">
             <div class="login-box">
-                <h2>登录润通代扣系统</h2>
+                <div class="icons">
+                    <a href="#"><i class="halflings-icon home"></i></a>
+                    <a href="#"><i class="halflings-icon cog"></i></a>
+                </div>
+                <h2>登陆代扣账号</h2>
                 <form class="form-horizontal" action="/login.do" method="post">
                     <fieldset>
 
@@ -33,12 +37,19 @@
                         </div>
                         <div class="clearfix"></div>
 
+                        <label class="remember" for="remember"><input type="checkbox" id="remember" />下次自动登陆</label>
+
                         <div class="button-login">
                             <button type="submit" class="btn btn-primary">Login</button>
                         </div>
                         <div class="clearfix"></div>
                     </fieldset>
                 </form>
+                <hr>
+                <h3>Forgot Password?</h3>
+                <p>
+                    No problem, <a href="#">click here</a> to get a new password.
+                </p>
             </div><!--/span-->
         </div><!--/row-->
 
