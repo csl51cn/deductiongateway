@@ -2706,7 +2706,7 @@
     BootstrapTable.prototype.getSelections = function () {
         var that = this;
 
-        return $.grep(this.options.data, function (row) {
+        return $.grep(this.options.data, function (row,i) {
             // fix #2424: from html with checkbox
             return row[that.header.stateField] === true;
         });

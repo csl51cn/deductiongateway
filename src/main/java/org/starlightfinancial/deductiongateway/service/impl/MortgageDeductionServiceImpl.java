@@ -7,6 +7,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,7 +276,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     /**
-     * 查询代扣哦数据
+     * 查询代扣数据
      *
      * @param startDate
      * @param endDate
@@ -298,9 +299,11 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 if (StringUtils.isNotEmpty(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
                 }
-
-                predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(type.split(","))));
-                predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
+                String[] typeArr = type.split(",");
+                predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
+                if (typeArr.length == 1) {//如果是代扣结果查询,typeArr为[0,1]
+                    predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
+                }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
 
             }
@@ -350,6 +353,152 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             mortgageDeductionList.add(mortgageDeduction);
         }
         return mortgageDeductionList;
+    }
+
+
+    /**
+     * 导出代扣结果excel
+     * @param startDate
+     * @param endDate
+     * @param customerName
+     * @return
+     */
+    @Override
+    public Workbook exportXLS(Date startDate, Date endDate, String customerName) {
+
+//        HSSFWorkbook workbook = new HSSFWorkbook();
+//        HSSFSheet sheet = workbook.createSheet("扣款统计");
+//        //表头
+//        String[] headers = new String[]
+//                {"客户编号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号","账数据１金额（元）", "分账数据２金额（元）",
+//                        "收分账数据２的公司","持卡人姓名","证件号","扣款结果","原因","银联分账数据１扣款(分)","银联分账数据2扣款(分)","是否已核销"};
+//        sheet.setDefaultColumnWidth(15);
+//        HSSFRow rowHead1 = sheet.createRow(0);
+//        HSSFCellStyle cellStyle = workbook.createCellStyle();
+//        HSSFFont font = workbook.createFont();
+//        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+//        cellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+//        cellStyle.setFont(font);
+//        for (int i = 0; i < headers.length; i++) {
+//            HSSFCell cell = rowHead1.createCell(i);
+//            cell.setCellValue(headers[i]);
+//            cell.setCellStyle(cellStyle);
+//        }
+//
+//        HSSFRow row = null; HSSFCell cell = null;
+//        HSSFCellStyle dateStyle = workbook.createCellStyle();
+//        dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+//        HSSFCellStyle numericStyle = workbook.createCellStyle();
+//        numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//        int i = 1;
+//
+//        List <MortgageDeduction> listCustomer= contractService.queryMortgageDeduction(getCondition()+" order by t.createDate desc ", 0, 1000000);;
+//        for (MortgageDeduction mortgageDeduction :  listCustomer) {
+//            row = sheet.createRow(i );
+//
+//            cell = row.createCell(0);
+//            cell.setCellValue(mortgageDeduction.getCustomerNo());
+//            cell = row.createCell(1);
+//            cell.setCellValue(mortgageDeduction.getCustomerName());
+//            cell = row.createCell(2);
+//            cell.setCellValue(mortgageDeduction.getContractNo());
+//            cell = row.createCell(3);
+//            cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate()));
+//            cell = row.createCell(4);
+//            cell.setCellValue(mortgageDeduction.getParam1());
+//            cell = row.createCell(5);
+//            cell.setCellValue(mortgageDeduction.getParam3());
+//            cell = row.createCell(6);
+//            if(Utility.checkBigDecimal2(mortgageDeduction.getSplitData1())==true)
+//            {
+//                cell.setCellValue(mortgageDeduction.getSplitData1().toString());
+//            }
+//            else
+//            {
+//                cell.setCellValue("");
+//            }
+//            cell = row.createCell(7);
+//            if(Utility.checkBigDecimal2(mortgageDeduction.getSplitData2())==true)
+//            {
+//                cell.setCellValue(mortgageDeduction.getSplitData2().toString());
+//            }
+//            else
+//            {
+//                cell.setCellValue("");
+//            }
+//
+//            cell = row.createCell(8);
+//            String company=mortgageDeduction.getTarget()!=null?mortgageDeduction.getTarget().trim():"";
+//            if(StringUtils.equals(company, "00145112")){
+//                cell.setCellValue("铠岳");
+//            }
+//
+//            if(StringUtils.equals(company, "00160808")){
+//                cell.setCellValue("润坤");
+//            }
+//
+//            cell = row.createCell(9);
+//            cell.setCellValue(mortgageDeduction.getParam4());
+//            cell = row.createCell(10);
+//            cell.setCellValue(mortgageDeduction.getParam6());
+//            cell = row.createCell(11);
+//            if(mortgageDeduction.getIssuccess()==null || StringUtils.equals(mortgageDeduction.getIssuccess(), "0")){
+//                cell.setCellValue("扣款失败");
+//            }
+//            else{
+//                cell.setCellValue("扣款成功");
+//            }
+//
+//            cell = row.createCell(12);
+//            cell.setCellValue(mortgageDeduction.getErrorResult());
+//            cell = row.createCell(13);
+//            if(Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1())==true)
+//            {
+//                cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
+//            }
+//            else
+//            {
+//                cell.setCellValue("");
+//            }
+//            cell = row.createCell(14);
+//            if(Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2())==true)
+//            {
+//                cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
+//            }
+//            else
+//            {
+//                cell.setCellValue("");
+//            }
+//            cell = row.createCell(15);
+//            cell.setCellValue(mortgageDeduction.getErrorResult());
+//
+//            String status=mortgageDeduction.getIsoffs();
+//            if(status==null || StringUtils.equals(status, "0")){
+//                cell.setCellValue("未核销");
+//            }else{
+//                cell.setCellValue("已核销");
+//            }
+//
+//            i = i + 1;
+//        }
+//
+//        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+//        externalContext.setResponseContentType("application/vnd.ms-excel");
+//        externalContext.setResponseHeader("Expires", "0");
+//        externalContext.setResponseHeader("Cache-Control","must-revalidate, post-check=0, pre-check=0");
+//        externalContext.setResponseHeader("Pragma", "public");
+//        SimpleDateFormat format2 = new SimpleDateFormat("yyyyMMdd");
+//        String fileName= "扣款结果统计报表"+format2.format(new Date());
+//        externalContext.setResponseHeader("Content-disposition", "attachment;filename="+ new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");
+//        externalContext.addResponseCookie(Constants.DOWNLOAD_COOKIE, "true", new HashMap<String, Object>());
+//
+//        OutputStream out = externalContext.getResponseOutputStream();
+//        workbook.write(out);
+//        externalContext.responseFlushBuffer();
+//        FacesContext.getCurrentInstance().responseComplete();
+
+        return null;
     }
 
     /**

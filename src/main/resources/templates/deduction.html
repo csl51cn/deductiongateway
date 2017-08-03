@@ -151,19 +151,19 @@
 
 
 <script type="text/javascript">
-    function stateFormatter(value, row, index) {
-        if (row.state == true)
-            return {
-                disabled: true,//设置是否可用
-                checked: true//设置选中
-            };
-        return value;
-    }
+
     var columns = [
         {
             field: 'type',
             title: 'type',
-            checkbox: true
+            checkbox: true,
+            formatter:function(value, row, index){
+                if(value == "1"){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
         }, {
             field: 'id',
             title: "id"
@@ -283,7 +283,7 @@
         <!--执行代扣按钮功能-->
         $("#deductionBtn").click(function () {
             var ids = [];
-            var rows = $('#table').bootstrapTable('getData');
+            var rows = $('#table').bootstrapTable('getSelections');
             for (var i = 0; i < rows.length; i++) {
                 ids.push(rows[i].id);
             }

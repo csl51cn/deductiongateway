@@ -1,5 +1,7 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.*;
 
@@ -90,13 +93,14 @@ public class MortgageDeductionController {
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
         System.out.println(startDate + ":" + endDate + ":" + customerName + ":" + pageBean);
         endDate = Utility.addDay(endDate, 1);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type,getLoginUserId(session) );
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type, getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 
 
     /**
      * 执行代扣
+     *
      * @param ids
      * @return
      */
@@ -104,12 +108,30 @@ public class MortgageDeductionController {
     @SameUrlData
     @ResponseBody
     public String saveMortgageDeductions(String ids) {
-        List<MortgageDeduction>  list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-        mortgageDeductionService.saveMortgageDeductions(list);
+        if (StringUtils.isEmpty(ids)) {
+            return "0";
+        }
+        List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+        //mortgageDeductionService.saveMortgageDeductions(list);
         System.out.println(list);
         return "1";
     }
 
+    @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
+    public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) {
+
+        Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName);
+
+
+    }
+
+
+    /**
+     * 获取登录用户StaffId
+     *
+     * @param session
+     * @return
+     */
     private int getLoginUserId(HttpSession session) {
         SysUser loginUser = (SysUser) session.getAttribute("loginUser");
         return Integer.parseInt(loginUser.getStaffId());

@@ -1,5 +1,7 @@
 package org.starlightfinancial.deductiongateway.utility;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,7 +38,42 @@ public class Utility {
         return map;
     }
 
+    /**
+     * 将日期转为字符串
+     * @param date
+     * @return
+     */
+    public static String convertToString(Date date) {
+        try {
+            if (date != null) {
+                return new SimpleDateFormat("yyyy-MM-dd").format(date);
+            } else {
+                return "";
+            }
+        } catch (Exception e) {
+            return "";
+        }
+    }
 
+    /**
+     *
+     * @param checkValue
+     * @return
+     */
+    public static boolean checkBigDecimal2(BigDecimal checkValue)// 判断大于0
+    {
+        if (checkValue != null
+                && checkValue.compareTo(new BigDecimal("0.00")) == 1)
+            return true;
+        return false;
+    }
+
+    /**
+     * 天数加减
+     * @param date
+     * @param days
+     * @return
+     */
     public static Date addDay(Date date ,Integer days){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

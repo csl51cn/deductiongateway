@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>执行代扣</title>
+    <title>代扣结果统计</title>
     <title th:include="common :: #header" th:remove="tag"></title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
@@ -149,7 +149,8 @@
 <script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
 
 
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
+    var staffId  = [[${session.loginUser.staffId}]];
     window.operateEvents = {
         'click .deduction': function (e, value, row, index) {
             increment();
@@ -163,12 +164,17 @@
                     noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                 }
             })
-        }};
-    function operateFormatter(value, row, index) {
-        return [
-            '<button type="button" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>'
-        ].join('');
+            location.href = "/mortgageDeductionController/"
+        }
     };
+    function operateFormatter(value, row, index) {
+        if("1" != row.issuccess && row.creatId == staffId){
+            return [
+                '<button type="button" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>'
+            ].join('');
+        }
+    }
+    ;
     var value = 0;
 
     function increment() {
@@ -196,7 +202,8 @@
         title: '合同编号'
     }, {
         field: 'customerName',
-        title: '客户名称'
+        title: '客户名称',
+        width: 65
     }, {
         field: 'param3',
         title: '银行卡号'
@@ -205,24 +212,26 @@
         title: '证件号码'
     }, {
         field: 'splitData1',
-        title: '分账数据1'
+        title: '分账数据1(元)',
+        width: 65
     }, {
         field: 'splitData2',
-        title: '分账数据2'
-    }, {
+        title: '分账数据2(元)',
+        width: 65
+    },{
         field: 'target',
-        title: '服务费管理公司'
-    }, {
-        field: 'param1',
-        title: '开户行'
-    }, {
+        title: '服务费管理公司',
+        width: 120
+    },{
         field: 'issuccess',
         title: '交易结果',
         formatter: function (value, row, index) {
             if (value == '1') {
                 return '交易成功';
-            } else {
+            } else if (value == '0') {
                 return '交易失败';
+            }else{
+                return '暂无结果'
             }
         }
     }, {
@@ -311,6 +320,10 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
+            var startDate = $("#startDate");
+            var endDate = $("#endDate");
+            var customerName = $("#customerName");
+            location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;
 
         });
 
