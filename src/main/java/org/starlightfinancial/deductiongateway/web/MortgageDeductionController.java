@@ -1,8 +1,8 @@
 package org.starlightfinancial.deductiongateway.web;
+
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -19,8 +19,11 @@ import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -113,7 +116,7 @@ public class MortgageDeductionController {
     public String saveMortgageDeductions(String ids) {
         try {
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            mortgageDeductionService.saveMortgageDeductions(list);
+            // mortgageDeductionService.saveMortgageDeductions(list);
             System.out.println(list);
             return "1";
         } catch (Exception e) {
@@ -123,10 +126,16 @@ public class MortgageDeductionController {
     }
 
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
-    public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) {
+    public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
 
         Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName);
-
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        String fileName = "扣款结果统计报表" + format.format(new Date());
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=" + new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");
+        ServletOutputStream outputStream = response.getOutputStream();
+        workbook.write(outputStream);
 
     }
 

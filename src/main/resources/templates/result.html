@@ -150,7 +150,7 @@
 
 
 <script type="text/javascript" th:inline="javascript">
-    var staffId = [[${session.loginUser.staffId}]];
+    var staffId  = [[${session.loginUser.staffId}]];
     window.operateEvents = {
         'click .deduction': function (e, value, row, index) {
             increment();
@@ -161,18 +161,17 @@
                 data: {"ids": row.id},
                 success: function (data) {
                     $('#myModal').modal('hide');
-                    if ("1" == data) {
+                    if("1" == data){
                         noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    } else {
+                    }else{
                         noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     }
                 }
             })
         }
     };
-
     function operateFormatter(value, row, index) {
-        if ("1" != row.issuccess && row.creatId == staffId) {
+        if("1" != row.issuccess && row.creatId == staffId){
             return [
                 '<button type="button" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>'
             ].join('');
@@ -222,11 +221,11 @@
         field: 'splitData2',
         title: '分账数据2(元)',
         width: 65
-    }, {
+    },{
         field: 'target',
         title: '服务费管理公司',
         width: 120
-    }, {
+    },{
         field: 'issuccess',
         title: '交易结果',
         formatter: function (value, row, index) {
@@ -234,7 +233,7 @@
                 return '交易成功';
             } else if (value == '0') {
                 return '交易失败';
-            } else {
+            }else{
                 return '暂无结果'
             }
         }
@@ -267,7 +266,6 @@
             });
         };
         initTable();
-
         function FormatDate(strTime) {
             var date = new Date(strTime);
             return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -325,9 +323,9 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
-            var startDate = $("#startDate");
-            var endDate = $("#endDate");
-            var customerName = $("#customerName");
+            var startDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            var customerName = $("#customerName").val()
             location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;
 
         });
