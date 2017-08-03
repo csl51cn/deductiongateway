@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.starlightfinancial.deductiongateway.common.LoginInterceptor;
 import org.starlightfinancial.deductiongateway.common.SameUrlDataInterceptor;
 
 /**
@@ -17,6 +18,7 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
      * @author lance
      */
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor()).addPathPatterns("/**");
         registry.addInterceptor(new SameUrlDataInterceptor()).addPathPatterns("/**");
     }
 }

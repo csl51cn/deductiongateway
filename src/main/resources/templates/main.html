@@ -4,6 +4,8 @@
     <title>主页面</title>
     <title th:include="common :: #header" th:remove="tag"></title>
     <link href="/css/jquery.noty.css" rel="stylesheet">
+    <link href="/css/uploadify.css" rel="stylesheet">
+    <link href="/css/fileinput.min.css" rel="stylesheet">
 </head>
 <body>
 <!-- start: Header -->
@@ -92,7 +94,8 @@
                                 <div class="control-group">
                                     <label class="control-label" for="uploadify">文件上传</label>
                                     <div class="controls">
-                                        <input class="input-file uniform_on" id="uploadify" type="file">
+                                        <input class="input-file uniform_on" id="uploadify" type="file"
+                                               name="uploadFile">
                                         <div id="fileQueue"></div>
                                     </div>
                                 </div>
@@ -117,36 +120,62 @@
 </footer>
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/piexif.min.js"></script>
+<script src="/js/sortable.min.js"></script>
+<script src="/js/purify.min.js"></script>
+<script src="/js/fileinput.min.js"></script>
+<script src="/js/theme.min.js"></script>
+<script src="/js/zh.js"></script>
 <script type="text/javascript">
     $(function () {
-        $("#uploadify").uploadify({
-            //注:这里uploadify为html标签，文件输入框id
-            swf: 'css/uploadify.swf',
-            uploader: '/mortgageDeductionController/upload.do',
-            cancelImg: '/img/uploadify-cancel.png',
-            buttonText: '浏览',
-            fileObjName: 'uploadFile',
-            auto: true,
-            multi: true,
-            Debug: true,
-            queueID: 'fileQueue',//这里fileQueue 为上传进度条显示在哪个div里
-            removeCompleted: true,
-            queueSizeLimit: 999,
-            fileSizeLimit: '100MB',
-            fileTypeExts: '*.xls;*.xlsx',
-            height: 30,
-            width: 190,
-            successTimeout: 30,
-            requeueErrors: true,
-            uploadLimit: 100,
-            onUploadSuccess: function (file, data, response) {
-                if ("1" == data) {
-                    noty({'text': file.name + '上传成功', 'layout': 'center', 'type': 'information',"timeout":"3000"});
-                } else {
-                    noty({'text': file.name + '上传失败', 'layout': 'center', 'type': 'error',"timeout":"3000"});
-                }
-            },
+//        $("#uploadify").uploadify({
+//            //注:这里uploadify为html标签，文件输入框id
+//            swf: '/css/uploadify.swf',
+//            uploader: '/mortgageDeductionController/upload.do',
+//            cancelImg: '/img/uploadify-cancel.png',
+//            buttonText: '浏览',
+//            fileObjName: 'uploadFile',
+//            auto: true,
+//            multi: true,
+//            Debug: true,
+//            queueID: 'fileQueue',//这里fileQueue 为上传进度条显示在哪个div里
+//            removeCompleted: true,
+//            queueSizeLimit: 999,
+//            fileSizeLimit: '100MB',
+//            fileTypeExts: '*.xls',
+//            height: 30,
+//            width: 190,
+//            successTimeout: 30,
+//            requeueErrors: true,
+//            uploadLimit: 100,
+//            onUploadSuccess: function (file, data, response) {
+//                if ("1" == data) {
+//                    noty({'text': file.name + '上传成功', 'layout': 'center', 'type': 'information', "timeout": "3000"});
+//                } else {
+//                    noty({'text': file.name + '上传失败', 'layout': 'center', 'type': 'error', "timeout": "3000"});
+//                }
+//            },
+//        });
+        $("#uploadify").fileinput({
+            language: 'zh', //设置语言
+            uploadUrl: "/mortgageDeductionController/upload.do", //上传的地址
+            allowedFileExtensions: ['xls', 'xlsx'],//指定文件后缀
+            showUpload: true, //是否显示上传按钮
+            showCaption: true,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            maxFileCount: 10,//最大上传文件数限制
+            uploadAsync: true,
         });
+        //导入文件上传完成之后的事件
+        $("#uploadify").on("fileuploaded", function (event, data, previewId, index) {
+            var result = data.response.result;
+            var msg = data.response.msg;
+            if ("1" == result) {
+                noty({'text':  msg + '上传成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+            } else {
+                noty({'text':  '上传失败,'+ msg, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            }
+        })
     })
 </script>
 <!--end : JavaScript-->
