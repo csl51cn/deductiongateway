@@ -7,12 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.domain.SysDictRepository;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.util.List;
 
 
@@ -39,6 +41,7 @@ public class ApplicationTest {
 
     @Test
     public void test() throws Exception {
+
 
 //        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId("789");
 //        System.out.println(mortgageDeduction.getParam1());

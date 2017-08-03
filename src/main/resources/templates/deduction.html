@@ -88,7 +88,7 @@
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">×</span>
                             </button>
-                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                            <h4 class="modal-title" id="myModalLabel">执行中 请不要关闭进度条</h4>
                         </div>
                         <div class="modal-body">
                             <div class="progress progress-striped progress-success active">
@@ -283,7 +283,7 @@
         <!--执行代扣按钮功能-->
         $("#deductionBtn").click(function () {
             var ids = [];
-            var rows = $('#table').bootstrapTable('getData');
+            var rows = $('#table').bootstrapTable('getAllSelections');
             for (var i = 0; i < rows.length; i++) {
                 ids.push(rows[i].id);
             }
@@ -292,6 +292,7 @@
 
             $.ajax({
                 url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                timeout:900000,
                 method: "POST",
                 data: {"ids": ids.toString()},
                 success: function (data) {

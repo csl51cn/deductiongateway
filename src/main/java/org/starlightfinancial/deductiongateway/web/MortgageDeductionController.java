@@ -1,5 +1,7 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,8 @@ import java.util.*;
  */
 @Controller
 public class MortgageDeductionController {
+
+    private static final Logger log = LoggerFactory.getLogger(MortgageDeductionController.class);
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
@@ -90,13 +94,14 @@ public class MortgageDeductionController {
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
         System.out.println(startDate + ":" + endDate + ":" + customerName + ":" + pageBean);
         endDate = Utility.addDay(endDate, 1);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type,getLoginUserId(session) );
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type, getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 
 
     /**
      * 执行代扣
+     *
      * @param ids
      * @return
      */
@@ -104,10 +109,15 @@ public class MortgageDeductionController {
     @SameUrlData
     @ResponseBody
     public String saveMortgageDeductions(String ids) {
-        List<MortgageDeduction>  list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-        mortgageDeductionService.saveMortgageDeductions(list);
-        System.out.println(list);
-        return "1";
+        try {
+            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            mortgageDeductionService.saveMortgageDeductions(list);
+            System.out.println(list);
+            return "1";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
     }
 
     private int getLoginUserId(HttpSession session) {

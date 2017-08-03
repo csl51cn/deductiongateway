@@ -37,11 +37,11 @@ public class Utility {
     }
 
 
-    public static Date addDay(Date date ,Integer days){
+    public static Date addDay(Date date, Integer days) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(calendar.DATE, days);
-        return  calendar.getTime();
+        return calendar.getTime();
     }
 
 }
