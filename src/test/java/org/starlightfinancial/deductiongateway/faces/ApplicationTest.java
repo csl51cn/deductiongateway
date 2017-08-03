@@ -7,15 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
+import org.springframework.util.ResourceUtils;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.domain.SysDictRepository;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.util.List;
+import java.net.URL;
 
 
 /**
@@ -41,7 +40,8 @@ public class ApplicationTest {
 
     @Test
     public void test() throws Exception {
-
+        URL url = ResourceUtils.getURL("classpath:" + Utility.SEND_BANK_KEY_FILE);
+        System.out.println("urlxxxxx    " + url.getPath());
 
 //        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId("789");
 //        System.out.println(mortgageDeduction.getParam1());
@@ -51,8 +51,8 @@ public class ApplicationTest {
 
 //        File file = new File("src/main/resources/代扣粘贴模版.xls");
 //        mortgageDeductionService.importCustomerData(file, 14);
-        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
-        mortgageDeductionService.saveMortgageDeductions(list);
+//        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
+//        mortgageDeductionService.saveMortgageDeductions(list);
 
     }
 }

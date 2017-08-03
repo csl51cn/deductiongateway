@@ -189,9 +189,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) {
-
-//        String path = FacesContext.getCurrentInstance().getExternalContext().getRealPath("WEB-INF\\classes");
-        String path = "D:\\sili.chen\\IdeaProjects\\deductiongateway\\src\\main\\resources";
         List<GoPayBean> messages = new ArrayList<GoPayBean>();
         String splitData;
         for (int i = 0; i < list.size(); i++) {
@@ -260,7 +257,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         try {
-            List<Map> result = httpClientUtil.sendInformation(messages, path, 1);
+            List<Map> result = httpClientUtil.sendInformation(messages);
             return result;
         } catch (Exception e) {
             e.printStackTrace();
@@ -352,6 +349,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     /**
      * 导出代扣结果excel
+     *
      * @param startDate
      * @param endDate
      * @param customerName

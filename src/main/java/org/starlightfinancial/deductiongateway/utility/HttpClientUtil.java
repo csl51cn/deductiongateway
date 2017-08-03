@@ -13,6 +13,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 import org.starlightfinancial.deductiongateway.domain.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
@@ -128,12 +129,10 @@ public class HttpClientUtil {
 
     /**
      * @param messages
-     * @param path
-     * @param staffId
      * @return
      */
     @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
-    public List<Map> sendInformation(List<GoPayBean> messages, String path, int staffId) {
+    public List<Map> sendInformation(List<GoPayBean> messages) {
         String chkValue;//签名数据
         List<Map> results = new ArrayList<Map>();
         Map result;
@@ -166,7 +165,7 @@ public class HttpClientUtil {
                 sb.append(goPay.getCustomIp());
 
                 //加密数据
-                chkValue = sign(goPay.getMerId(), sb.toString(), path);
+                chkValue = sign(goPay.getMerId(), sb.toString());
                 if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                     return null;
                 }
@@ -244,12 +243,12 @@ public class HttpClientUtil {
      * @return
      * @throws Exception
      */
-    private String sign(String merId, String data, String path) throws Exception {
+    private String sign(String merId, String data) throws Exception {
         chinapay.PrivateKey key = new chinapay.PrivateKey();
         chinapay.SecureLink t;
         boolean flag;
         String ChkValue2;
-        String paths = path + "\\" + Utility.SEND_BANK_KEY_FILE;//"MerPrK_808080211388159_20130917115334.key";;
+        String paths = ResourceUtils.getURL("classpath:" + Utility.SEND_BANK_KEY_FILE).getPath();
         if (paths == null || "".equals(paths)) {
             return null;
         }
