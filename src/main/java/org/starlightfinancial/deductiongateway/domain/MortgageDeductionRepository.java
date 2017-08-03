@@ -13,5 +13,7 @@ public interface MortgageDeductionRepository extends JpaRepository<MortgageDeduc
 
     List<MortgageDeduction> findByTypeAndCreatId(String type, int creatId);
 
-    MortgageDeduction findById(Integer id);
+    List<MortgageDeduction> findByIdIn(Integer[] ids);
+
+
 }

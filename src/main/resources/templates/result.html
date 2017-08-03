@@ -161,10 +161,13 @@
                 data: {"ids": row.id},
                 success: function (data) {
                     $('#myModal').modal('hide');
-                    noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    if("1" == data){
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    }else{
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
                 }
             })
-            location.href = "/mortgageDeductionController/"
         }
     };
     function operateFormatter(value, row, index) {
@@ -320,9 +323,9 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
-            var startDate = $("#startDate");
-            var endDate = $("#endDate");
-            var customerName = $("#customerName");
+            var startDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            var customerName = $("#customerName").val()
             location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;
 
         });
