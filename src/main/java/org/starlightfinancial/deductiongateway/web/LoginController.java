@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,23 +20,28 @@ public class LoginController {
 
     @RequestMapping("/login.do")
     public String login(String loginName, String password, HttpSession session) {
+        if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(password)) {
+            session.setAttribute("msg", "登录失败,用户名或密码为空");
+            return "login";
+        }
+
         SysUser loginUser = systemService.findSysUser(loginName, password);
         if (loginUser != null && loginUser.getId() > 0) {
             session.setAttribute("loginUser", loginUser);
             return "main";
         }
-        session.setAttribute("msg","登录失败,用户名或密码错误/账户不可用");
+        session.setAttribute("msg", "登录失败,用户名或密码错误/账户不可用");
         return "login";
     }
 
     @RequestMapping("/logout.do")
-    public  String  logout(HttpSession session){
+    public String logout(HttpSession session) {
         session.removeAttribute("loginUser");
         session.removeAttribute("msg");
-        return  "login";
+        return "login";
     }
-    
-    
+
+
 }
 
 

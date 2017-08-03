@@ -314,7 +314,8 @@ function template_functions(){
 	});
 
 	/* ---------- Uniform ---------- */
-	$("input:checkbox, input:radio, input:file").not('[data-no-uniform="true"],#uniform-is-ajax').uniform();
+	//$("input:checkbox, input:radio, input:file").not('[data-no-uniform="true"],#uniform-is-ajax').uniform();
+	$("input:checkbox, input:radio").not('[data-no-uniform="true"],#uniform-is-ajax').uniform();
 
 	/* ---------- Choosen ---------- */
 	$('[data-rel="chosen"],[rel="chosen"]').chosen();
@@ -353,11 +354,11 @@ function template_functions(){
 	});
 
 	/* ---------- Uploadify ---------- */
-	$('#file_upload').uploadify({
-		'swf'      : 'misc/uploadify.swf',
-		'uploader' : 'misc/uploadify.php'
-		// Put your options here
-	});
+	// $('#file_upload').uploadify({
+	// 	'swf'      : '/css/uploadify.swf',
+	// 	'uploader' : '/mortgageDeductionController/upload.do'
+	// 	// Put your options here
+	// });
 
 	/* ---------- Fullscreen ---------- */
 	$('#toggle-fullscreen').button().click(function () {

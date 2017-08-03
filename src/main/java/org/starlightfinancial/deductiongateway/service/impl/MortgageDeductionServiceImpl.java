@@ -43,6 +43,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Autowired
     SysDictRepository sysDictRepository;
 
+
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
 
     public void importCustomerData(MultipartFile uploadedFile, int staffId) {
@@ -273,8 +274,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         return null;
     }
 
+    /**
+     * 查询代扣哦数据
+     *
+     * @param startDate
+     * @param endDate
+     * @param customerName
+     * @param pageBean
+     * @param type         0:已执行代扣,1:未代扣数据
+     * @param creatid
+     * @return
+     */
     @Override
-    public PageBean queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
+    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
         PageRequest pageRequest = buildPageRequest(pageBean);
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
             @Override
@@ -321,6 +333,23 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             return pageBean;
         }
         return null;
+    }
+
+    /**
+     * 根据id查询MortgageDeduction数据
+     *
+     * @param ids
+     * @return
+     */
+    @Override
+    public List<MortgageDeduction> findMortgageDeductionListByIds(String ids) {
+        String[] idsArr = ids.split(",");
+        ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
+        for (String id : idsArr) {
+            MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findById(Integer.parseInt(id));
+            mortgageDeductionList.add(mortgageDeduction);
+        }
+        return mortgageDeductionList;
     }
 
     /**

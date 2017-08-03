@@ -1,7 +1,6 @@
 package org.starlightfinancial.deductiongateway.domain;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Date;
 
 
@@ -10,8 +9,7 @@ import java.util.Date;
  * 
  */
 @Entity(name="SYS_USER")
-public class SysUser implements Serializable {
-	private static final long serialVersionUID = 1L;
+public class SysUser {
 
 	@Id
 	@GeneratedValue(strategy= GenerationType.AUTO)
@@ -19,6 +17,9 @@ public class SysUser implements Serializable {
 
 	@Column(name="cert_no")
 	private String certNo;
+
+	@Column(name = "staff_id")
+	private String staffId;
 
 	@Column(name="last_login_date")
 	private Date lastLoginDate;
@@ -104,5 +105,12 @@ public class SysUser implements Serializable {
 	public void setDeleteFlag(String deleteFlag) {
 		this.deleteFlag = deleteFlag;
 	}
-	
+
+	public String getStaffId() {
+		return staffId;
+	}
+
+	public void setStaffId(String staffId) {
+		this.staffId = staffId;
+	}
 }

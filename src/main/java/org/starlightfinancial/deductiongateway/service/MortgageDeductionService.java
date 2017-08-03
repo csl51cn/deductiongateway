@@ -40,7 +40,12 @@ public interface MortgageDeductionService {
      * @param creatid
      * @return
      */
-    PageBean  queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String  type, int creatid);
+    PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String  type, int creatid);
 
-
+    /**
+     * 根据id查询代扣数据
+     * @param ids
+     * @return
+     */
+    List<MortgageDeduction> findMortgageDeductionListByIds(String ids);
 }

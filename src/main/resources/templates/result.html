@@ -81,7 +81,23 @@
                 </li>
                 <li><a href="/result.do">扣款结果统计</a></li>
             </ul>
-
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
@@ -134,11 +150,45 @@
 
 
 <script type="text/javascript">
+    window.operateEvents = {
+        'click .deduction': function (e, value, row, index) {
+            increment();
+            $('#myModal').modal('show');
+            $.ajax({
+                url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                method: "POST",
+                data: {"ids": row.id},
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                }
+            })
+        }};
+    function operateFormatter(value, row, index) {
+        return [
+            '<button type="button" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>'
+        ].join('');
+    };
+    var value = 0;
+
+    function increment() {
+        value += 1;
+        if (value == 80) {
+            clearTimeout(st);
+            return;
+        }
+        $("#prog").css("width", value + "%")
+        st = setTimeout(increment, 500);
+    }
+
     var columns = [{
-        field: 'id',
-        title: 'id',
-//        checkbox: true
-    },{
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
         field: 'ordId',
         title: '订单号'
     }, {
@@ -165,10 +215,26 @@
     }, {
         field: 'param1',
         title: '开户行'
-    },{
-        field: 'i',
-        title: '开户行'
-    },];
+    }, {
+        field: 'issuccess',
+        title: '交易结果',
+        formatter: function (value, row, index) {
+            if (value == '1') {
+                return '交易成功';
+            } else {
+                return '交易失败';
+            }
+        }
+    }, {
+        field: 'errorResult',
+        title: '原因'
+    }, {
+        field: 'operate',
+        title: '操作',
+        align: 'center',
+        events: operateEvents,
+        formatter: operateFormatter
+    }];
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
@@ -198,7 +264,7 @@
             var starDate = $("#startDate").val();
             var endDate = $("#endDate").val();
             if (starDate == "") {
-                starDate =date;
+                starDate = date;
             }
             if (endDate == "") {
                 endDate = date;
@@ -245,8 +311,9 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
-            var allTableData = $('#table').bootstrapTable('getData');
+
         });
+
     })
 </script>
 <!-- end: JavaScript-->

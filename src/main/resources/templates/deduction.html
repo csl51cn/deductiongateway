@@ -81,7 +81,23 @@
                 </li>
                 <li><a href="/deduction.do">代扣</a></li>
             </ul>
-
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
@@ -120,6 +136,7 @@
         <!-- end: Content -->
     </div><!--/#content.span10-->
 </div><!--/fluid-row-->
+
 <footer>
     <p>
         <span style="text-align:left;float:left">版权所有 2017 重庆两江新区润通小额贷款有限公司 </span>
@@ -134,41 +151,60 @@
 
 
 <script type="text/javascript">
-    var columns = [{
-        field: 'id',
-        title: 'id',
-        checkbox: true
-    }, {
-        field: 'contractNo',
-        title: '合同编号'
-    }, {
-        field: 'customerName',
-        title: '客户名称'
-    }, {
-        field: 'param1',
-        title: '开户行'
-    }, {
-        field: 'param2',
-        title: '卡折标志'
-    }, {
-        field: 'param3',
-        title: '银行卡号'
-    }, {
-        field: 'param5',
-        title: '证件类型'
-    }, {
-        field: 'param6',
-        title: '证件号码'
-    }, {
-        field: 'splitData1',
-        title: '分账数据1'
-    }, {
-        field: 'splitData2',
-        title: '分账数据2'
-    }, {
-        field: 'target',
-        title: '服务费管理公司'
-    }];
+    function stateFormatter(value, row, index) {
+        if (row.state == true)
+            return {
+                disabled: true,//设置是否可用
+                checked: true//设置选中
+            };
+        return value;
+    }
+    var columns = [
+        {
+            field: 'type',
+            title: 'type',
+            checkbox: true
+        }, {
+            field: 'id',
+            title: "id"
+        }, {
+            field: 'number',
+            title: '序号',
+            formatter: function (value, row, index) {
+                var options = $('#table').bootstrapTable("getOptions");
+                return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+            }
+        }, {
+            field: 'contractNo',
+            title: '合同编号'
+        }, {
+            field: 'customerName',
+            title: '客户名称'
+        }, {
+            field: 'param1',
+            title: '开户行'
+        }, {
+            field: 'param2',
+            title: '卡折标志'
+        }, {
+            field: 'param3',
+            title: '银行卡号'
+        }, {
+            field: 'param5',
+            title: '证件类型'
+        }, {
+            field: 'param6',
+            title: '证件号码'
+        }, {
+            field: 'splitData1',
+            title: '分账数据1'
+        }, {
+            field: 'splitData2',
+            title: '分账数据2'
+        }, {
+            field: 'target',
+            title: '服务费管理公司'
+        }];
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
@@ -188,6 +224,7 @@
             });
         };
         initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
         function FormatDate(strTime) {
             var date = new Date(strTime);
             return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -209,7 +246,7 @@
                 startDate: starDate,
                 endDate: endDate,
                 customerName: $("#customerName").val(),
-                type: 0
+                type: 1
             }
         };
 
@@ -245,16 +282,40 @@
         });
         <!--执行代扣按钮功能-->
         $("#deductionBtn").click(function () {
-            var allTableData = $('#table').bootstrapTable('getData');
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getData');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            increment();
+            $('#myModal').modal('show');
+
             $.ajax({
-                url:"/mortgageDeductionController/deduct.do",
-                method:"POST",
-                data:allTableData,
-                success:function(data){
-                    noty({text:"成功"});
+                url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                method: "POST",
+                data: {"ids": ids.toString()},
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    if("1" == data){
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    }else{
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
                 }
             })
         });
+        var value = 0;
+
+        function increment() {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
+
     })
 </script>
 <!-- end: JavaScript-->
