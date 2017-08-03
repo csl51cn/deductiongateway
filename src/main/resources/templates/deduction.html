@@ -139,7 +139,7 @@
 
 <footer>
     <p>
-        <span style="text-align:left;float:left">版权所有 2017 重庆两江新区润通小额贷款有限公司 </span>
+        <span style="text-align:left;float:left">©2017 重庆两江新区润通小额贷款有限公司 </span>
     </p>
 </footer>
 <!-- start: JavaScript-->
@@ -157,10 +157,10 @@
             field: 'type',
             title: 'type',
             checkbox: true,
-            formatter:function(value, row, index){
-                if(value == "1"){
+            formatter: function (value, row, index) {
+                if (value == "1") {
                     return true;
-                }else{
+                } else {
                     return false;
                 }
             }
@@ -225,6 +225,7 @@
         };
         initTable();
         $('#table').bootstrapTable('hideColumn', 'id');
+
         function FormatDate(strTime) {
             var date = new Date(strTime);
             return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -292,14 +293,14 @@
 
             $.ajax({
                 url: "/mortgageDeductionController/saveMortgageDeductions.do",
-                timeout:900000,
+                timeout: 900000,
                 method: "POST",
                 data: {"ids": ids.toString()},
                 success: function (data) {
                     $('#myModal').modal('hide');
-                    if("1" == data){
+                    if ("1" == data) {
                         noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    }else{
+                    } else {
                         noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     }
                 }
