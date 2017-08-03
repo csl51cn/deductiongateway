@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.starlightfinancial.deductiongateway.domain.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,6 +81,7 @@ public class HttpClientUtil {
                     latch.countDown();
                     try {
                         String content = EntityUtils.toString(response.getEntity(), "UTF-8");
+                        System.out.println(content);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -130,6 +132,7 @@ public class HttpClientUtil {
      * @param staffId
      * @return
      */
+    @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
     public List<Map> sendInformation(List<GoPayBean> messages, String path, int staffId) {
         String chkValue;//签名数据
         List<Map> results = new ArrayList<Map>();

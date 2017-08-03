@@ -134,6 +134,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                             }
                         }
 
+                        mortgageDeduction.setIssuccess("0");
                         mortgageDeduction.setType("1");
                         mortgageDeduction.setPlanNo(-1);
                         mortgageDeduction.setCreateDate(new Date());
@@ -164,7 +165,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         }
 
                         //处理服务费管理公司
-                        if (mortgageDeduction.getTarget() != null && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
+                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
                             mortgageDeduction.setTarget("00145112");
                         } else {
                             mortgageDeduction.setTarget("00160808");
@@ -220,7 +221,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             if (StringUtils.isNotBlank(goPayBean.getOrgManagerId())) {
                 splitData += ";" + goPayBean.getOrgManagerId() + "^" + m2 + ";";
             }
-//            splitData = "00145111^" + m1 + ";00145112^" + m2 + ";";
             splitData = "00010001^1;00010002^1";
 
             goPayBean.setSplitData1(new BigDecimal(amount1));
@@ -233,24 +233,18 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
             goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
             goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-//            goPayBean.setParam1(loanRePlan.getParam1());//开户行号
-//            goPayBean.setParam2(loanRePlan.getParam2());//卡折标志
-//            goPayBean.setParam3(loanRePlan.getParam3());//卡号/折号
-//            goPayBean.setParam4(loanRePlan.getParam4());//持卡人姓名
-//            goPayBean.setParam5(loanRePlan.getParam5());//证件类型
-//            goPayBean.setParam6(loanRePlan.getParam6()); //证件号
             goPayBean.setParam1("0410");//开户行号
             goPayBean.setParam2("0");//卡折标志
             goPayBean.setParam3("6216261000000000018");//卡号/折号
             goPayBean.setParam4("全渠道");//持卡人姓名
             goPayBean.setParam5("01");//证件类型
             goPayBean.setParam6("341126197709218366"); //证件号
-//            goPayBean.setParam1("0302");//开户行号
-//            goPayBean.setParam2("0");//卡折标志
-//            goPayBean.setParam3("621771120182551");//卡号/折号
-//            goPayBean.setParam4("郝琪");//持卡人姓名
-//            goPayBean.setParam5("01");//证件类型
-//            goPayBean.setParam6("654301199207174621"); //证件号
+//            goPayBean.setParam1(mortgageDeduction.getParam1());//开户行号
+//            goPayBean.setParam2(mortgageDeduction.getParam2());//卡折标志
+//            goPayBean.setParam3(mortgageDeduction.getParam3());//卡号/折号
+//            goPayBean.setParam4(mortgageDeduction.getParam4());//持卡人姓名
+//            goPayBean.setParam5(mortgageDeduction.getParam5());//证件类型
+//            goPayBean.setParam6(mortgageDeduction.getParam6()); //证件号
             goPayBean.setParam7("");
             goPayBean.setParam8("");
             goPayBean.setParam9("");

@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import java.util.*;
  */
 @Controller
 public class MortgageDeductionController {
+
+    private static final Logger log = LoggerFactory.getLogger(MortgageDeductionController.class);
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
@@ -108,13 +111,15 @@ public class MortgageDeductionController {
     @SameUrlData
     @ResponseBody
     public String saveMortgageDeductions(String ids) {
-        if (StringUtils.isEmpty(ids)) {
-            return "0";
+        try {
+            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            mortgageDeductionService.saveMortgageDeductions(list);
+            System.out.println(list);
+            return "1";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
         }
-        List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-        //mortgageDeductionService.saveMortgageDeductions(list);
-        System.out.println(list);
-        return "1";
     }
 
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")

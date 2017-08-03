@@ -54,7 +54,6 @@ public class Utility {
             return "";
         }
     }
-
     /**
      *
      * @param checkValue
@@ -67,7 +66,6 @@ public class Utility {
             return true;
         return false;
     }
-
     /**
      * 天数加减
      * @param date
