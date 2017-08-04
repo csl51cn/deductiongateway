@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -95,7 +96,6 @@ public class MortgageDeductionController {
     @RequestMapping(value = "/mortgageDeductionController/queryDeductionData.do")
     @ResponseBody
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
-        System.out.println(startDate + ":" + endDate + ":" + customerName + ":" + pageBean);
         endDate = Utility.addDay(endDate, 1);
         PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type, getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
@@ -106,7 +106,7 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
-     * @param reGenerate  扣款结果页面发起的代扣需要重新生成数据
+     * @param reGenerate 扣款结果页面发起的代扣需要重新生成数据
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
@@ -118,10 +118,16 @@ public class MortgageDeductionController {
                 return "请选择一条记录进行代扣";
             }
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
             if ("1".equals(reGenerate)) {
-                for (MortgageDeduction mortgageDeduction: list) {
-                    mortgageDeduction.setId(null);
+                for (int i = 0; i < list.size(); i++) {
+                    MortgageDeduction oldMortgageDeduction = list.get(i);
+                    MortgageDeduction newMortgageDeduction = new MortgageDeduction();
+                    BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
+                    newMortgageDeduction.setId(null);
+                    mortgageDeductionList.add(newMortgageDeduction);
                 }
+                    list = mortgageDeductionList;
             }
             mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
@@ -142,7 +148,7 @@ public class MortgageDeductionController {
      */
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
     public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
-
+        endDate = Utility.addDay(endDate, 1);
         Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName);
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String fileName = "扣款结果统计报表" + format.format(new Date());
