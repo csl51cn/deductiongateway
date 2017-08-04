@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ResourceUtils;
+import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.domain.SysDictRepository;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
@@ -15,6 +16,7 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.transaction.Transactional;
 import java.net.URL;
+import java.util.List;
 
 
 /**
@@ -51,8 +53,8 @@ public class ApplicationTest {
 
 //        File file = new File("src/main/resources/代扣粘贴模版.xls");
 //        mortgageDeductionService.importCustomerData(file, 14);
-//        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
-//        mortgageDeductionService.saveMortgageDeductions(list);
+        List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
+        mortgageDeductionService.saveMortgageDeductions(list);
 
     }
 }

@@ -40,6 +40,7 @@ public class Utility {
 
     /**
      * 将日期转为字符串
+     *
      * @param date
      * @return
      */
@@ -54,8 +55,8 @@ public class Utility {
             return "";
         }
     }
+
     /**
-     *
      * @param checkValue
      * @return
      */
@@ -66,17 +67,19 @@ public class Utility {
             return true;
         return false;
     }
+
     /**
      * 天数加减
+     *
      * @param date
      * @param days
      * @return
      */
-    public static Date addDay(Date date ,Integer days){
+    public static Date addDay(Date date, Integer days) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(calendar.DATE, days);
-        return  calendar.getTime();
+        return calendar.getTime();
     }
 
 }

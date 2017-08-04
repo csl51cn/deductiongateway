@@ -116,7 +116,7 @@ public class MortgageDeductionController {
     public String saveMortgageDeductions(String ids) {
         try {
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            // mortgageDeductionService.saveMortgageDeductions(list);
+            mortgageDeductionService.saveMortgageDeductions(list);
             System.out.println(list);
             return "1";
         } catch (Exception e) {
