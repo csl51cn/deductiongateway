@@ -395,6 +395,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+                predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotEmpty(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
@@ -470,6 +471,17 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             i = i + 1;
         }
         return workbook;
+    }
+
+    /**
+     * 更新代扣数据
+     * @param list
+     */
+    @Override
+    public void updateMortgageDeductions(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+        }
     }
 
     /**

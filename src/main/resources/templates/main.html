@@ -115,7 +115,7 @@
 
 <footer>
     <p>
-        <span style="text-align:left;float:left">©2017 重庆两江新区润通小额贷款有限公司 </span>
+        <span style="text-align:left;float:left" id="footer"></span>
     </p>
 </footer>
 <!-- start: JavaScript-->
@@ -128,34 +128,6 @@
 <script src="/js/zh.js"></script>
 <script type="text/javascript">
     $(function () {
-//        $("#uploadify").uploadify({
-//            //注:这里uploadify为html标签，文件输入框id
-//            swf: '/css/uploadify.swf',
-//            uploader: '/mortgageDeductionController/upload.do',
-//            cancelImg: '/img/uploadify-cancel.png',
-//            buttonText: '浏览',
-//            fileObjName: 'uploadFile',
-//            auto: true,
-//            multi: true,
-//            Debug: true,
-//            queueID: 'fileQueue',//这里fileQueue 为上传进度条显示在哪个div里
-//            removeCompleted: true,
-//            queueSizeLimit: 999,
-//            fileSizeLimit: '100MB',
-//            fileTypeExts: '*.xls',
-//            height: 30,
-//            width: 190,
-//            successTimeout: 30,
-//            requeueErrors: true,
-//            uploadLimit: 100,
-//            onUploadSuccess: function (file, data, response) {
-//                if ("1" == data) {
-//                    noty({'text': file.name + '上传成功', 'layout': 'center', 'type': 'information', "timeout": "3000"});
-//                } else {
-//                    noty({'text': file.name + '上传失败', 'layout': 'center', 'type': 'error', "timeout": "3000"});
-//                }
-//            },
-//        });
         $("#uploadify").fileinput({
             language: 'zh', //设置语言
             uploadUrl: "/mortgageDeductionController/upload.do", //上传的地址
