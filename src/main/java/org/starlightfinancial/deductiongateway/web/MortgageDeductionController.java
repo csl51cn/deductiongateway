@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,10 +113,11 @@ public class MortgageDeductionController {
     @ResponseBody
     public String saveMortgageDeductions(String ids) {
         try {
+            if (StringUtils.isEmpty(ids)){
+                return "请选择一条记录进行代扣";
+            }
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
             mortgageDeductionService.saveMortgageDeductions(list);
-            System.out.println(list);
-            //  mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
         } catch (Exception e) {
             e.printStackTrace();
