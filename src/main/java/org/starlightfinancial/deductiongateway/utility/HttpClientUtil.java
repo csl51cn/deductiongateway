@@ -75,6 +75,7 @@ public class HttpClientUtil {
             httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             httpclient.start();
 
+            System.out.println("开始调用银联接口");
             //执行postMethod
             httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
 
@@ -166,7 +167,7 @@ public class HttpClientUtil {
 
                 //加密数据
                 chkValue = sign(goPay.getMerId(), sb.toString());
-                System.out.println(chkValue);
+                System.out.println("chkValue" + chkValue);
                 if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                     return null;
                 }
@@ -249,14 +250,14 @@ public class HttpClientUtil {
         chinapay.SecureLink t;
         boolean flag;
         String ChkValue2;
-        String line = File.separator;
         String paths = null;
+        String line = File.separator;
         if ("\\".equals(line)) {
-            paths = "D://"+Utility.SEND_BANK_KEY_FILE;
+            paths = "D://" + Utility.SEND_BANK_KEY_FILE;
         } else if ("/".equals(line)) {
-
-            paths = "/root/"+ Utility.SEND_BANK_KEY_FILE;
+            paths = "/root/" + Utility.SEND_BANK_KEY_FILE;
         }
+        System.out.println("paths" + paths);
         if (paths == null || "".equals(paths)) {
             return null;
         }

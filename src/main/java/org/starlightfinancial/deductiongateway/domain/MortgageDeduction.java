@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author sili.chen
  */
-@Entity(name = "BU_MORTGAGEDEUCTION")
+@Entity(name = "BU_MORTGAGEDEUCTION_TEST")
 public class MortgageDeduction {
 
     @Id
