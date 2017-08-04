@@ -16,7 +16,15 @@ public class EncryptHelper {
 	public void setKey(String strKey) {
 		try {
 			KeyGenerator _generator = KeyGenerator.getInstance("DES");
-			_generator.init(new SecureRandom(strKey.getBytes()));
+//			_generator.init(new SecureRandom(strKey.getBytes()));
+//			this.key = _generator.generateKey();
+//			_generator = null;
+//			KeyGenerator _generator = KeyGenerator.getInstance("DES");
+			//防止linux下 随机生成key
+			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG" );
+			secureRandom.setSeed(strKey.getBytes());
+
+			_generator.init(56,secureRandom);
 			this.key = _generator.generateKey();
 			_generator = null;
 		} catch (Exception e) {
@@ -58,7 +66,7 @@ public class EncryptHelper {
 		byte[] byteFina = null;
 		Cipher cipher;
 		try {
-			cipher = Cipher.getInstance("DES");
+			cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, key);
 			byteFina = cipher.doFinal(byteS);
 		} catch (Exception e) {
@@ -91,7 +99,7 @@ public class EncryptHelper {
 		String stmp = "";
 		for (int n = 0; n < b.length; n++) {
 			// 整数转成十六进制表示
-			stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+			stmp = (Integer.toHexString(b[n] & 0XFF));
 			if (stmp.length() == 1)
 				hs = hs + "0" + stmp;
 			else

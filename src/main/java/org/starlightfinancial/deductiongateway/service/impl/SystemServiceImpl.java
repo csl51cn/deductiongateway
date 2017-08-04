@@ -34,6 +34,7 @@ public class SystemServiceImpl implements SystemService {
     public SysUser findSysUser(String loginName, String password) {
 
         String de_password = EncryptHelper.Instance.getEncString(password);
+        System.out.println("Password" + de_password);
         if (StringUtils.isEmpty(de_password))
             return null;
         de_password = de_password.trim();
