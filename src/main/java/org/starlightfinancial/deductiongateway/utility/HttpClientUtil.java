@@ -13,11 +13,11 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 import org.starlightfinancial.deductiongateway.domain.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -166,6 +166,7 @@ public class HttpClientUtil {
 
                 //加密数据
                 chkValue = sign(goPay.getMerId(), sb.toString());
+                System.out.println(chkValue);
                 if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                     return null;
                 }
@@ -248,7 +249,14 @@ public class HttpClientUtil {
         chinapay.SecureLink t;
         boolean flag;
         String ChkValue2;
-        String paths = ResourceUtils.getURL("classpath:" + Utility.SEND_BANK_KEY_FILE).getPath();
+        String line = File.separator;
+        String paths = null;
+        if ("\\".equals(line)) {
+            paths = "D://"+Utility.SEND_BANK_KEY_FILE;
+        } else if ("/".equals(line)) {
+
+            paths = "/root/"+ Utility.SEND_BANK_KEY_FILE;
+        }
         if (paths == null || "".equals(paths)) {
             return null;
         }
