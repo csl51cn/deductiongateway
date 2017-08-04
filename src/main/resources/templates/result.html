@@ -174,12 +174,20 @@
             $.ajax({
                 url: "/mortgageDeductionController/updateMortgageDeductions.do",
                 method: "POST",
-                data: {"ids": row.id},
+                data: {"ids": row.id,"reGenerate":"1"},
                 success: function (data) {
                     if ("1" == data) {
                         setTimeout(" $('#queryBtn').click()", 4020);
                         noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         $("#manualConfirmBtn" + index).prop("disabled", true);
+                    } if (data.length > 5) {
+                        noty({
+                            'text': '执行失败,' + data,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "4000"
+                        });
+
                     } else {
                         noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     }

@@ -106,17 +106,23 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
+     * @param reGenerate  扣款结果页面发起的代扣需要重新生成数据
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
     @SameUrlData
     @ResponseBody
-    public String saveMortgageDeductions(String ids) {
+    public String saveMortgageDeductions(String ids, String reGenerate) {
         try {
-            if (StringUtils.isEmpty(ids)){
+            if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
             }
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            if ("1".equals(reGenerate)) {
+                for (MortgageDeduction mortgageDeduction: list) {
+                    mortgageDeduction.setId(null);
+                }
+            }
             mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
         } catch (Exception e) {

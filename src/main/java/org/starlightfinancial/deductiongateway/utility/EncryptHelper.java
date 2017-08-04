@@ -16,10 +16,6 @@ public class EncryptHelper {
 	public void setKey(String strKey) {
 		try {
 			KeyGenerator _generator = KeyGenerator.getInstance("DES");
-//			_generator.init(new SecureRandom(strKey.getBytes()));
-//			this.key = _generator.generateKey();
-//			_generator = null;
-//			KeyGenerator _generator = KeyGenerator.getInstance("DES");
 			//防止linux下 随机生成key
 			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG" );
 			secureRandom.setSeed(strKey.getBytes());

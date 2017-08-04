@@ -11,7 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if ("/login.do".equals(request.getRequestURI()) || "/".equals(request.getRequestURI())) {
+        if ("/login.do".equals(request.getRequestURI()) || "/".equals(request.getRequestURI())
+                || "/PayGetBgAsyn".equals(request.getRequestURI()) || "/PayGetPgAsyn".equals(request.getRequestURI())) {
             return true;
         }
 
