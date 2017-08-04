@@ -337,7 +337,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     public List<MortgageDeduction> findMortgageDeductionListByIds(String ids) {
         String[] idsStrArr = ids.split(",");
         ArrayList<Integer> idsList = new ArrayList<>();
-        for ( String id:idsStrArr){
+        for (String id : idsStrArr) {
             idsList.add(Integer.parseInt(id));
         }
         List<MortgageDeduction> mortgageDeductionList = mortgageDeductionRepository.findByIdIn(idsList.toArray(new Integer[]{}));
@@ -360,8 +360,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         HSSFSheet sheet = workbook.createSheet("扣款统计");
         //表头
         String[] headers = new String[]
-                {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号","账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司","持卡人姓名","证件号","扣款结果","原因","银联分账数据１扣款(分)","银联分账数据2扣款(分)",""};
+                {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)", ""};
         sheet.setDefaultColumnWidth(15);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
@@ -375,7 +375,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell.setCellStyle(cellStyle);
         }
 
-        HSSFRow row = null; HSSFCell cell = null;
+        HSSFRow row = null;
+        HSSFCell cell = null;
         HSSFCellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
         HSSFCellStyle numericStyle = workbook.createCellStyle();
@@ -389,6 +390,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+                predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotEmpty(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
@@ -397,9 +399,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             }
         };
-        List <MortgageDeduction> listCustomer = mortgageDeductionRepository.findAll(specification);
-        for (MortgageDeduction mortgageDeduction :  listCustomer) {
-            row = sheet.createRow(i );
+        List<MortgageDeduction> listCustomer = mortgageDeductionRepository.findAll(specification);
+        for (MortgageDeduction mortgageDeduction : listCustomer) {
+            row = sheet.createRow(i);
 
             cell = row.createCell(0);
             cell.setCellValue(mortgageDeduction.getOrdId());
@@ -414,31 +416,25 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(5);
             cell.setCellValue(mortgageDeduction.getParam3());
             cell = row.createCell(6);
-            if(Utility.checkBigDecimal2(mortgageDeduction.getSplitData1())==true)
-            {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getSplitData1().toString());
-            }
-            else
-            {
+            } else {
                 cell.setCellValue("");
             }
             cell = row.createCell(7);
-            if(Utility.checkBigDecimal2(mortgageDeduction.getSplitData2())==true)
-            {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getSplitData2().toString());
-            }
-            else
-            {
+            } else {
                 cell.setCellValue("");
             }
 
             cell = row.createCell(8);
-            String company=mortgageDeduction.getTarget()!=null?mortgageDeduction.getTarget().trim():"";
-            if(StringUtils.equals(company, "00145112")){
+            String company = mortgageDeduction.getTarget() != null ? mortgageDeduction.getTarget().trim() : "";
+            if (StringUtils.equals(company, "00145112")) {
                 cell.setCellValue("铠岳");
             }
 
-            if(StringUtils.equals(company, "00160808")){
+            if (StringUtils.equals(company, "00160808")) {
                 cell.setCellValue("润坤");
             }
 
@@ -447,36 +443,40 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(10);
             cell.setCellValue(mortgageDeduction.getParam6());
             cell = row.createCell(11);
-            if(mortgageDeduction.getIssuccess()==null || StringUtils.equals(mortgageDeduction.getIssuccess(), "0")){
+            if (mortgageDeduction.getIssuccess() == null || StringUtils.equals(mortgageDeduction.getIssuccess(), "0")) {
                 cell.setCellValue("扣款失败");
-            }
-            else{
+            } else {
                 cell.setCellValue("扣款成功");
             }
 
             cell = row.createCell(12);
             cell.setCellValue(mortgageDeduction.getErrorResult());
             cell = row.createCell(13);
-            if(Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1())==true)
-            {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
-            }
-            else
-            {
+            } else {
                 cell.setCellValue("");
             }
             cell = row.createCell(14);
-            if(Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2())==true)
-            {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
-            }
-            else
-            {
+            } else {
                 cell.setCellValue("");
             }
             i = i + 1;
         }
         return workbook;
+    }
+
+    /**
+     * 更新代扣数据
+     * @param list
+     */
+    @Override
+    public void updateMortgageDeductions(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+        }
     }
 
     /**

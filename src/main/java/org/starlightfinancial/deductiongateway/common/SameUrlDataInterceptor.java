@@ -24,10 +24,15 @@ public class SameUrlDataInterceptor extends HandlerInterceptorAdapter {
             Method method = handlerMethod.getMethod();
             SameUrlData annotation = method.getAnnotation(SameUrlData.class);
             if (annotation != null) {
-                if (repeatDataValidator(request))//如果重复相同数据
+                if (repeatDataValidator(request)) {//如果重复相同数据
+                    response.setCharacterEncoding("UTF-8");
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write(JSON.toJSONString("请勿重复提交数据"));
                     return false;
-                else
+                } else {
                     return true;
+                }
+
             }
             return true;
         } else {
@@ -55,7 +60,7 @@ public class SameUrlDataInterceptor extends HandlerInterceptorAdapter {
             return false;
         } else//否则，已经访问过页面
         {
-            if (preUrlParams.toString().equals(nowUrlParams))//如果上次url+数据和本次url+数据相同，则表示城府添加数据
+            if (preUrlParams.toString().equals(nowUrlParams))//如果上次url+数据和本次url+数据相同，则表示重复添加数据
             {
 
                 return true;

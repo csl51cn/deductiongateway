@@ -58,4 +58,10 @@ public interface MortgageDeductionService {
      * @return
      */
     Workbook exportXLS(Date startDate, Date endDate, String customerName);
+
+    /**
+     * 更新代扣数据
+     * @param list
+     */
+    void updateMortgageDeductions(List<MortgageDeduction> list);
 }

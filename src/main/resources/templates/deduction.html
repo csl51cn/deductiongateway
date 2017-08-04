@@ -139,7 +139,7 @@
 
 <footer>
     <p>
-        <span style="text-align:left;float:left">©2017 重庆两江新区润通小额贷款有限公司 </span>
+        <<span style="text-align:left;float:left" id="footer"></span>
     </p>
 </footer>
 <!-- start: JavaScript-->
@@ -150,8 +150,7 @@
 <script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
 
 
-<script type="text/javascript">
-
+<script type="text/javascript" th:inline="javascript">
     var columns = [
         {
             field: 'type',
@@ -220,7 +219,21 @@
                 cache: false,
                 height: $(window).height() - 300,
                 pagination: true,
-                columns: columns
+                columns: columns,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                }
             });
         };
         initTable();
@@ -301,13 +314,23 @@
                     if ("1" == data) {
                         noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                     } else {
-                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
                     }
                 }
             })
         });
         var value = 0;
-
+        <!--进度条自动增长-->
         function increment() {
             value += 1;
             if (value == 80) {

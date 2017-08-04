@@ -75,12 +75,9 @@ public class MortgageDeductionController {
         }
         systemService.saveMD5(md5ByFile);
         mortgageDeductionService.importCustomerData(uploadFile, getLoginUserId(session));
-        System.out.println(uploadFile.getName());
-        System.out.println(uploadFile.getOriginalFilename());
         map.put("result", "1");
         map.put("msg", uploadFile.getOriginalFilename());
         return map;
-        // return  "{result:0}";
     }
 
     /**
@@ -116,8 +113,7 @@ public class MortgageDeductionController {
     public String saveMortgageDeductions(String ids) {
         try {
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            // mortgageDeductionService.saveMortgageDeductions(list);
-            System.out.println(list);
+            //  mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
         } catch (Exception e) {
             e.printStackTrace();
@@ -125,6 +121,15 @@ public class MortgageDeductionController {
         }
     }
 
+    /**
+     * 导出代扣结果Excel
+     *
+     * @param startDate
+     * @param endDate
+     * @param customerName
+     * @param response
+     * @throws IOException
+     */
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
     public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
 
@@ -137,6 +142,30 @@ public class MortgageDeductionController {
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
 
+    }
+
+    /**
+     * 人工确认扣款成功
+     *
+     * @param ids
+     * @return
+     */
+    @RequestMapping(value = "/mortgageDeductionController/updateMortgageDeductions.do")
+    @ResponseBody
+    public String updateMortgageDeductions(String ids) {
+        try {
+            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            if (list != null) {
+                list.get(0).setIssuccess("1");
+                mortgageDeductionService.updateMortgageDeductions(list);
+                return "1";
+            } else {
+                return "0";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "0";
+        }
     }
 
 
