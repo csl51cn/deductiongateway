@@ -328,7 +328,7 @@
 
                 $.ajax({
                     url: "/mortgageDeductionController/saveMortgageDeductions.do",
-                    timeout: 900000,
+                    timeout: 1800000,
                     method: "POST",
                     data: {"ids": ids.toString(),"reGenerate":"0"},
                     success: function (data) {
