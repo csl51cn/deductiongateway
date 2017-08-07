@@ -98,6 +98,26 @@
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="confirmModal">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="hidden" id="functionName"/>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
@@ -296,38 +316,41 @@
         });
         <!--执行代扣按钮功能-->
         $("#deductionBtn").click(function () {
-            var ids = [];
-            var rows = $('#table').bootstrapTable('getSelections');
-            for (var i = 0; i < rows.length; i++) {
-                ids.push(rows[i].id);
-            }
-            increment();
-            $('#myModal').modal('show');
+            $('#confirmModal').modal();
+            $(".btn-success").click(function () {
+                var ids = [];
+                var rows = $('#table').bootstrapTable('getSelections');
+                for (var i = 0; i < rows.length; i++) {
+                    ids.push(rows[i].id);
+                }
+                increment();
+                $('#myModal').modal('show');
 
-            $.ajax({
-                url: "/mortgageDeductionController/saveMortgageDeductions.do",
-                timeout: 900000,
-                method: "POST",
-                data: {"ids": ids.toString(),"reGenerate":"0"},
-                success: function (data) {
-                    $('#myModal').modal('hide');
-                    if ("1" == data) {
-                        setTimeout(" $('#queryBtn').click()", 4020);
-                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    } else {
-                        if (data.length > 5) {
-                            noty({
-                                'text': '执行失败,' + data,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "4000"
-                            });
-
+                $.ajax({
+                    url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                    timeout: 900000,
+                    method: "POST",
+                    data: {"ids": ids.toString(),"reGenerate":"0"},
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout(" $('#queryBtn').click()", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            if (data.length > 5) {
+                                noty({
+                                    'text': '执行失败,' + data,
+                                    'layout': 'center',
+                                    'type': 'error',
+                                    "timeout": "4000"
+                                });
+
+                            } else {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
                         }
                     }
-                }
+                })
             })
         });
         var value = 0;

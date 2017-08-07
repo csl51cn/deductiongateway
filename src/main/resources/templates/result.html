@@ -180,6 +180,7 @@
                 $('#myModal').modal('show');
                 $.ajax({
                     url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                    timeout: 900000,
                     method: "POST",
                     data: {"ids": row.id, "reGenerate": "1"},
                     success: function (data) {
