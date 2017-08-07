@@ -25,7 +25,8 @@
                     <!-- start: User Dropdown -->
                     <li class="dropdown">
                         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="halflings-icon white user"></i> admin
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
