@@ -282,7 +282,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      */
     @Override
     public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
-        PageRequest pageRequest = buildPageRequest(pageBean);
+        PageRequest pageRequest = buildPageRequest(pageBean, type);
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -295,7 +295,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
                 String[] typeArr = type.split(",");
                 predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
-                if (typeArr.length == 1) {//如果是代扣结果查询,typeArr为[0,1]
+                if (typeArr.length == 1) {//代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
                     predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
@@ -303,9 +303,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
         };
         Page<MortgageDeduction> page = mortgageDeductionRepository.findAll(specification, pageRequest);
-
-        long count = mortgageDeductionRepository.count(specification);
-
         if (page.hasContent()) {
             List<MortgageDeduction> mortgageDeductionList = page.getContent();
             List<SysDict> sysDicts = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
@@ -326,7 +323,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
             }
             pageBean.setRows(mortgageDeductionList);
-            pageBean.setTotal(count);
+            pageBean.setTotal(page.getTotalElements());
             return pageBean;
         }
         return null;
@@ -400,8 +397,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 if (StringUtils.isNotEmpty(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
                 }
-                return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
-
+                criteriaQuery.where(predicates.toArray(new Predicate[0]));
+                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("id")));
+                return criteriaQuery.getRestriction();
             }
         };
         List<MortgageDeduction> listCustomer = mortgageDeductionRepository.findAll(specification);
@@ -486,12 +484,30 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     /**
+     * 删除代扣数据
+     *
+     * @param list
+     */
+    @Override
+    public void deleteMortgageDeductions(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            mortgageDeductionRepository.delete(mortgageDeduction);
+        }
+    }
+
+    /**
      * 创建分页请求.
      */
-    private PageRequest buildPageRequest(PageBean pageBean) {
+    private PageRequest buildPageRequest(PageBean pageBean, String type) {
+        String[] typeArr = type.split(",");
+        Sort sort = null;
+        if (typeArr.length == 1) {//代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+            sort = new Sort(Sort.Direction.ASC, "id");
+        } else {
+            sort = new Sort(Sort.Direction.DESC, "id");
+        }
         Integer pageNumber = pageBean.getPageNumber();
         Integer pageSize = pageBean.getPageSize();
-        Sort sort = new Sort(Sort.Direction.ASC, "id");
         return new PageRequest(pageNumber - 1, pageSize, sort);
     }
 
