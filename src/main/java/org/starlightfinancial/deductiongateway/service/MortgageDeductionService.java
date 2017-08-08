@@ -64,4 +64,10 @@ public interface MortgageDeductionService {
      * @param list
      */
     void updateMortgageDeductions(List<MortgageDeduction> list);
+
+    /**
+     * 删除代扣数据
+     * @param list
+     */
+    void deleteMortgageDeductions(List<MortgageDeduction> list);
 }

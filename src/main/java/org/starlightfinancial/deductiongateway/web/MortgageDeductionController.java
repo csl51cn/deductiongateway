@@ -185,6 +185,28 @@ public class MortgageDeductionController {
     }
 
 
+    @RequestMapping(value="/mortgageDeductionController/deleteMortgageDeductions")
+    @ResponseBody
+    public String deleteMortgageDeductions(String ids) {
+        try {
+            if (StringUtils.isEmpty(ids)) {
+                return "请选择一条记录进行删除";
+            }
+            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            if (list != null) {
+                list.get(0).setIssuccess("1");
+                mortgageDeductionService.deleteMortgageDeductions(list);
+                return "1";
+            } else {
+                return "0";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "0";
+        }
+    }
+
+
     /**
      * 获取登录用户StaffId
      *
