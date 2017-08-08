@@ -2,6 +2,7 @@ package org.starlightfinancial.deductiongateway.web;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -157,6 +158,7 @@ public class MortgageDeductionController {
         response.setHeader("Content-Disposition", "attachment; filename=" + new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
+        IOUtils.closeQuietly(outputStream);
 
     }
 
