@@ -520,7 +520,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
-        mortgageDeduction.setPayTime(new Timestamp(System.currentTimeMillis()));
+        mortgageDeduction.setPayTime(new Date());
         mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
     }
 }
