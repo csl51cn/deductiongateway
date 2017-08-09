@@ -243,7 +243,20 @@
         $("#prog").css("width", value + "%")
         st = setTimeout(increment, 500);
     }
-
+    function formatDateTime (date) {
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h=h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        var second=date.getSeconds();
+        second=second < 10 ? ('0' + second) : second;
+        return y + '/' + m + '/' + d+'.'+h+':'+minute+':'+second;
+    };
     var columns = [{
         field: 'number',
         title: '序号',
@@ -279,7 +292,7 @@
         field: 'target',
         title: '服务费管理公司',
         width: 120
-    }, {
+    },{
         field: 'issuccess',
         title: '交易结果',
         formatter: function (value, row, index) {
@@ -290,6 +303,13 @@
             } else {
                 return '暂无结果'
             }
+        }
+    }, {
+        field: 'payTime',
+        title: '代扣时间',
+        width: 120,
+        formatter:function(value, row, index){
+            return formatDateTime(new Date(value));
         }
     }, {
         field: 'errorResult',
