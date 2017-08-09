@@ -74,6 +74,9 @@ public class MortgageDeduction {
     @Column(name = "createdate")
     private Date createDate;
 
+    @Column(name = "paytime")
+    private Date payTime;
+
     @Column(name = "issuccess")
     private String issuccess;
 
@@ -266,6 +269,14 @@ public class MortgageDeduction {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
     }
 
     public String getIssuccess() {
