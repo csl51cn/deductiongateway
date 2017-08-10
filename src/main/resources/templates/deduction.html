@@ -336,7 +336,7 @@
                     success: function (data) {
                         $('#myModal').modal('hide');
                         if ("1" == data) {
-                            setTimeout(" $('#queryBtn').click()", 4020);
+                            setTimeout(" $('#table').bootstrapTable('refresh')", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
                             if (data.length > 5) {
@@ -375,7 +375,7 @@
                     success: function (data) {
                         $('#myModal').modal('hide');
                         if ("1" == data) {
-                            setTimeout(" $('#queryBtn').click()", 4020);
+                            setTimeout(" $('#table').bootstrapTable('refresh')", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
                             if (data.length > 5) {

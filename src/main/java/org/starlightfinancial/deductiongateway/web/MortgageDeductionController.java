@@ -126,6 +126,7 @@ public class MortgageDeductionController {
                     MortgageDeduction newMortgageDeduction = new MortgageDeduction();
                     BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
                     newMortgageDeduction.setId(null);
+                    newMortgageDeduction.setCreateDate(new Date());
                     mortgageDeductionList.add(newMortgageDeduction);
                 }
                     list = mortgageDeductionList;

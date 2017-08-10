@@ -175,6 +175,7 @@
     window.operateEvents = {
         'click .deduction': function (e, value, row, index) {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 increment();
                 $('#myModal').modal('show');
@@ -188,6 +189,14 @@
                         if ("1" == data) {
                             setTimeout("$('#queryBtn').click()", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
                         } else {
                             noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                         }
@@ -197,6 +206,7 @@
         },
         'click .manualConfirm': function (e, value, row, index) {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 $.ajax({
                     url: "/mortgageDeductionController/updateMortgageDeductions.do",
@@ -206,8 +216,7 @@
                         if ("1" == data) {
                             setTimeout("$('#queryBtn').click()", 4020);
                             noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        }
-                        if (data.length > 5) {
+                        } else if (data.length > 5) {
                             noty({
                                 'text': '执行失败,' + data,
                                 'layout': 'center',
@@ -231,7 +240,8 @@
             ].join('');
 
         }
-    };
+    }
+    ;
     var value = 0;
     <!--进度条自动增长-->
     function increment() {
@@ -243,20 +253,21 @@
         $("#prog").css("width", value + "%")
         st = setTimeout(increment, 500);
     }
-    function formatDateTime (date) {
+    function formatDateTime(date) {
         var y = date.getFullYear();
         var m = date.getMonth() + 1;
         m = m < 10 ? ('0' + m) : m;
         var d = date.getDate();
         d = d < 10 ? ('0' + d) : d;
         var h = date.getHours();
-        h=h < 10 ? ('0' + h) : h;
+        h = h < 10 ? ('0' + h) : h;
         var minute = date.getMinutes();
         minute = minute < 10 ? ('0' + minute) : minute;
-        var second=date.getSeconds();
-        second=second < 10 ? ('0' + second) : second;
-        return y + '/' + m + '/' + d+'.'+h+':'+minute+':'+second;
-    };
+        var second = date.getSeconds();
+        second = second < 10 ? ('0' + second) : second;
+        return y + '/' + m + '/' + d + '.' + h + ':' + minute + ':' + second;
+    }
+    ;
     var columns = [{
         field: 'number',
         title: '序号',
@@ -292,7 +303,7 @@
         field: 'target',
         title: '服务费管理公司',
         width: 120
-    },{
+    }, {
         field: 'issuccess',
         title: '交易结果',
         formatter: function (value, row, index) {
@@ -308,7 +319,7 @@
         field: 'payTime',
         title: '代扣时间',
         width: 120,
-        formatter:function(value, row, index){
+        formatter: function (value, row, index) {
             return formatDateTime(new Date(value));
         }
     }, {
