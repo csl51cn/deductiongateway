@@ -25,6 +25,7 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -519,6 +520,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
+        mortgageDeduction.setPayTime(new Date());
         mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
     }
 }
