@@ -13,7 +13,10 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.domain.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
 
 import javax.transaction.Transactional;
@@ -25,11 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-
 public class HttpClientUtil {
-
-    @Autowired
-    private MortgageDeductionRepository mortgageDeductionRepository;
 
     private Map sendMessage(String MerId, String BusiId, String OrdId, String OrdAmt, String CuryId, String Version, String BgRetUrl, String PageRetUrl,
                             String GateId, String Param1, String Param2, String Param3, String Param4, String Param5, String Param6, String Param7, String Param8,
@@ -82,8 +81,18 @@ public class HttpClientUtil {
                 public void completed(final HttpResponse response) {
                     latch.countDown();
                     try {
+
                         String content = EntityUtils.toString(response.getEntity(), "UTF-8");
+                        String payStat = null;
+                        try {
+                            payStat = content.substring(content.indexOf("PayStat") + 16, content.indexOf("PayStat") + 20);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         System.out.println(content);
+                        System.out.printf("payStat|" + payStat);
+                        map.put("OrdId", OrdId);
+                        map.put("PayStat", payStat);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

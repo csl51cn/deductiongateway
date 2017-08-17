@@ -25,7 +25,6 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -262,6 +261,16 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         try {
             List<Map> result = httpClientUtil.sendInformation(messages);
+            Iterator iterator = result.iterator();
+            if (iterator.hasNext()) {
+                Map map = (Map) iterator.next();
+                String ordId = (String) map.get("OrdId");
+                String payStat = (String) map.get("PayStat");
+                MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
+                mortgageDeduction.setResult(payStat);
+                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
+                mortgageDeductionRepository.save(mortgageDeduction);
+            }
             return result;
         } catch (Exception e) {
             e.printStackTrace();
