@@ -138,7 +138,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                             }
                         }
 
-                        mortgageDeduction.setIssuccess("0");
+                        mortgageDeduction.setIssuccess("2");
                         mortgageDeduction.setType("1");
                         mortgageDeduction.setPlanNo(-1);
                         mortgageDeduction.setCreateDate(new Date());
@@ -149,7 +149,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         if (StringUtils.isNotBlank(mortgageDeduction.getParam2()) && "卡".equals(mortgageDeduction.getParam2().trim())) {
                             mortgageDeduction.setParam2("0");
                         } else {
-                            mortgageDeduction.setParam2("1");
+                            mortgageDeduction.setParam2("0");
                         }
 
                         //处理开户行
@@ -262,12 +262,16 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         try {
             List<Map> result = httpClientUtil.sendInformation(messages);
             Iterator iterator = result.iterator();
-            if (iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 Map map = (Map) iterator.next();
                 String ordId = (String) map.get("OrdId");
                 String payStat = (String) map.get("PayStat");
                 MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
                 mortgageDeduction.setResult(payStat);
+                if (StringUtils.equals(Constant.SUCCESS, payStat))
+                    mortgageDeduction.setIssuccess("1");
+                else
+                    mortgageDeduction.setIssuccess("0");
                 mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
                 mortgageDeductionRepository.save(mortgageDeduction);
             }
