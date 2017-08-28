@@ -3,7 +3,7 @@ package org.starlightfinancial.deductiongateway.faces;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import javax.annotation.Resource;

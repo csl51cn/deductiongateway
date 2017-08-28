@@ -8,9 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ResourceUtils;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
-import org.starlightfinancial.deductiongateway.domain.SysDictRepository;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
+import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 

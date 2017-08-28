@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.starlightfinancial.deductiongateway.domain.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
+import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 
 import javax.servlet.http.HttpServletRequest;

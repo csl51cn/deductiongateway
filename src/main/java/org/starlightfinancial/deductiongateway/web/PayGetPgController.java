@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.starlightfinancial.deductiongateway.domain.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;

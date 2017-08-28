@@ -3,7 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import java.util.Date;

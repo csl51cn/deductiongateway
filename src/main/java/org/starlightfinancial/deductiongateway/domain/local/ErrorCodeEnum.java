@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway.domain;
+package org.starlightfinancial.deductiongateway.domain.local;
 
 /**
  * 银联失败交易返回状态码

@@ -12,12 +12,7 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.starlightfinancial.deductiongateway.domain.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
+import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 
 import javax.transaction.Transactional;
 import java.io.File;
