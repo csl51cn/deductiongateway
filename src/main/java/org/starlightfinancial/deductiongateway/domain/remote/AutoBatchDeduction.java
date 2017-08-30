@@ -1,7 +1,10 @@
 package org.starlightfinancial.deductiongateway.domain.remote;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -18,28 +21,28 @@ public class AutoBatchDeduction {
     private String busiNo;
 
     @Column(name = "还款账号银行")
+    @NotEmpty(message = "还款账号银行不能为空")
     private String bankName;
 
     @Column(name = "代扣卡折类型")
+    @NotEmpty(message = "代扣卡折类型不能为空")
     private String cardAndPassbook;
 
     @Column(name = "还款账户名")
+    @NotEmpty(message = "还款账户名不能为空")
     private String customerName;
 
     @Column(name = "还款账号")
+    @NotEmpty(message = "还款账号不能为空")
     private String accout;
 
     @Column(name = "代扣人证件类型")
+    @NotEmpty(message = "代扣人证件类型不能为空")
     private String certificateType;
 
     @Column(name = "代扣人证件号码")
+    @NotEmpty(message = "代扣人证件号码不能为空")
     private String certificateNo;
-
-    @Column(name = "bxplanid")
-    private String bxplanid;
-
-    @Column(name = "fwfplanid")
-    private String fwfplanid;
 
     @Column(name = "计划期数")
     private String planVolume;
@@ -48,28 +51,20 @@ public class AutoBatchDeduction {
     private Date planDate;
 
     @Column(name = "当期应还本息")
+    @DecimalMin(value = "0" , message = "当期应还本息不能小于0")
     private BigDecimal bxAmount;
 
-    @Column(name = "本息未还总额")
-    private BigDecimal bxBalance;
-
     @Column(name = "当期应还服务费")
+    @DecimalMin(value = "0" , message = "当期应还服务费不能小于0")
     private BigDecimal fwfAmount;
 
-    @Column(name = "服务费未还总额")
-    private BigDecimal fwfBalance;
-
     @Column(name = "服务费管理司")
+    @NotEmpty(message = "服务费管理司不能为空")
     private String fwfCompamny;
 
     @Column(name = "合同编号")
+    @NotEmpty(message = "合同编号不能为空")
     private String contractNo;
-
-    @Column(name = "本息预付款")
-    private BigDecimal bxAdvance;
-
-    @Column(name = "服务费预付款")
-    private BigDecimal fwfAdvance;
 
     public Integer getDateId() {
         return dateId;
@@ -135,22 +130,6 @@ public class AutoBatchDeduction {
         this.certificateNo = certificateNo;
     }
 
-    public String getBxplanid() {
-        return bxplanid;
-    }
-
-    public void setBxplanid(String bxplanid) {
-        this.bxplanid = bxplanid;
-    }
-
-    public String getFwfplanid() {
-        return fwfplanid;
-    }
-
-    public void setFwfplanid(String fwfplanid) {
-        this.fwfplanid = fwfplanid;
-    }
-
     public String getPlanVolume() {
         return planVolume;
     }
@@ -175,14 +154,6 @@ public class AutoBatchDeduction {
         this.bxAmount = bxAmount;
     }
 
-    public BigDecimal getBxBalance() {
-        return bxBalance;
-    }
-
-    public void setBxBalance(BigDecimal bxBalance) {
-        this.bxBalance = bxBalance;
-    }
-
     public BigDecimal getFwfAmount() {
         return fwfAmount;
     }
@@ -191,20 +162,12 @@ public class AutoBatchDeduction {
         this.fwfAmount = fwfAmount;
     }
 
-    public BigDecimal getFwfBalance() {
-        return fwfBalance;
-    }
-
-    public void setFwfBalance(BigDecimal fwfBalance) {
-        this.fwfBalance = fwfBalance;
-    }
-
     public String getFwfCompamny() {
         return fwfCompamny;
     }
 
-    public void setFwfCompamny(String fwfConpamny) {
-        this.fwfCompamny = fwfConpamny;
+    public void setFwfCompamny(String fwfCompamny) {
+        this.fwfCompamny = fwfCompamny;
     }
 
     public String getContractNo() {
@@ -213,22 +176,6 @@ public class AutoBatchDeduction {
 
     public void setContractNo(String contractNo) {
         this.contractNo = contractNo;
-    }
-
-    public BigDecimal getBxAdvance() {
-        return bxAdvance;
-    }
-
-    public void setBxAdvance(BigDecimal bxAdvance) {
-        this.bxAdvance = bxAdvance;
-    }
-
-    public BigDecimal getFwfAdvance() {
-        return fwfAdvance;
-    }
-
-    public void setFwfAdvance(BigDecimal fwfAdvance) {
-        this.fwfAdvance = fwfAdvance;
     }
 
     @Override
@@ -242,18 +189,12 @@ public class AutoBatchDeduction {
                 ", accout='" + accout + '\'' +
                 ", certificateType='" + certificateType + '\'' +
                 ", certificateNo='" + certificateNo + '\'' +
-                ", bxplanid='" + bxplanid + '\'' +
-                ", fwfplanid='" + fwfplanid + '\'' +
                 ", planVolume='" + planVolume + '\'' +
                 ", planDate=" + planDate +
                 ", bxAmount=" + bxAmount +
-                ", bxBalance=" + bxBalance +
                 ", fwfAmount=" + fwfAmount +
-                ", fwfBalance=" + fwfBalance +
-                ", fwfConpamny='" + fwfCompamny + '\'' +
+                ", fwfCompamny='" + fwfCompamny + '\'' +
                 ", contractNo='" + contractNo + '\'' +
-                ", bxAdvance=" + bxAdvance +
-                ", fwfAdvance=" + fwfAdvance +
                 '}';
     }
 }
