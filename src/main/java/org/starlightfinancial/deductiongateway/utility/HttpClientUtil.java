@@ -12,6 +12,7 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 
 import javax.transaction.Transactional;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+@Component
 public class HttpClientUtil {
 
     private Map sendMessage(String MerId, String BusiId, String OrdId, String OrdAmt, String CuryId, String Version, String BgRetUrl, String PageRetUrl,
@@ -138,8 +140,7 @@ public class HttpClientUtil {
      */
     @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
     public List<Map> sendInformation(List<GoPayBean> messages) {
-        String chkValue;//签名数据
-        List<Map> results = new ArrayList<Map>();
+        List<Map> results = new ArrayList<>();
         Map result;
 
         for (GoPayBean goPay : messages) {
@@ -170,8 +171,7 @@ public class HttpClientUtil {
                 sb.append(goPay.getCustomIp());
 
                 //加密数据
-                chkValue = sign(goPay.getMerId(), sb.toString());
-                System.out.println("chkValue" + chkValue);
+                String chkValue = sign(goPay.getMerId(), sb.toString());
                 if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                     return null;
                 }

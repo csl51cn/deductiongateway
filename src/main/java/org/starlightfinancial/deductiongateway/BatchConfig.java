@@ -12,8 +12,8 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.StoredProcedureItemReader;
 import org.springframework.batch.support.DatabaseType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -80,11 +80,11 @@ public class BatchConfig {
 
     @Bean
     public ItemReader<AutoBatchDeduction> reader(@Qualifier("remoteDataSource") DataSource dataSource) {
-        StoredProcedureItemReader storedProcedureItemReader = new StoredProcedureItemReader();
-        storedProcedureItemReader.setDataSource(dataSource);
-        storedProcedureItemReader.setProcedureName("testReturn");
-        storedProcedureItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
-        return storedProcedureItemReader;
+        JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
+        jdbcCursorItemReader.setDataSource(dataSource);
+        jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
+        jdbcCursorItemReader.setSql("SELECT * FROM  Temp_当前代扣数据");
+        return jdbcCursorItemReader;
     }
 
     @Bean
