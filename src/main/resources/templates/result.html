@@ -48,18 +48,7 @@
 <div class="container-fluid-full">
     <div class="row-fluid">
         <!-- start: Main Menu -->
-        <div id="sidebar-left" class="span2">
-            <div class="nav-collapse sidebar-nav">
-                <ul class="nav nav-tabs nav-stacked main-menu">
-                    <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入账户信息</span></a>
-                    </li>
-                    <li><a href="/deduction.do"><i class="icon-align-justify"></i><span class="hidden-tablet"> 代扣</span></a>
-                    </li>
-                    <li><a href="/result.do"><i class="icon-bar-chart"></i><span
-                            class="hidden-tablet"> 扣款结果统计</span></a></li>
-                </ul>
-            </div>
-        </div>
+        <div th:include="common :: #menu" th:remove="tag"></div>
         <!-- end: Main Menu -->
 
         <noscript>
@@ -112,7 +101,6 @@
                             <p>您确认要执行吗？</p>
                         </div>
                         <div class="modal-footer">
-                            <input type="hidden" id="functionName"/>
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                             <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
                         </div>
@@ -253,21 +241,7 @@
         $("#prog").css("width", value + "%")
         st = setTimeout(increment, 500);
     }
-    function formatDateTime(date) {
-        var y = date.getFullYear();
-        var m = date.getMonth() + 1;
-        m = m < 10 ? ('0' + m) : m;
-        var d = date.getDate();
-        d = d < 10 ? ('0' + d) : d;
-        var h = date.getHours();
-        h = h < 10 ? ('0' + h) : h;
-        var minute = date.getMinutes();
-        minute = minute < 10 ? ('0' + minute) : minute;
-        var second = date.getSeconds();
-        second = second < 10 ? ('0' + second) : second;
-        return y + '/' + m + '/' + d + '.' + h + ':' + minute + ':' + second;
-    }
-    ;
+
     var columns = [{
         field: 'number',
         title: '序号',
@@ -318,10 +292,7 @@
     }, {
         field: 'payTime',
         title: '代扣时间',
-        width: 120,
-        formatter: function (value, row, index) {
-            return formatDateTime(new Date(value));
-        }
+        width: 120
     }, {
         field: 'errorResult',
         title: '原因'
@@ -415,6 +386,7 @@
         $('#endDate').datetimepicker("setValue");
         <!--查询按钮功能-->
         $("#queryBtn").click(function () {
+            $('#table').bootstrapTable('removeAll');
             $('#table').bootstrapTable('refresh', {
                 url: '/mortgageDeductionController/queryDeductionData.do',
                 query: queryParams()

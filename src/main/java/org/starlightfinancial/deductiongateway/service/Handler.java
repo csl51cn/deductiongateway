@@ -10,5 +10,5 @@ public abstract class Handler {
         this.successor = successor;
     }
 
-    public abstract void handleRequest();
+    public abstract void handleRequest(Object o);
 }

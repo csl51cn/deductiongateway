@@ -12,9 +12,9 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
 
 
     @Override
-    public void handleRequest() {
+    public void handleRequest(Object o) {
         ConcreteComponent concreteComponent = new ConcreteComponent();
-        MetadataValidator metadataValidator = new MetadataValidator();
+        MetadataValidator metadataValidator = new MetadataValidator(o);
         Splitter splitter = new Splitter();
         Assembler assembler = new Assembler();
 
@@ -28,14 +28,14 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
         if (result) {
             System.out.println("to do something");
         } else {
-            successor.handleRequest();
+            //successor.handleRequest();
         }
     }
 
     @Override
     public Object process(Object o) throws Exception {
         System.out.println(o);
-
+        this.handleRequest(o);
         return null;
     }
 }

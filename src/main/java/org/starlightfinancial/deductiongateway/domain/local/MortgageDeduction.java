@@ -1,5 +1,7 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -75,6 +77,7 @@ public class MortgageDeduction {
     private Date createDate;
 
     @Column(name = "paytime")
+    @JsonFormat(pattern="yyyy/MM/dd.HH:mm:ss" ,timezone = "GMT+8")
     private Date payTime;
 
     @Column(name = "issuccess")

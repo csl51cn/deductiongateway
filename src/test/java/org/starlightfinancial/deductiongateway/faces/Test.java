@@ -9,7 +9,8 @@ public class Test {
     public static void main(String[] args) {
         ConcreteHandler concreteHandler = new ConcreteHandler();
         concreteHandler.setSuccessor(concreteHandler);
-        concreteHandler.handleRequest();
+        //concreteHandler.handleRequest();
+
 
 
     }

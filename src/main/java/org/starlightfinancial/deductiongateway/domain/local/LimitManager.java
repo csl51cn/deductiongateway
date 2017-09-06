@@ -22,7 +22,7 @@ public class LimitManager {
      * 银行代码
      */
     @Column(name = "bankcode")
-    private Integer bankCode;
+    private String bankCode;
 
     /**
      * 银行名称
@@ -57,11 +57,11 @@ public class LimitManager {
         this.id = id;
     }
 
-    public Integer getBankCode() {
+    public String getBankCode() {
         return bankCode;
     }
 
-    public void setBankCode(Integer bankCode) {
+    public void setBankCode(String bankCode) {
         this.bankCode = bankCode;
     }
 

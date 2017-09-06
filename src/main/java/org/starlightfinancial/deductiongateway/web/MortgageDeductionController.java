@@ -97,7 +97,7 @@ public class MortgageDeductionController {
     @RequestMapping(value = "/mortgageDeductionController/queryDeductionData.do")
     @ResponseBody
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
-        endDate = Utility.addDay(endDate, 1);
+        endDate = Utility.toMidNight(endDate);
         PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type, getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
@@ -150,7 +150,7 @@ public class MortgageDeductionController {
      */
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
     public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
-        endDate = Utility.addDay(endDate, 1);
+        endDate = Utility.toMidNight(endDate);
         Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName);
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String fileName = "扣款结果统计报表" + format.format(new Date());
@@ -204,7 +204,7 @@ public class MortgageDeductionController {
                 return "0";
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug("删除代扣记录失败",e);
             return "0";
         }
     }

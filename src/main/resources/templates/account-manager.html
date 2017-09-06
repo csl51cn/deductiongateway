@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>卡号管理</title>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-editable.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/main.do"><span>润通代扣系统</span></a>
+
+            <!-- start: Header Menu -->
+            <div class="nav-no-collapse header-nav">
+                <ul class="nav pull-right">
+                    <!-- start: User Dropdown -->
+                    <li class="dropdown">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-menu-title">
+                                <span>账户设置</span>
+                            </li>
+                            <li><a href="/logout.do"><i class="halflings-icon off"></i> 退出</a></li>
+                        </ul>
+                    </li>
+                    <!-- end: User Dropdown -->
+                </ul>
+            </div>
+            <!-- end: Header Menu -->
+
+        </div>
+    </div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/result.do">限额管理</a></li>
+            </ul>
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>卡号管理</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form class="form-horizontal" id="form">
+                                <table class="table-bordered">
+                                    <tr with="33%">
+                                        <td>合同编号</td>
+                                        <td><input type="text" class="" id="contractNo" name="contractNo"/></td>
+                                        <td>业务编号</td>
+                                        <td><input type="text" class="" id="bizNo" name="bizNo"/></td>
+                                        <td>账户名</td>
+                                        <td><input type="text" class="" id="accountName" name="accountName"/></td>
+                                        <td>
+                                            <input type="button" id="queryBtn" value="查询"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <table id="table"></table>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-editable.min.js"></script>
+<script src="/js/bootstrap-table-editable.min.js"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+
+    var columns = [{
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
+        field: 'id',
+        title: 'id'
+    },{
+        field: 'dateId',
+        title: 'dateId'
+    },  {
+        field: 'bizNo',
+        title: '业务编号'
+    }, {
+        field: 'contractNo',
+        title: '合同编号'
+    }, {
+        field: 'accountName',
+        title: '账户名'
+    }, {
+        field: 'bankName',
+        title: '开户行'
+    }, {
+        field: 'account',
+        title: '卡号'
+    }, {
+        field: 'certificateType',
+        title: '证件类型'
+    }, {
+        field: 'certificateNo',
+        title: '证件号码'
+    }, {
+        field: 'sort',
+        title: '扣款顺序',
+        editable: {
+            type: 'text',
+            title: '扣款顺序',
+            validate: function (v) {
+                if (!v) return '扣款顺序不能为空';
+            }
+        }
+    }];
+    $(function () {
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/accountManagerController/queryAccount.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 10,
+                pageList: [10, 20, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                },
+                onEditableSave: function (field, row, oldValue, $el) {
+                    $.ajax({
+                        type: "post",
+                        url: "/accountManagerController/updateAccount.do",
+                        data: row,
+                        dataType: 'JSON',
+                        success: function (data) {
+                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                            if (data == "1") {
+                                noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            }else{
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        },
+                        error: function () {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        },
+
+                    });
+                }
+            });
+        };
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+        $('#table').bootstrapTable('hideColumn', 'dateId');
+        function queryParams() {
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                contractNo: $("#contractNo").val(),
+                bizNo: $("#bizNo").val(),
+                accountName: $("#accountName").val()
+            }
+        };
+
+
+        <!--查询按钮功能-->
+        $("#queryBtn").click(function () {
+            $('#table').bootstrapTable('removeAll');
+            $('#table').bootstrapTable('refresh', {
+                url: '/accountManagerController/queryAccount.do',
+                query: queryParams()
+            })
+        });
+
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

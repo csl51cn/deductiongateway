@@ -4,34 +4,43 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- *页面跳转管理Controller
+ * 页面跳转管理Controller
  */
 @Controller
 public class PageController {
 
 
     @RequestMapping("/")
-    public  String   toLoginPage(){
+    public String toLoginPage() {
         return "login";
     }
 
 
     @RequestMapping("/main.do")
-    public  String   toMainPage(){
+    public String toMainPage() {
         return "main";
     }
 
     @RequestMapping("/deduction.do")
-    public  String   toDeductionPage(){
+    public String toDeductionPage() {
         return "deduction";
     }
 
 
     @RequestMapping("/result.do")
-    public  String   toResultPage(){
+    public String toResultPage() {
         return "result";
     }
 
+    @RequestMapping("/accountmanager.do")
+    public String toAccountManagerPage() {
+        return "account-manager";
+    }
+
+    @RequestMapping("/limitmanager.do")
+    public String toLimitManagerPage() {
+        return "limit-manager";
+    }
 
 }
 

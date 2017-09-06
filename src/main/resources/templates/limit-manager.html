@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>限额管理</title>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-editable.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/main.do"><span>润通代扣系统</span></a>
+
+            <!-- start: Header Menu -->
+            <div class="nav-no-collapse header-nav">
+                <ul class="nav pull-right">
+                    <!-- start: User Dropdown -->
+                    <li class="dropdown">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-menu-title">
+                                <span>账户设置</span>
+                            </li>
+                            <li><a href="/logout.do"><i class="halflings-icon off"></i> 退出</a></li>
+                        </ul>
+                    </li>
+                    <!-- end: User Dropdown -->
+                </ul>
+            </div>
+            <!-- end: Header Menu -->
+
+        </div>
+    </div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/result.do">限额管理</a></li>
+            </ul>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="editModal" style="width: 600px">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title" id="modalTitle">新增限额</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editForm">
+                                <table class="table">
+                                    <tbody>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_bankcode">银行代码</label></td>
+                                        <td><input type="text" name="bankCode" id="txt_bankcode" placeholder="银行代码">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_bankname">银行名称</label></td>
+                                        <td><input type="text" name="bankName" id="txt_bankname" placeholder="银行名称">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_cardtype">卡性质</label></td>
+                                        <td>
+                                            <select id="txt_cardtype" name="cardType">
+                                                <option value="0">借记卡</option>
+                                                <option value="1">贷记卡</option>
+                                                <option value="1">准贷记卡</option>
+                                            </select>
+                                        </td>
+
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_singlelimit">单笔单卡限额</label></td>
+                                        <td><input type="text" name="singleLimit" id="txt_singlelimit"
+                                                   placeholder="单笔单卡限额"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_singledaylimit">单日单卡限额</label></td>
+                                        <td><input type="text" name="singleDayLimit" id="txt_singledaylimit"
+                                                   placeholder="单日单卡限额"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>卡号管理</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form class="form-horizontal" id="form">
+                                <table class="table-bordered">
+                                    <tr with="33%">
+                                        <td>
+                                            <input type="button" id="addBtn" value="新增"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <table id="table"></table>
+
+                        <!--<table id="dbtableDefTb" data-toggle="table" data-toolbar="#toolbar"-->
+                               <!--data-search="true"-->
+                               <!--data-show-refresh="true"-->
+                               <!--data-show-toggle="true"-->
+                               <!--data-show-columns="true"-->
+                               <!--data-show-export="true"-->
+                               <!--data-detail-view="true"-->
+                               <!--data-detail-formatter="detailFormatter"-->
+                               <!--data-pagination="true"-->
+                               <!--data-page-size="50"-->
+                               <!--data-page-list="[50, 100, ALL]"-->
+                               <!--data-show-footer="false"-->
+                               <!--data-side-pagination="server"-->
+                               <!--data-url="/limitManagerController/queryLimit.do">-->
+                            <!--<thead>-->
+                            <!--<tr>-->
+                                <!--<th data-field="" data-checkbox="true"></th>-->
+                                <!--<th data-field="" data-formatter="viewIndex">序号</th>-->
+                                <!--<th data-field="" data-formatter="viewOptions">操作</th>-->
+                                <!--<th data-field="bankName" data-formatter="editCol">数据表字段名称</th>-->
+                                <!--<th data-field="mdColName" data-formatter="editCol">模型表字段名称</th>-->
+                                <!--<th data-field="dataType" data-formatter="editColDataType">数据类型</th>-->
+                                <!--<th data-field="dataTypeLen" data-formatter="editCol">数据长度</th>-->
+                                <!--<th data-field="isNull" data-formatter="editColIsNull">是否可空</th>-->
+                                <!--<th data-field="colDescribe" data-formatter="editCol">描述</th>-->
+                                <!--<th data-field="orderBy" data-formatter="editCol">排序值</th>-->
+                            <!--</tr>-->
+                            <!--</thead>-->
+                        <!--</table>-->
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-editable.min.js"></script>
+<script src="/js/bootstrap-table-editable.min.js"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+
+//    function editCol(value, row, index, key) {
+//        return "<div><input type=\"text\" value=\"" + value + "\" onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")' /></div>";
+//    }
+//
+//    function editColDataType(value, row, index, key) {
+//        var selectNotNullStr = 'selected="selected"';
+//        var selectNullStr = '';
+//        var html = [];
+//        html.push("<select onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")'>");
+//        // dataTypeSelect 是在加载页面的时候用 ajax 到后台取出的值，作为这个页面的全局变量赋给了 dataTypeSelect
+//        $.each(dataTypeSelect, function (index, content) {
+//            html.push('<option value="' + content.id + '" ' + (value == content.id ? selectNotNullStr : selectNullStr) + '>' + content.text + '</option>');
+//        });
+//        html.push('</select>');
+//
+//        return html.join('');
+//    }
+//
+//    function editColIsNull(value, row, index, key) {
+//        var selectNotNullStr = 'selected="selected"';
+//        var selectNullStr = '';
+//        return [
+//            "<select onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")'>",
+//            '<option value="1" ' + (value == 1 ? selectNotNullStr : selectNullStr) + '>可以为空</option>',
+//            '<option value="0" ' + (value == 0 ? selectNotNullStr : selectNullStr) + '>不可为空</option>',
+//            '</select>'
+//        ].join('');
+//    }
+//
+//    function viewIndex(value, row, index) {
+//        return '<div>' + (index + 1) + '</div>';
+//    }
+//
+//    // 改变 input 编辑框值时，更新 data 数据，便于新增行时原来填写好的数据不会被新增行强制覆盖
+//    function reloadRowData(obj, row, key, index) {
+//        row[key] = obj.val();
+//        $('#dbtableDefTb').bootstrapTable('getOptions').data.splice(index, 1, row);
+//    }
+//
+//    function viewOptions(value, row, index) {
+//        return [
+//            "<a class=\"like\" href='javascript:addRow(" + index + ", " + JSON.stringify(row) + ")' title=\"新增行\">",
+//            '<i class="glyphicon glyphicon-plus"></i>',
+//            '</a>  ',
+//            '<a class="remove" href="javascript:removeRow(\'' + row.dbColName + '\')" title="删除行">',
+//            '<i class="glyphicon glyphicon-remove"></i>',
+//            '</a>'
+//        ].join('');
+//    }
+//
+//    function addRow(insertIndex, rowObj) {
+//        var insertRow = rowObj;
+//        $.each(insertRow, function (name, value) {
+//            insertRow[name] = '';
+//        });
+//
+//        var params = {index: insertIndex + 1, row: insertRow};
+//        $('#dbtableDefTb').bootstrapTable('insertRow', params);
+//    }
+
+  //===============================================================================
+    var columns = [{
+        field: 'state',
+        checkbox: true
+    }, {
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
+        field: 'id',
+        title: 'id'
+    }, {
+        field: 'bankCode',
+        title: '银行代码'
+    }, {
+        field: 'bankName',
+        title: '银行名称'
+    }, {
+        field: 'cardType',
+        title: '卡性质',
+        formatter: function (value, row, index) {
+            if (value == 0) {
+                return "借记卡";
+            } else if (value == 1) {
+                return "贷记卡";
+            } else if (value == 2) {
+                return "准贷记卡";
+            } else {
+                return "未知";
+            }
+        }
+    }, {
+        field: 'singleLimit',
+        title: '单笔单卡限额',
+        editable: {
+            type: 'text',
+            title: '单笔单卡限额',
+            validate: function (v) {
+                if (!v) return '单笔单卡限额不能为空';
+            }
+        }
+    }, {
+        field: 'singleDayLimit',
+        title: '单日单卡限额',
+        editable: {
+            type: 'text',
+            title: '单日单卡限额',
+            validate: function (v) {
+                if (!v) return '单日单卡限额不能为空';
+            }
+        }
+    }];
+    $(function () {
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/limitManagerController/queryLimit.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 10,
+                pageList: [10, 20, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                clickEdit:true,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                },
+                onEditableSave: function (field, row, oldValue, $el) {
+                    $.ajax({
+                        type: "post",
+                        url: "/limitManagerController/saveOrUpdateLimit.do",
+                        data: row,
+                        dataType: 'JSON',
+                        success: function (data) {
+                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                            if (data == "1") {
+                                noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            } else {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        },
+                        error: function () {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        },
+
+                    });
+                },
+                OnClickRow:function (e, row, $element, field){
+
+                }
+            });
+        };
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+        function queryParams() {
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                contractNo: $("#contractNo").val(),
+                bizNo: $("#bizNo").val(),
+                accountName: $("#accountName").val()
+            }
+        };
+        <!--新增按钮功能-->
+        $("#addBtn").click(function () {
+            $("#editForm")[0].reset();
+            $("#editModal").modal();
+
+        });
+        <!--新增限额模态框中的确认按钮功能-->
+        $(".btn-success").click(function () {
+
+            $.ajax({
+                type: "post",
+                url: "/limitManagerController/saveLimit.do",
+                data: $("#editForm").serialize(),
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data == "1") {
+                        setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                        if (data == "1") {
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                }
+            });
+        });
+
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

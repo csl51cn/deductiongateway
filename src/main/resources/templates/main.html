@@ -49,18 +49,7 @@
 <div class="container-fluid-full">
     <div class="row-fluid">
         <!-- start: Main Menu -->
-        <div id="sidebar-left" class="span2">
-            <div class="nav-collapse sidebar-nav">
-                <ul class="nav nav-tabs nav-stacked main-menu">
-                    <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入账户信息</span></a>
-                    </li>
-                    <li><a href="/deduction.do"><i class="icon-align-justify"></i><span class="hidden-tablet"> 代扣</span></a>
-                    </li>
-                    <li><a href="/result.do"><i class="icon-bar-chart"></i><span
-                            class="hidden-tablet">扣款结果统计</span></a></li>
-                </ul>
-            </div>
-        </div>
+        <div th:include="common :: #menu" th:remove="tag"></div>
         <!-- end: Main Menu -->
 
         <noscript>
@@ -137,6 +126,7 @@
             browseClass: "btn btn-primary", //按钮样式
             maxFileCount: 10,//最大上传文件数限制
             uploadAsync: true,
+            maxFileSize: 10240
         });
         //导入文件上传完成之后的事件
         $("#uploadify").on("fileuploaded", function (event, data, previewId, index) {

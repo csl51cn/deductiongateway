@@ -1,5 +1,8 @@
 package org.starlightfinancial.deductiongateway.utility;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,8 +36,13 @@ public class Utility {
     public static Map<String, Object> pageBean2Map(PageBean pageBean) {
 
         HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("total", pageBean.getTotal());
-        map.put("rows", pageBean.getRows());
+        if (pageBean != null) {
+            map.put("total", pageBean.getTotal());
+            map.put("rows", pageBean.getRows());
+        } else {
+            map.put("total", 0);
+            map.put("rows", null);
+        }
         return map;
     }
 
@@ -82,4 +90,30 @@ public class Utility {
         return calendar.getTime();
     }
 
+    /**
+     * 获取某日23:59:59 时间
+     *
+     * @param date
+     * @return
+     */
+    public static Date toMidNight(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR); //年
+        int month = calendar.get(Calendar.MONTH);//月
+        int day = calendar.get(Calendar.DAY_OF_MONTH); //日
+        calendar.set(year, month, day, 23, 59, 59);
+        return calendar.getTime();
+    }
+
+
+    /**
+     * 创建分页请求.
+     */
+    public static PageRequest buildPageRequest(PageBean pageBean) {
+        Sort sort = new Sort(Sort.Direction.ASC, "id");
+        Integer pageNumber = pageBean.getPageNumber();
+        Integer pageSize = pageBean.getPageSize();
+        return new PageRequest(pageNumber - 1, pageSize, sort);
+    }
 }
