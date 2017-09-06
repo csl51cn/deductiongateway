@@ -194,67 +194,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) {
         List<GoPayBean> messages = new ArrayList<GoPayBean>();
-        String splitData;
         for (int i = 0; i < list.size(); i++) {
-            GoPayBean goPayBean = new GoPayBean();
             MortgageDeduction mortgageDeduction = list.get(i);
-            goPayBean.setContractId(String.valueOf(mortgageDeduction.getApplyMainId()));//设置合同编号
-            goPayBean.setCustomerNo(mortgageDeduction.getCustomerNo());//设置客户编号
-            goPayBean.setCustomerName(mortgageDeduction.getCustomerName());//设置客户名称
-            goPayBean.setContractNo(mortgageDeduction.getContractNo());//设置合同编号
-            goPayBean.setOrgManagerId(mortgageDeduction.getTarget());//设置服务费的管理公司
-            goPayBean.setRePlanId("");//设置还款计划的id
-
-            //计算账户管理费
-            int m1 = 0;
-            int m2 = 0;
-            String amount1 = mortgageDeduction.getSplitData1().toString();
-            String amount2 = mortgageDeduction.getSplitData2().toString();
-            if (StringUtils.isNotBlank(amount1)) {
-                m1 = new BigDecimal(amount1).movePointRight(2).intValue();
-            }
-            if (StringUtils.isNotBlank(amount2)) {
-                m2 = new BigDecimal(amount2).movePointRight(2).intValue();
-            }
-            goPayBean.setOrdAmt(m1 + m2 + "");
-            // 商户分账数据
-            splitData = "00145111^" + m1;
-            if (StringUtils.isNotBlank(goPayBean.getOrgManagerId())) {
-                splitData += ";" + goPayBean.getOrgManagerId() + "^" + m2 + ";";
-            }
-            splitData = "00010001^1;00010002^1";
-
-            goPayBean.setSplitData1(new BigDecimal(amount1));
-            goPayBean.setSplitData2(new BigDecimal(amount2));
-            goPayBean.setBusiId("");
-            goPayBean.setOrdId(MerSeq.tickOrder());
-            goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
-            goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
-            goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
-            goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
-            goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
-            goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-            goPayBean.setParam1("0410");//开户行号
-            goPayBean.setParam2("0");//卡折标志
-            goPayBean.setParam3("6216261000000000018");//卡号/折号
-            goPayBean.setParam4("全渠道");//持卡人姓名
-            goPayBean.setParam5("01");//证件类型
-            goPayBean.setParam6("341126197709218366"); //证件号
-//            goPayBean.setParam1(mortgageDeduction.getParam1());//开户行号
-//            goPayBean.setParam2(mortgageDeduction.getParam2());//卡折标志
-//            goPayBean.setParam3(mortgageDeduction.getParam3());//卡号/折号
-//            goPayBean.setParam4(mortgageDeduction.getParam4());//持卡人姓名
-//            goPayBean.setParam5(mortgageDeduction.getParam5());//证件类型
-//            goPayBean.setParam6(mortgageDeduction.getParam6()); //证件号
-            goPayBean.setParam7("");
-            goPayBean.setParam8("");
-            goPayBean.setParam9("");
-            goPayBean.setParam10("");
-            goPayBean.setOrdDesc("批量代扣款");
-            goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
-            goPayBean.setShareData(splitData);
-            goPayBean.setPriv1("");
-            goPayBean.setCustomIp("");
+            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
             messages.add(goPayBean);
             this.goPayBeanToMortgageDeduction(mortgageDeduction, goPayBean);
         }

@@ -4,6 +4,8 @@ import org.springframework.batch.item.validator.ValidationException;
 import org.springframework.batch.item.validator.Validator;
 import org.springframework.beans.factory.InitializingBean;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.starlightfinancial.deductiongateway.service.Decorator;
 
 import javax.validation.ConstraintViolation;
@@ -14,10 +16,12 @@ import java.util.Set;
 /**
  * Created by sili.chen on 2017/8/23
  */
+@Component
 public class MetadataValidator extends Decorator implements Validator, InitializingBean {
 
     private Object o;
 
+    @Autowired
     private javax.validation.Validator validator;
 
 
@@ -56,7 +60,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-        validator = validatorFactory.usingContext().getValidator();
+//        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+//        validator = validatorFactory.usingContext().getValidator();
     }
 }

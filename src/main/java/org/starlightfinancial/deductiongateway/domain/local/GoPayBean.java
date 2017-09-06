@@ -1,5 +1,9 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
+import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
+import org.starlightfinancial.deductiongateway.utility.MerSeq;
+import org.starlightfinancial.deductiongateway.utility.Utility;
+
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -39,8 +43,6 @@ public class GoPayBean {
     private String contractNo;
     private String orgManagerId;
     private String rePlanId;
-
-
     private BigDecimal splitData1;
     private BigDecimal splitData2;
 
@@ -260,30 +262,6 @@ public class GoPayBean {
         this.Priv1 = priv1;
     }
 
-    public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        StringBuffer sb = new StringBuffer();
-        Field[] fields = this.getClass().getDeclaredFields();
-        sb.append(this.getClass().getName() + "{");
-        for (int i = 0; i < fields.length; i++) {
-            try {
-                if (fields[i].get(this) instanceof Date) {
-                    if (fields[i].get(this) != null) {
-                        sb.append(fields[i].getName() + ":").append(
-                                sdf.format(fields[i].get(this))).append(";");
-                        continue;
-                    }
-                }
-                sb.append(fields[i].getName()).append(":").append(
-                        fields[i].get(this)).append(";");
-            } catch (IllegalArgumentException e) {
-            } catch (IllegalAccessException e) {
-            }
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
     public BigDecimal getSplitData1() {
         return splitData1;
     }
@@ -348,4 +326,27 @@ public class GoPayBean {
         this.rePlanId = rePlanId;
     }
 
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        StringBuffer sb = new StringBuffer();
+        Field[] fields = this.getClass().getDeclaredFields();
+        sb.append(this.getClass().getName() + "{");
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                if (fields[i].get(this) instanceof Date) {
+                    if (fields[i].get(this) != null) {
+                        sb.append(fields[i].getName() + ":").append(
+                                sdf.format(fields[i].get(this))).append(";");
+                        continue;
+                    }
+                }
+                sb.append(fields[i].getName()).append(":").append(
+                        fields[i].get(this)).append(";");
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+            }
+        }
+        sb.append("}");
+        return sb.toString();
+    }
 }

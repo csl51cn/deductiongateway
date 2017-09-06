@@ -1,7 +1,10 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.springframework.batch.item.ItemProcessor;
-import org.starlightfinancial.deductiongateway.service.ConcreteComponent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
+import org.starlightfinancial.deductiongateway.service.Assembler;
+import org.starlightfinancial.deductiongateway.service.AssemblerFactory;
 import org.starlightfinancial.deductiongateway.service.Handler;
 
 
@@ -10,32 +13,41 @@ import org.starlightfinancial.deductiongateway.service.Handler;
  */
 public class ConcreteHandler extends Handler implements ItemProcessor {
 
+    @Autowired
+    Splitter splitter;
+
+    @Autowired
+    AssemblerFactory assemblerFactory;
+
+    @Autowired
+    MetadataValidator metadataValidator;
+
+    private AutoBatchDeduction autoBatchDeduction;
 
     @Override
-    public void handleRequest(Object o) {
-        ConcreteComponent concreteComponent = new ConcreteComponent();
-        MetadataValidator metadataValidator = new MetadataValidator(o);
-        Splitter splitter = new Splitter();
-        Assembler assembler = new Assembler();
+    public void handleRequest() {
+        try {
+            Assembler assembler = assemblerFactory.getAssembleImpl("auto");
+            splitter.setRoute(metadataValidator);
+            assembler.setRoute(splitter);
+            assembler.doRoute();
 
-        metadataValidator.setRoute(concreteComponent);
-        splitter.setRoute(metadataValidator);
-        assembler.setRoute(splitter);
-
-        assembler.doRoute();
-
-        boolean result = false;
-        if (result) {
-            System.out.println("to do something");
-        } else {
-            //successor.handleRequest();
+            boolean result = false;
+            if (result) {
+                System.out.println("to do something");
+            } else {
+                successor.handleRequest();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public Object process(Object o) throws Exception {
-        System.out.println(o);
-        this.handleRequest(o);
-        return null;
+        this.autoBatchDeduction = (AutoBatchDeduction) o;
+        splitter.setAutoBatchDeduction(autoBatchDeduction);
+        this.handleRequest();
+        return o;
     }
 }
