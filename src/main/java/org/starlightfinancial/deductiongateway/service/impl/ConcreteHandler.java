@@ -47,6 +47,7 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
     public Object process(Object o) throws Exception {
         this.autoBatchDeduction = (AutoBatchDeduction) o;
         splitter.setAutoBatchDeduction(autoBatchDeduction);
+        metadataValidator.setAutoBatchDeduction(autoBatchDeduction);
         this.handleRequest();
         return o;
     }

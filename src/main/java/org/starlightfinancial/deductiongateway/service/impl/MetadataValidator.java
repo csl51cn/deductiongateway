@@ -3,9 +3,8 @@ package org.starlightfinancial.deductiongateway.service.impl;
 import org.springframework.batch.item.validator.ValidationException;
 import org.springframework.batch.item.validator.Validator;
 import org.springframework.beans.factory.InitializingBean;
-import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.service.Decorator;
 
 import javax.validation.ConstraintViolation;
@@ -19,19 +18,17 @@ import java.util.Set;
 @Component
 public class MetadataValidator extends Decorator implements Validator, InitializingBean {
 
-    private Object o;
+    private AutoBatchDeduction autoBatchDeduction ;
 
-    @Autowired
     private javax.validation.Validator validator;
 
-
-    public MetadataValidator() {
+    public AutoBatchDeduction getAutoBatchDeduction() {
+        return autoBatchDeduction;
     }
 
-    public MetadataValidator(Object o) {
-        this.o = o;
+    public void setAutoBatchDeduction(AutoBatchDeduction autoBatchDeduction) {
+        this.autoBatchDeduction = autoBatchDeduction;
     }
-
 
     @Override
     public void doRoute() {
@@ -41,7 +38,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.validate(o);
+        this.validate(autoBatchDeduction);
         System.out.println("Validator is working");
     }
 
@@ -60,7 +57,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
 
     @Override
     public void afterPropertiesSet() throws Exception {
-//        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-//        validator = validatorFactory.usingContext().getValidator();
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.usingContext().getValidator();
     }
 }
