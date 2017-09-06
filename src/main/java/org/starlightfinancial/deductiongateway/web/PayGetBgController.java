@@ -16,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by Administrator on 2017-7-22.
  */
-@RestController
 public class PayGetBgController {
     private static final Logger log = LoggerFactory.getLogger(PayGetBgController.class);
 
