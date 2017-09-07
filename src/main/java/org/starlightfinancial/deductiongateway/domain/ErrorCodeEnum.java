@@ -44,7 +44,9 @@ public enum ErrorCodeEnum {
     CODE_000037("20EC", "商户状态不合法"),
     CODE_000038("20R1", "退款处理中"),
     CODE_000039("1003", "退款成功"),
-    CODE_000040("9999", "系统处理失败");
+    CODE_000040("9999", "系统处理失败"),
+    CODE_000041("2062", "不支持此类卡交易"),
+    CODE_000042("0003", "白名单未设置");
 
     private String code;
     private String value;
