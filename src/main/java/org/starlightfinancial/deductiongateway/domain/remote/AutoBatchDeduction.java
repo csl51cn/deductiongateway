@@ -80,8 +80,19 @@ public class AutoBatchDeduction {
         goPayBean.setSplitData1(bxAmount);
         goPayBean.setSplitData2(fwfAmount);
         goPayBean.setBusiId("");
+        String amount1 = bxAmount.toString();
+        String amount2 = fwfAmount.toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        goPayBean.setOrdAmt(m1 + m2 + "");
+        goPayBean.setOrdAmt("2");
         goPayBean.setOrdId(MerSeq.tickOrder());
-        goPayBean.setOrdAmt(bxAmount.add(fwfAmount).toString());
         goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
         goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
         goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
@@ -109,6 +120,8 @@ public class AutoBatchDeduction {
         goPayBean.setShareData(this.getShareData());
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
+        goPayBean.setPayStat("");
+        goPayBean.setPayTime("");
         return goPayBean;
     }
 

@@ -1,7 +1,5 @@
 package org.starlightfinancial.deductiongateway.service;
 
-import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,14 +8,21 @@ import java.util.List;
  */
 public abstract class Assembler extends Decorator {
 
-    private List<GoPayBean> messages = new ArrayList<>();
+    private List result = new ArrayList();
 
-    public abstract void assembleMessage();
+    public abstract void assembleMessage() throws Exception;
 
     @Override
-    public void doRoute() {
+    public void doRoute() throws Exception {
         super.doRoute();
         this.assembleMessage();
-        System.out.println("Assembler is working");
+    }
+
+    public List getResult() {
+        return result;
+    }
+
+    public void setResult(List result) {
+        this.result = result;
     }
 }

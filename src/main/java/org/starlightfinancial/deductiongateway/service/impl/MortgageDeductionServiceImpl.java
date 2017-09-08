@@ -42,6 +42,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Autowired
     SysDictRepository sysDictRepository;
 
+    @Autowired
+    HttpClientUtil httpClientUtil;
+
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
 
@@ -193,34 +196,23 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) {
-        List<GoPayBean> messages = new ArrayList<GoPayBean>();
         for (int i = 0; i < list.size(); i++) {
             MortgageDeduction mortgageDeduction = list.get(i);
             GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
-            messages.add(goPayBean);
-            this.goPayBeanToMortgageDeduction(mortgageDeduction, goPayBean);
-        }
-
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-        try {
-            List<Map> result = httpClientUtil.sendInformation(messages);
-            Iterator iterator = result.iterator();
-            while (iterator.hasNext()) {
-                Map map = (Map) iterator.next();
-                String ordId = (String) map.get("OrdId");
+            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
+            try {
+                Map map = httpClientUtil.send(goPayBean.aggregationToList());
                 String payStat = (String) map.get("PayStat");
-                MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
                 mortgageDeduction.setResult(payStat);
                 if (StringUtils.equals(Constant.SUCCESS, payStat))
                     mortgageDeduction.setIssuccess("1");
                 else
                     mortgageDeduction.setIssuccess("0");
                 mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-                mortgageDeductionRepository.save(mortgageDeduction);
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         return null;
@@ -471,7 +463,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
 
-    private void goPayBeanToMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
+    private void updateMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
         mortgageDeduction.setOrdId(goPayBean.getOrdId());
         mortgageDeduction.setMerId(goPayBean.getMerId());
         mortgageDeduction.setCuryId(goPayBean.getCuryId());
@@ -479,6 +471,5 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
         mortgageDeduction.setPayTime(new Date());
-        mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
     }
 }

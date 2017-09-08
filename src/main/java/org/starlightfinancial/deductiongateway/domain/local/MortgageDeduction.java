@@ -122,7 +122,17 @@ public class MortgageDeduction {
         goPayBean.setSplitData2(splitData2);
         goPayBean.setBusiId("");
         goPayBean.setOrdId(MerSeq.tickOrder());
-        goPayBean.setOrdAmt(splitData1.add(splitData2).toString());
+        String amount1 = splitData1.toString();
+        String amount2 = splitData2.toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        goPayBean.setOrdAmt(m1 + m2 + "");
         goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
         goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
         goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号

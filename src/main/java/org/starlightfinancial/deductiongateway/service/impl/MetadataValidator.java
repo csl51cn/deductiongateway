@@ -18,7 +18,7 @@ import java.util.Set;
 @Component
 public class MetadataValidator extends Decorator implements Validator, InitializingBean {
 
-    private AutoBatchDeduction autoBatchDeduction ;
+    private AutoBatchDeduction autoBatchDeduction;
 
     private javax.validation.Validator validator;
 
@@ -31,7 +31,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
     }
 
     @Override
-    public void doRoute() {
+    public void doRoute() throws Exception {
         super.doRoute();
         try {
             this.afterPropertiesSet();

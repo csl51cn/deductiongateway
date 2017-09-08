@@ -73,7 +73,7 @@ public class Splitter extends Decorator {
     }
 
     @Override
-    public void doRoute() {
+    public void doRoute() throws Exception {
         super.doRoute();
         setDeductionList(doSplitAccount());
     }

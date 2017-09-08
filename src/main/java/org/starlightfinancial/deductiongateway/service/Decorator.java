@@ -8,7 +8,7 @@ public abstract class Decorator implements Route {
     protected Route route;
 
     @Override
-    public void doRoute() {
+    public void doRoute() throws Exception {
         if (null != route) {
             route.doRoute();
         }

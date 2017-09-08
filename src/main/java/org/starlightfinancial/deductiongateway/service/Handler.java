@@ -1,5 +1,9 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+
+import java.util.List;
+
 /**
  * Created by sili.chen on 2017/8/23
  */
@@ -10,5 +14,5 @@ public abstract class Handler {
         this.successor = successor;
     }
 
-    public abstract void handleRequest();
+    public abstract List<MortgageDeduction> handleRequest();
 }
