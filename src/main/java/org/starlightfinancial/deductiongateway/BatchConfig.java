@@ -136,7 +136,7 @@ public class BatchConfig {
                 "LEFT JOIN WorkData_Dictionary h ON h.date_id = a.date_id  " +
                 "LEFT JOIN Dictionary i ON i.id = h.content " +
                 "WHERE " +
-                " d.是否放款 = 485 " +
+                " d.是否放款 = 485 AND" +
                 " a.Flow_No IN ( " +
                 "  SELECT " +
                 "   Flow_No " +

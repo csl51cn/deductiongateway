@@ -404,10 +404,9 @@
         });
         <!--新增限额模态框中的确认按钮功能-->
         $(".btn-success").click(function () {
-
             $.ajax({
                 type: "post",
-                url: "/limitManagerController/saveLimit.do",
+                url: "/limitManagerController/saveOrUpdateLimit.do",
                 data: $("#editForm").serialize(),
                 dataType: 'JSON',
                 success: function (data) {
