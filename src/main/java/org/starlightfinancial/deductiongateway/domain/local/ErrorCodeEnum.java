@@ -46,7 +46,9 @@ public enum ErrorCodeEnum {
     CODE_000039("1003", "退款成功"),
     CODE_000040("9999", "系统处理失败"),
     CODE_000041("2062", "不支持此类卡交易"),
-    CODE_000042("0003", "白名单未设置");
+    CODE_000042("0003", "白名单未设置"),
+    CODE_000043("2075", "密码输错次数超限，请联系发卡行");
+
 
     private String code;
     private String value;
