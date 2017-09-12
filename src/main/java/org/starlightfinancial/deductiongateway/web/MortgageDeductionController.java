@@ -98,7 +98,7 @@ public class MortgageDeductionController {
     @ResponseBody
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
         endDate = Utility.addDay(endDate, 1);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName, pageBean, type, getLoginUserId(session));
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 
@@ -151,7 +151,7 @@ public class MortgageDeductionController {
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
     public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
         endDate = Utility.addDay(endDate, 1);
-        Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName);
+        Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName.trim());
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String fileName = "扣款结果统计报表" + format.format(new Date());
         response.setContentType("application/vnd.ms-excel");
