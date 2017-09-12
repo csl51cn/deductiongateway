@@ -24,16 +24,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.starlightfinancial.deductiongateway.common.MyJobListener;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRowMapper;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeductionRowMapper;
 import org.starlightfinancial.deductiongateway.service.impl.ConcreteHandler;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.metamodel.Metamodel;
 import javax.sql.DataSource;
 import java.time.LocalDate;
-import java.util.Map;
 
 /**
  * Created by sili.chen on 2017/8/23
@@ -136,7 +133,7 @@ public class BatchConfig {
                 "LEFT JOIN WorkData_Dictionary h ON h.date_id = a.date_id  " +
                 "LEFT JOIN Dictionary i ON i.id = h.content " +
                 "WHERE " +
-                " d.是否放款 = 485 AND" +
+                " d.是否放款 = 485 AND " +
                 " a.Flow_No IN ( " +
                 "  SELECT " +
                 "   Flow_No " +
@@ -208,27 +205,30 @@ public class BatchConfig {
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
                 "AND d.放款日期 <= '2017-08-29' " +
                 "AND d.放款日期 >= '2017-06-2'");
-               // "AND d.放款日期 >= " + yesterday.toString());
-              // TODO: 2017-08-30   放款时间为昨天
+        // "AND d.放款日期 >= " + yesterday.toString());
+        // TODO: 2017-08-30   放款时间为昨天
 
         return jdbcCursorItemReader;
     }
-
 
 
     @Bean(name = "w0")
     public ItemWriter<AccountManager> accountAutoImportWriter(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
         JpaItemWriter jpaItemWriter = new JpaItemWriter();
         jpaItemWriter.setEntityManagerFactory(localContainerEntityManagerFactoryBean.getObject());
-        return  jpaItemWriter;
+        return jpaItemWriter;
     }
 
 
     @Bean(name = "s1")
-    public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader, ItemWriter<AutoBatchDeduction> writer) {
+    public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader, ItemWriter<MortgageDeduction> writer,
+                      ItemProcessor<AutoBatchDeduction, MortgageDeduction> processor,
+                      @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
         return stepBuilderFactory.get("step1")
-                .<AutoBatchDeduction, AutoBatchDeduction>chunk(65000)
+                .transactionManager(tx)
+                .<AutoBatchDeduction, MortgageDeduction>chunk(65000)
                 .reader(reader)
+                .processor(processor)
                 .writer(writer)
                 .build();
     }
@@ -243,85 +243,15 @@ public class BatchConfig {
     }
 
     @Bean(name = "p1")
-    public ItemProcessor<AutoBatchDeduction, AutoBatchDeduction> processor() {
+    public ItemProcessor<AutoBatchDeduction, MortgageDeduction> processor() {
         ConcreteHandler concreteHandler = new ConcreteHandler();
         return concreteHandler;
     }
 
     @Bean(name = "w1")
-    public ItemWriter<AutoBatchDeduction> writer(@Qualifier("localDataSource") DataSource dataSource) {
+    public ItemWriter<MortgageDeduction> writer(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
         JpaItemWriter jpaItemWriter = new JpaItemWriter();
-        jpaItemWriter.setEntityManagerFactory(new EntityManagerFactory() {
-            @Override
-            public EntityManager createEntityManager() {
-                return null;
-            }
-
-            @Override
-            public EntityManager createEntityManager(Map map) {
-                return null;
-            }
-
-            @Override
-            public EntityManager createEntityManager(SynchronizationType synchronizationType) {
-                return null;
-            }
-
-            @Override
-            public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
-                return null;
-            }
-
-            @Override
-            public CriteriaBuilder getCriteriaBuilder() {
-                return null;
-            }
-
-            @Override
-            public Metamodel getMetamodel() {
-                return null;
-            }
-
-            @Override
-            public boolean isOpen() {
-                return false;
-            }
-
-            @Override
-            public void close() {
-
-            }
-
-            @Override
-            public Map<String, Object> getProperties() {
-                return null;
-            }
-
-            @Override
-            public Cache getCache() {
-                return null;
-            }
-
-            @Override
-            public PersistenceUnitUtil getPersistenceUnitUtil() {
-                return null;
-            }
-
-            @Override
-            public void addNamedQuery(String s, Query query) {
-
-            }
-
-            @Override
-            public <T> T unwrap(Class<T> aClass) {
-                return null;
-            }
-
-            @Override
-            public <T> void addNamedEntityGraph(String s, EntityGraph<T> entityGraph) {
-
-            }
-        });
+        jpaItemWriter.setEntityManagerFactory(localContainerEntityManagerFactoryBean.getObject());
         return jpaItemWriter;
     }
 
