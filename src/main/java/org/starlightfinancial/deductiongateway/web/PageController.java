@@ -11,6 +11,11 @@ public class PageController {
 
 
     @RequestMapping("/")
+    public String toIndexPage() {
+        return "index";
+    }
+
+    @RequestMapping("/login")
     public String toLoginPage() {
         return "login";
     }
