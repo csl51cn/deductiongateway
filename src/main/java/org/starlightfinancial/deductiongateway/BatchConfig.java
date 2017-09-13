@@ -24,13 +24,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.starlightfinancial.deductiongateway.common.MyJobListener;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRowMapper;
-import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeductionRowMapper;
+import org.starlightfinancial.deductiongateway.service.impl.AutoBatchItemWriter;
 import org.starlightfinancial.deductiongateway.service.impl.ConcreteHandler;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Created by sili.chen on 2017/8/23
@@ -211,7 +212,6 @@ public class BatchConfig {
         return jdbcCursorItemReader;
     }
 
-
     @Bean(name = "w0")
     public ItemWriter<AccountManager> accountAutoImportWriter(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
         JpaItemWriter jpaItemWriter = new JpaItemWriter();
@@ -219,14 +219,13 @@ public class BatchConfig {
         return jpaItemWriter;
     }
 
-
     @Bean(name = "s1")
-    public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader, ItemWriter<MortgageDeduction> writer,
-                      ItemProcessor<AutoBatchDeduction, MortgageDeduction> processor,
+    public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader, ItemWriter<List> writer,
+                      ItemProcessor<AutoBatchDeduction, List> processor,
                       @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
         return stepBuilderFactory.get("step1")
                 .transactionManager(tx)
-                .<AutoBatchDeduction, MortgageDeduction>chunk(65000)
+                .<AutoBatchDeduction, List>chunk(65000)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
@@ -243,16 +242,17 @@ public class BatchConfig {
     }
 
     @Bean(name = "p1")
-    public ItemProcessor<AutoBatchDeduction, MortgageDeduction> processor() {
+    public ItemProcessor<AutoBatchDeduction, List> processor() {
         ConcreteHandler concreteHandler = new ConcreteHandler();
         return concreteHandler;
     }
 
     @Bean(name = "w1")
-    public ItemWriter<MortgageDeduction> writer(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
-        JpaItemWriter jpaItemWriter = new JpaItemWriter();
-        jpaItemWriter.setEntityManagerFactory(localContainerEntityManagerFactoryBean.getObject());
-        return jpaItemWriter;
+    public ItemWriter<List> writer(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
+        AutoBatchItemWriter autoBatchItemWriter = new AutoBatchItemWriter();
+        autoBatchItemWriter.setJpaItemWriter(new JpaItemWriter());
+        autoBatchItemWriter.setLocalContainerEntityManagerFactoryBean(localContainerEntityManagerFactoryBean);
+        return autoBatchItemWriter;
     }
 
     @Bean

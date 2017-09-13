@@ -3,6 +3,8 @@ package org.starlightfinancial.deductiongateway.domain.remote;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.local.SysDict;
+import org.starlightfinancial.deductiongateway.utility.DictionaryType;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -11,6 +13,7 @@ import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by sili.chen on 2017/8/25
@@ -99,18 +102,18 @@ public class AutoBatchDeduction {
         goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
         goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
         goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-        goPayBean.setParam1("0410");//开户行号
+//        goPayBean.setParam1("0410");//开户行号
+//        goPayBean.setParam2("0");//卡折标志
+//        goPayBean.setParam3("6216261000000000018");//卡号/折号
+//        goPayBean.setParam4("全渠道");//持卡人姓名
+//        goPayBean.setParam5("01");//证件类型
+//        goPayBean.setParam6("341126197709218366"); //证件号
+        goPayBean.setParam1(bankName);//开户行号
         goPayBean.setParam2("0");//卡折标志
-        goPayBean.setParam3("6216261000000000018");//卡号/折号
-        goPayBean.setParam4("全渠道");//持卡人姓名
-        goPayBean.setParam5("01");//证件类型
-        goPayBean.setParam6("341126197709218366"); //证件号
-//            goPayBean.setParam1(mortgageDeduction.getParam1());//开户行号
-//            goPayBean.setParam2(mortgageDeduction.getParam2());//卡折标志
-//            goPayBean.setParam3(mortgageDeduction.getParam3());//卡号/折号
-//            goPayBean.setParam4(mortgageDeduction.getParam4());//持卡人姓名
-//            goPayBean.setParam5(mortgageDeduction.getParam5());//证件类型
-//            goPayBean.setParam6(mortgageDeduction.getParam6()); //证件号
+        goPayBean.setParam3(accout);//卡号/折号
+        goPayBean.setParam4(customerName);//持卡人姓名
+        goPayBean.setParam5(certificateType);//证件类型
+        goPayBean.setParam6(certificateNo); //证件号
         goPayBean.setParam7("");
         goPayBean.setParam8("");
         goPayBean.setParam9("");
