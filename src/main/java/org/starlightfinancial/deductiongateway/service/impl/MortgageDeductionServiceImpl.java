@@ -218,7 +218,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             goPayBean.setOrdAmt(m1 + m2 + "");
             // 商户分账数据
             splitData = "00145111^" + m1;
-            if (StringUtils.isNotBlank(goPayBean.getOrgManagerId())) {
+            if (StringUtils.isNotBlank(goPayBean.getOrgManagerId()) && m2 != 0 ) {
                 splitData += ";" + goPayBean.getOrgManagerId() + "^" + m2 + ";";
             }
 //            splitData = "00010001^1;00010002^1";
