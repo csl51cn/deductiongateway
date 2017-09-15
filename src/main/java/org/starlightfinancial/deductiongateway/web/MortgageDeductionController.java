@@ -17,6 +17,7 @@ import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.service.ReconciliationService;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -39,9 +40,10 @@ public class MortgageDeductionController {
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
-
     @Autowired
     private SystemService systemService;
+    @Autowired
+    private ReconciliationService reconciliationService;
 
     /**
      * 代扣账户数据文件导入
@@ -129,7 +131,7 @@ public class MortgageDeductionController {
                     newMortgageDeduction.setCreateDate(new Date());
                     mortgageDeductionList.add(newMortgageDeduction);
                 }
-                    list = mortgageDeductionList;
+                list = mortgageDeductionList;
             }
             mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
@@ -188,7 +190,7 @@ public class MortgageDeductionController {
     }
 
 
-    @RequestMapping(value="/mortgageDeductionController/deleteMortgageDeductions")
+    @RequestMapping(value = "/mortgageDeductionController/deleteMortgageDeductions")
     @ResponseBody
     public String deleteMortgageDeductions(String ids) {
         try {
@@ -204,7 +206,7 @@ public class MortgageDeductionController {
                 return "0";
             }
         } catch (Exception e) {
-            log.debug("删除代扣记录失败",e);
+            log.debug("删除代扣记录失败", e);
             return "0";
         }
     }

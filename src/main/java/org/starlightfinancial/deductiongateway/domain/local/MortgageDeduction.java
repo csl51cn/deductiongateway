@@ -1,7 +1,6 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import org.apache.commons.lang.StringUtils;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -81,7 +80,7 @@ public class MortgageDeduction {
     private Date createDate;
 
     @Column(name = "paytime")
-    @JsonFormat(pattern="yyyy/MM/dd.HH:mm:ss" ,timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy/MM/dd.HH:mm:ss", timezone = "GMT+8")
     private Date payTime;
 
     @Column(name = "issuccess")
@@ -110,6 +109,9 @@ public class MortgageDeduction {
 
     @Column(name = "planno")
     private int planNo;
+
+    @Column(name = "checkstate")
+    private String checkState;
 
     public GoPayBean transToGoPayBean() {
         GoPayBean goPayBean = new GoPayBean();
@@ -426,5 +428,13 @@ public class MortgageDeduction {
 
     public void setPlanNo(int planNo) {
         this.planNo = planNo;
+    }
+
+    public String getCheckState() {
+        return checkState;
+    }
+
+    public void setCheckState(String checkState) {
+        this.checkState = checkState;
     }
 }

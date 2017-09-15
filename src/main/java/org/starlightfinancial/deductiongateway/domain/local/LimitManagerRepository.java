@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface LimitManagerRepository extends JpaRepository<LimitManager, Integer>, JpaSpecificationExecutor<LimitManager> {
 
     LimitManager findByBankName(String bankName);
+
+    LimitManager findByBankCode(String bankCode);
 }

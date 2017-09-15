@@ -47,5 +47,10 @@ public class PageController {
         return "limit-manager";
     }
 
+    @RequestMapping("/unionpay.do")
+    public String toUnionPayPage() {
+        return "union-pay";
+    }
+
 }
 

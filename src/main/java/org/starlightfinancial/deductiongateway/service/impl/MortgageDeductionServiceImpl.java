@@ -7,6 +7,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +45,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     @Autowired
     HttpClientUtil httpClientUtil;
+
+    @Autowired
+    private LimitManagerRepository limitManagerRepository;
 
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
@@ -183,7 +187,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     }
                 }
 
-                mortgageDeductionRepository.save(list);
+                for (MortgageDeduction mortgageDeduction : list) {
+                    List<MortgageDeduction> result = this.doSplitAccount(mortgageDeduction);
+                    for (MortgageDeduction deduction : result) {
+                        mortgageDeductionRepository.save(deduction);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,6 +225,53 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
 
         return null;
+    }
+
+    public List<MortgageDeduction> doSplitAccount(MortgageDeduction mortgageDeduction) {
+        List<MortgageDeduction> result = new ArrayList<>();
+        LimitManager limitManager = limitManagerRepository.findByBankCode(mortgageDeduction.getParam1());
+        BigDecimal singleLimit = limitManager.getSingleLimit();
+        BigDecimal bxAmount = mortgageDeduction.getSplitData1();
+        BigDecimal fwfAmount = mortgageDeduction.getSplitData2();
+
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue()) {
+            result.add(mortgageDeduction);
+        } else {
+            result = recurLimit(limitManager, mortgageDeduction);
+        }
+
+        return result;
+    }
+
+    private List recurLimit(LimitManager limitManager, MortgageDeduction mortgageDeduction) {
+        List result = new ArrayList();
+        BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        BigDecimal drawDownAmount = totalAmount;
+        BigDecimal drawDownBxAmount = mortgageDeduction.getSplitData1();
+        BigDecimal drawDownFwfAmount = mortgageDeduction.getSplitData2();
+
+        while (drawDownAmount.doubleValue() > 0) {
+            BigDecimal bxAmount;
+            if (drawDownAmount.doubleValue() > limitManager.getSingleLimit().doubleValue()) {
+                bxAmount = limitManager.getSingleLimit().subtract(drawDownFwfAmount);
+                if (bxAmount.doubleValue() >= limitManager.getSingleLimit().doubleValue()) {
+                    bxAmount = limitManager.getSingleLimit();
+                }
+            } else {
+                bxAmount = drawDownAmount;
+            }
+            MortgageDeduction newObj = new MortgageDeduction();
+            BeanUtils.copyProperties(mortgageDeduction, newObj);
+            newObj.setSplitData1(bxAmount);
+            newObj.setSplitData2(drawDownFwfAmount);
+            drawDownAmount = drawDownAmount.subtract(bxAmount).subtract(drawDownFwfAmount);
+            drawDownBxAmount = drawDownBxAmount.subtract(bxAmount);
+            drawDownFwfAmount = drawDownFwfAmount.subtract(drawDownFwfAmount);
+
+            result.add(newObj);
+        }
+
+        return result;
     }
 
     /**
