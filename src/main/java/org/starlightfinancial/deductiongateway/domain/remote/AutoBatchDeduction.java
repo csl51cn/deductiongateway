@@ -140,7 +140,7 @@ public class AutoBatchDeduction {
         if (StringUtils.isNotBlank(fwfCompamny)) {
             shareData += ";" + this.transFwfCode() + "^" + fwfAmount + ";";
         }
-        shareData = "00010001^1;00010002^1";
+//        shareData = "00010001^1;00010002^1";
         return shareData;
     }
 
