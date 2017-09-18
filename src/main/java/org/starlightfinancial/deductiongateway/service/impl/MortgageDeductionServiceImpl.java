@@ -368,8 +368,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         //表头
         String[] headers = new String[]
                 {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)", ""};
-        sheet.setDefaultColumnWidth(15);
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
+        sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
         HSSFFont font = workbook.createFont();
@@ -461,18 +461,31 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             cell = row.createCell(12);
             cell.setCellValue(mortgageDeduction.getErrorResult());
+
             cell = row.createCell(13);
+            String checkState = mortgageDeduction.getCheckState() == null ? "" : mortgageDeduction.getCheckState();
+            if ("0".equals(checkState)) {
+                cell.setCellValue("不一致");
+            } else if ("1".equals(checkState)) {
+                cell.setCellValue("一致");
+            } else {
+                cell.setCellValue("未对账");
+            }
+
+            cell = row.createCell(14);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
-            cell = row.createCell(14);
+            cell = row.createCell(15);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
             } else {
                 cell.setCellValue("");
             }
+
+
             i = i + 1;
         }
         return workbook;
