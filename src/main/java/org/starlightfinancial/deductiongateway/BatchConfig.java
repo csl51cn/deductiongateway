@@ -237,7 +237,7 @@ public class BatchConfig {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
-        jdbcCursorItemReader.setSql("SELECT * FROM  Temp_当前代扣数据");
+        jdbcCursorItemReader.setSql("SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1)");
         return jdbcCursorItemReader;
     }
 
