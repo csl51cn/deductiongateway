@@ -204,9 +204,9 @@ public class BatchConfig {
                 "AND g.GoBackId = 0 " +
                 "AND h.GoBackId = 0 " +
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
-                "AND d.放款日期 <= '2017-08-29' " +
-                "AND d.放款日期 >= '2017-06-2'");
-        // "AND d.放款日期 >= " + yesterday.toString());
+//                "AND d.放款日期 <= '2017-08-29' " +
+//                "AND d.放款日期 >= '2017-06-2'");
+         "AND d.放款日期 >= " + yesterday.toString());
         // TODO: 2017-08-30   放款时间为昨天
 
         return jdbcCursorItemReader;

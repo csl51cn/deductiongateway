@@ -1,10 +1,9 @@
+
 package org.starlightfinancial.deductiongateway.domain.remote;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.local.SysDict;
-import org.starlightfinancial.deductiongateway.utility.DictionaryType;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -13,7 +12,6 @@ import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by sili.chen on 2017/8/25

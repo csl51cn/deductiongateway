@@ -29,14 +29,14 @@ public class ScheduledTaskService {
 
     public JobParameters jobParameter;
 
-    @Scheduled(cron = "0 54 16 * * ? ")
+    @Scheduled(cron = "00 00 06 * * ? ")
     public void execute() throws Exception {
         System.out.println("执行了吗");
         jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
         jobLauncher.run(autoDeduction, jobParameter);
     }
 
-    @Scheduled(cron = "50 20 15 * * ? ")
+    @Scheduled(cron = "00 20 04 * * ? ")
     public void executeAccountAutoBatchImport() throws Exception {
         System.out.println("执行了吗");
         jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
