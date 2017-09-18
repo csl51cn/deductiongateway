@@ -161,36 +161,6 @@
                             </form>
                         </div>
                         <table id="table"></table>
-
-                        <!--<table id="dbtableDefTb" data-toggle="table" data-toolbar="#toolbar"-->
-                               <!--data-search="true"-->
-                               <!--data-show-refresh="true"-->
-                               <!--data-show-toggle="true"-->
-                               <!--data-show-columns="true"-->
-                               <!--data-show-export="true"-->
-                               <!--data-detail-view="true"-->
-                               <!--data-detail-formatter="detailFormatter"-->
-                               <!--data-pagination="true"-->
-                               <!--data-page-size="50"-->
-                               <!--data-page-list="[50, 100, ALL]"-->
-                               <!--data-show-footer="false"-->
-                               <!--data-side-pagination="server"-->
-                               <!--data-url="/limitManagerController/queryLimit.do">-->
-                            <!--<thead>-->
-                            <!--<tr>-->
-                                <!--<th data-field="" data-checkbox="true"></th>-->
-                                <!--<th data-field="" data-formatter="viewIndex">序号</th>-->
-                                <!--<th data-field="" data-formatter="viewOptions">操作</th>-->
-                                <!--<th data-field="bankName" data-formatter="editCol">数据表字段名称</th>-->
-                                <!--<th data-field="mdColName" data-formatter="editCol">模型表字段名称</th>-->
-                                <!--<th data-field="dataType" data-formatter="editColDataType">数据类型</th>-->
-                                <!--<th data-field="dataTypeLen" data-formatter="editCol">数据长度</th>-->
-                                <!--<th data-field="isNull" data-formatter="editColIsNull">是否可空</th>-->
-                                <!--<th data-field="colDescribe" data-formatter="editCol">描述</th>-->
-                                <!--<th data-field="orderBy" data-formatter="editCol">排序值</th>-->
-                            <!--</tr>-->
-                            <!--</thead>-->
-                        <!--</table>-->
                     </div>
                 </div><!--/span-->
 
@@ -214,68 +184,6 @@
 
 
 <script type="text/javascript" th:inline="javascript">
-
-//    function editCol(value, row, index, key) {
-//        return "<div><input type=\"text\" value=\"" + value + "\" onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")' /></div>";
-//    }
-//
-//    function editColDataType(value, row, index, key) {
-//        var selectNotNullStr = 'selected="selected"';
-//        var selectNullStr = '';
-//        var html = [];
-//        html.push("<select onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")'>");
-//        // dataTypeSelect 是在加载页面的时候用 ajax 到后台取出的值，作为这个页面的全局变量赋给了 dataTypeSelect
-//        $.each(dataTypeSelect, function (index, content) {
-//            html.push('<option value="' + content.id + '" ' + (value == content.id ? selectNotNullStr : selectNullStr) + '>' + content.text + '</option>');
-//        });
-//        html.push('</select>');
-//
-//        return html.join('');
-//    }
-//
-//    function editColIsNull(value, row, index, key) {
-//        var selectNotNullStr = 'selected="selected"';
-//        var selectNullStr = '';
-//        return [
-//            "<select onchange='reloadRowData($(this), " + JSON.stringify(row) + ", \"" + key + "\", " + index + ")'>",
-//            '<option value="1" ' + (value == 1 ? selectNotNullStr : selectNullStr) + '>可以为空</option>',
-//            '<option value="0" ' + (value == 0 ? selectNotNullStr : selectNullStr) + '>不可为空</option>',
-//            '</select>'
-//        ].join('');
-//    }
-//
-//    function viewIndex(value, row, index) {
-//        return '<div>' + (index + 1) + '</div>';
-//    }
-//
-//    // 改变 input 编辑框值时，更新 data 数据，便于新增行时原来填写好的数据不会被新增行强制覆盖
-//    function reloadRowData(obj, row, key, index) {
-//        row[key] = obj.val();
-//        $('#dbtableDefTb').bootstrapTable('getOptions').data.splice(index, 1, row);
-//    }
-//
-//    function viewOptions(value, row, index) {
-//        return [
-//            "<a class=\"like\" href='javascript:addRow(" + index + ", " + JSON.stringify(row) + ")' title=\"新增行\">",
-//            '<i class="glyphicon glyphicon-plus"></i>',
-//            '</a>  ',
-//            '<a class="remove" href="javascript:removeRow(\'' + row.dbColName + '\')" title="删除行">',
-//            '<i class="glyphicon glyphicon-remove"></i>',
-//            '</a>'
-//        ].join('');
-//    }
-//
-//    function addRow(insertIndex, rowObj) {
-//        var insertRow = rowObj;
-//        $.each(insertRow, function (name, value) {
-//            insertRow[name] = '';
-//        });
-//
-//        var params = {index: insertIndex + 1, row: insertRow};
-//        $('#dbtableDefTb').bootstrapTable('insertRow', params);
-//    }
-
-  //===============================================================================
     var columns = [{
         field: 'state',
         checkbox: true
@@ -318,6 +226,12 @@
             validate: function (v) {
                 if (!v) return '单笔单卡限额不能为空';
             }
+        },
+        formatter:function (value, row, index) {
+            if(value == "-1"){
+                return "无限额";
+            }
+            return value;
         }
     }, {
         field: 'singleDayLimit',
@@ -328,6 +242,12 @@
             validate: function (v) {
                 if (!v) return '单日单卡限额不能为空';
             }
+        },
+        formatter:function (value, row, index) {
+            if(value == "-1"){
+                return "无限额";
+            }
+            return value;
         }
     }];
     $(function () {

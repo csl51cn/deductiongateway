@@ -38,13 +38,13 @@ public class LimitManager {
     private Integer cardType;
 
     /**
-     * 单笔单卡限额
+     * 单笔单卡限额 :-1时为无限额
      */
     @Column(name = "singlelimit")
     private BigDecimal singleLimit;
 
     /**
-     * 单日单笔限额
+     * 单日单笔限额 -1时为无限额
      */
     @Column(name = "singledaylimit")
     private BigDecimal singleDayLimit;

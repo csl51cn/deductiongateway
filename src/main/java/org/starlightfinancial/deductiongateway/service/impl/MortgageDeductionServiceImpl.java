@@ -234,7 +234,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         BigDecimal bxAmount = mortgageDeduction.getSplitData1();
         BigDecimal fwfAmount = mortgageDeduction.getSplitData2();
 
-        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue()) {
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue()  ||  singleLimit.doubleValue() == -1 ) {
             result.add(mortgageDeduction);
         } else {
             result = recurLimit(limitManager, mortgageDeduction);
