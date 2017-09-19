@@ -204,10 +204,15 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     }
 
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) {
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception {
         for (int i = 0; i < list.size(); i++) {
             MortgageDeduction mortgageDeduction = list.get(i);
             GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
+            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
+            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
+                throw new Exception("银联报文签名异常");
+            }
+            goPayBean.setChkValue(chkValue);
             this.updateMortgageDeduction(mortgageDeduction, goPayBean);
             try {
                 Map map = httpClientUtil.send(goPayBean.aggregationToList());

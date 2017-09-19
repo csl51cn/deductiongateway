@@ -29,7 +29,7 @@ public interface MortgageDeductionService {
      * @param list the list
      * @return the list
      */
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list);
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception;
 
     /**
      * 查询代扣数据

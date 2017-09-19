@@ -1,6 +1,8 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.Map;
  */
 @Service
 public class ReconciliationServiceImpl implements ReconciliationService {
+    private static final Logger log = LoggerFactory.getLogger(ReconciliationServiceImpl.class);
 
     @Qualifier("mortgageDeductionRepository")
     @Autowired
@@ -47,8 +50,23 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         String ordAmt = result[5]; //订单金额
         String ordState = result[10].split("-")[0]; //订单状态
         ordState = ErrorCodeEnum.getCodeByNewCode(ordState);
+        if (ordState == null ){
+            log.info("对账时订单状态未获取到,订单号:"+ordId);
+            return;
+        }
 
         MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
+//        if(mortgageDeduction != null){
+//            mortgageDeduction.setResult(ordState);
+//            mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
+//            if("1001".equals(ordState)){
+//                mortgageDeduction.setIssuccess("1");
+//            }else {
+//                mortgageDeduction.setIssuccess("0");
+//            }
+//            mortgageDeduction.setCheckState("1");
+//            mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+//        }
         if (mortgageDeduction != null) {
             if (mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2()).doubleValue() == Double.valueOf(ordAmt)
                     && mortgageDeduction.getResult().equals(ordState)) {

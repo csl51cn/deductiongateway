@@ -15,7 +15,7 @@ import java.util.Date;
  *
  * @author sili.chen
  */
-@Entity(name = "BU_MORTGAGEDEUCTION_TEST")
+@Entity(name = "BU_MORTGAGEDEUCTION")
 public class MortgageDeduction {
 
     @Id
@@ -141,25 +141,26 @@ public class MortgageDeduction {
         goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
         goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
         goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-        goPayBean.setParam1("0410");//开户行号
-        goPayBean.setParam2("0");//卡折标志
-        goPayBean.setParam3("6216261000000000018");//卡号/折号
-        goPayBean.setParam4("全渠道");//持卡人姓名
-        goPayBean.setParam5("01");//证件类型
-        goPayBean.setParam6("341126197709218366"); //证件号
-//        goPayBean.setParam1(this.getParam1());//开户行号
-//        goPayBean.setParam2(this.getParam2());//卡折标志
-//        goPayBean.setParam3(this.getParam3());//卡号/折号
-//        goPayBean.setParam4(this.getParam4());//持卡人姓名
-//        goPayBean.setParam5(this.getParam5());//证件类型
-//        goPayBean.setParam6(this.getParam6()); //证件号
+//        goPayBean.setOrdAmt("2");
+//        goPayBean.setParam1("0410");//开户行号
+//        goPayBean.setParam2("0");//卡折标志
+//        goPayBean.setParam3("6216261000000000018");//卡号/折号
+//        goPayBean.setParam4("全渠道");//持卡人姓名
+//        goPayBean.setParam5("01");//证件类型
+//        goPayBean.setParam6("341126197709218366"); //证件号
+        goPayBean.setParam1(param1);//开户行号
+        goPayBean.setParam2(param2);//卡折标志
+        goPayBean.setParam3(param3);//卡号/折号
+        goPayBean.setParam4(param4);//持卡人姓名
+        goPayBean.setParam5(param5);//证件类型
+        goPayBean.setParam6(param6); //证件号
         goPayBean.setParam7("");
         goPayBean.setParam8("");
         goPayBean.setParam9("");
         goPayBean.setParam10("");
         goPayBean.setOrdDesc("批量代扣款");
         goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
-        goPayBean.setShareData(this.getShareData());
+        goPayBean.setShareData(this.getShareData(m1, m2));
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
         return goPayBean;
@@ -174,12 +175,12 @@ public class MortgageDeduction {
         }
     }
 
-    private String getShareData() {
-        String shareData = "00145111^" + splitData1;
-        if (StringUtils.isNotBlank(target)) {
-            shareData += ";" + this.transFwfCode() + "^" + splitData2 + ";";
+    private String getShareData(int m1, int m2) {
+        String shareData = "00145111^" + m1 + ";";
+        if (StringUtils.isNotBlank(target) && m2 != 0) {
+            shareData += this.transFwfCode() + "^" + m2 + ";";
         }
-       shareData = "00010001^1;00010002^1";
+        // shareData = "00010001^1;00010002^1";
         return shareData;
     }
 

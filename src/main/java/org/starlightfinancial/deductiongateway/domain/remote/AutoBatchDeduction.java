@@ -92,7 +92,6 @@ public class AutoBatchDeduction {
             m2 = new BigDecimal(amount2).movePointRight(2).intValue();
         }
         goPayBean.setOrdAmt(m1 + m2 + "");
-        goPayBean.setOrdAmt("2");
         goPayBean.setOrdId(MerSeq.tickOrder());
         goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
         goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
@@ -100,6 +99,7 @@ public class AutoBatchDeduction {
         goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
         goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
         goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
+        //  goPayBean.setOrdAmt("2");
 //        goPayBean.setParam1("0410");//开户行号
 //        goPayBean.setParam2("0");//卡折标志
 //        goPayBean.setParam3("6216261000000000018");//卡号/折号
@@ -118,7 +118,7 @@ public class AutoBatchDeduction {
         goPayBean.setParam10("");
         goPayBean.setOrdDesc("批量代扣款");
         goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
-        goPayBean.setShareData(this.getShareData());
+        goPayBean.setShareData(this.getShareData(m1,m2));
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
         goPayBean.setPayStat("");
@@ -135,10 +135,10 @@ public class AutoBatchDeduction {
         }
     }
 
-    private String getShareData() {
-        String shareData = "00145111^" + bxAmount;
-        if (StringUtils.isNotBlank(fwfCompamny)) {
-            shareData += ";" + this.transFwfCode() + "^" + fwfAmount + ";";
+    private String getShareData(int m1,int m2) {
+        String shareData = "00145111^" + m1;
+        if (StringUtils.isNotBlank(fwfCompamny) && m2!= 0) {
+            shareData += ";" + this.transFwfCode() + "^" + m2 + ";";
         }
 //        shareData = "00010001^1;00010002^1";
         return shareData;
