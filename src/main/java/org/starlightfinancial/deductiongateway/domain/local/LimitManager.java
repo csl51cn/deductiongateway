@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  *
  * @author senlin.deng
  */
-@Entity(name = "BU_LIMITMANAGER")
+@Entity(name = "BU_LIMITMANAGER_TEST")
 public class LimitManager {
 
     /**

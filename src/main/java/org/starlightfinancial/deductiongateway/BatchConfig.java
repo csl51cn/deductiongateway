@@ -206,8 +206,8 @@ public class BatchConfig {
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
 //                "AND d.放款日期 <= '2017-08-29' " +
 //                "AND d.放款日期 >= '2017-06-2'");
-         "AND d.放款日期 >= " + yesterday.toString());
-        // TODO: 2017-08-30   放款时间为昨天
+         "AND d.放款日期 >= '" + yesterday.toString()+"'") ;
+
 
         return jdbcCursorItemReader;
     }

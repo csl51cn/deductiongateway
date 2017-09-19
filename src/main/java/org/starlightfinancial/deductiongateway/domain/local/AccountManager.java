@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author senlin.deng
  */
-@Entity(name = "BU_ACCOUNT_MANAGER")
+@Entity(name = "BU_ACCOUNT_MANAGER_TEST")
 public class AccountManager {
 
 

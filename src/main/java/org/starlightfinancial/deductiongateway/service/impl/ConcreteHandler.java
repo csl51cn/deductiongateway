@@ -14,7 +14,6 @@ import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +48,8 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
 
             List<GoPayBean> result = assembler.getResult();
             for (GoPayBean goPayBean : result) {
-//                Map map = httpClientUtil.send(goPayBean.aggregationToList());
-                Map map = new HashMap();
+                Map map = httpClientUtil.send(goPayBean.aggregationToList());
+//                Map map = new HashMap();
                 String payStat = (String) map.get("PayStat");
                 MortgageDeduction mortgageDeduction = goPayBean.transToMortgageDeduction();
                 mortgageDeduction.setResult(payStat);

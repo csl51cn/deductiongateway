@@ -15,7 +15,7 @@ import java.util.Date;
  *
  * @author sili.chen
  */
-@Entity(name = "BU_MORTGAGEDEUCTION")
+@Entity(name = "BU_MORTGAGEDEUCTION_TEST")
 public class MortgageDeduction {
 
     @Id
@@ -141,18 +141,18 @@ public class MortgageDeduction {
         goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
         goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
         goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-//        goPayBean.setParam1("0410");//开户行号
-//        goPayBean.setParam2("0");//卡折标志
-//        goPayBean.setParam3("6216261000000000018");//卡号/折号
-//        goPayBean.setParam4("全渠道");//持卡人姓名
-//        goPayBean.setParam5("01");//证件类型
-//        goPayBean.setParam6("341126197709218366"); //证件号
-        goPayBean.setParam1(this.getParam1());//开户行号
-        goPayBean.setParam2(this.getParam2());//卡折标志
-        goPayBean.setParam3(this.getParam3());//卡号/折号
-        goPayBean.setParam4(this.getParam4());//持卡人姓名
-        goPayBean.setParam5(this.getParam5());//证件类型
-        goPayBean.setParam6(this.getParam6()); //证件号
+        goPayBean.setParam1("0410");//开户行号
+        goPayBean.setParam2("0");//卡折标志
+        goPayBean.setParam3("6216261000000000018");//卡号/折号
+        goPayBean.setParam4("全渠道");//持卡人姓名
+        goPayBean.setParam5("01");//证件类型
+        goPayBean.setParam6("341126197709218366"); //证件号
+//        goPayBean.setParam1(this.getParam1());//开户行号
+//        goPayBean.setParam2(this.getParam2());//卡折标志
+//        goPayBean.setParam3(this.getParam3());//卡号/折号
+//        goPayBean.setParam4(this.getParam4());//持卡人姓名
+//        goPayBean.setParam5(this.getParam5());//证件类型
+//        goPayBean.setParam6(this.getParam6()); //证件号
         goPayBean.setParam7("");
         goPayBean.setParam8("");
         goPayBean.setParam9("");
@@ -179,7 +179,7 @@ public class MortgageDeduction {
         if (StringUtils.isNotBlank(target)) {
             shareData += ";" + this.transFwfCode() + "^" + splitData2 + ";";
         }
-//        shareData = "00010001^1;00010002^1";
+       shareData = "00010001^1;00010002^1";
         return shareData;
     }
 
