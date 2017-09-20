@@ -109,7 +109,7 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
-     * @param reGenerate 扣款结果页面发起的代扣需要重新生成数据
+     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
@@ -128,6 +128,9 @@ public class MortgageDeductionController {
                     MortgageDeduction newMortgageDeduction = new MortgageDeduction();
                     BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
                     newMortgageDeduction.setId(null);
+                    newMortgageDeduction.setIssuccess("2");
+                    newMortgageDeduction.setErrorResult(null);
+                    newMortgageDeduction.setType("1");
                     newMortgageDeduction.setCreateDate(new Date());
                     mortgageDeductionList.add(newMortgageDeduction);
                 }

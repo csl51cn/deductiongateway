@@ -214,6 +214,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
             goPayBean.setChkValue(chkValue);
             this.updateMortgageDeduction(mortgageDeduction, goPayBean);
+
             try {
                 Map map = httpClientUtil.send(goPayBean.aggregationToList());
                 String payStat = (String) map.get("PayStat");
@@ -226,6 +227,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
             }
         }
 

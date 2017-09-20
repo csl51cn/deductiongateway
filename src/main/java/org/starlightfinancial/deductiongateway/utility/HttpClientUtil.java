@@ -5,6 +5,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -28,7 +29,6 @@ public class HttpClientUtil {
     public static Map send(List<BasicNameValuePair> nvps) throws Exception {
         //批量发送扣款通信相关的对象
         Map map = new HashMap();
-//        CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
         HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClientBuilder.create();
         //信任所有证书,跳过证书验证
         configureHttpClient(httpAsyncClientBuilder);
@@ -104,7 +104,7 @@ public class HttpClientUtil {
 
 
     /**
-     * 配置HttpAsyncClientBuilder,信任所有证书
+     * 配置HttpAsyncClientBuilder,信任所有证书,重定向策略
      * @param clientBuilder
      */
     public static void configureHttpClient(HttpAsyncClientBuilder clientBuilder)
@@ -121,6 +121,8 @@ public class HttpClientUtil {
             }).build();
 
             clientBuilder.setSSLContext(sslContext);
+
+            clientBuilder.setRedirectStrategy(new LaxRedirectStrategy() );//设置重定向策略,如果是重定向,继续访问
 
         }catch(Exception e)
         {

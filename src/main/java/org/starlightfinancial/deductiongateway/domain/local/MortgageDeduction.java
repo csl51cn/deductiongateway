@@ -93,7 +93,7 @@ public class MortgageDeduction {
     private String isoffs;
 
     @Column(name = "type")
-    private String type;//type为0时表示存放扣款统计的结果，type为1时表示存放扣款信息的维护
+    private String type;//type为0表示已发起过代扣，type为1时未发起过代扣
 
     @Column(name = "target")
     private String target;
@@ -176,9 +176,9 @@ public class MortgageDeduction {
     }
 
     private String getShareData(int m1, int m2) {
-        String shareData = "00145111^" + m1 + ";";
+        String shareData = "00145111^" + m1;
         if (StringUtils.isNotBlank(target) && m2 != 0) {
-            shareData += this.transFwfCode() + "^" + m2 + ";";
+            shareData += ";" + this.transFwfCode() + "^" + m2 + ";";
         }
         // shareData = "00010001^1;00010002^1";
         return shareData;

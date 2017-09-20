@@ -50,35 +50,36 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         String ordAmt = result[5]; //订单金额
         String ordState = result[10].split("-")[0]; //订单状态
         ordState = ErrorCodeEnum.getCodeByNewCode(ordState);
-        if (ordState == null ){
-            log.info("对账时订单状态未获取到,订单号:"+ordId);
+        if (ordState == null) {
+            log.info("对账时订单状态未获取到,订单号:" + ordId);
             return;
         }
 
         MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
-//        if(mortgageDeduction != null){
-//            mortgageDeduction.setResult(ordState);
-//            mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
-//            if("1001".equals(ordState)){
-//                mortgageDeduction.setIssuccess("1");
-//            }else {
-//                mortgageDeduction.setIssuccess("0");
-//            }
-//            mortgageDeduction.setCheckState("1");
-//            mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
-//        }
         if (mortgageDeduction != null) {
-            if (mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2()).doubleValue() == Double.valueOf(ordAmt)
-                    && mortgageDeduction.getResult().equals(ordState)) {
-                mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_SUCESS, ordId);
-            } else {
-                if (StringUtils.equals(Constant.SUCCESS, ordState)) {
-                    mortgageDeduction.setResult(Constant.SUCCESS);
+            if (StringUtils.isBlank(mortgageDeduction.getErrorResult())) {//应对扣款失败无返回页面的情况
+                mortgageDeduction.setResult(ordState);
+                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
+                if ("1001".equals(ordState)) {
                     mortgageDeduction.setIssuccess("1");
-                    mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
-                    mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+                } else {
+                    mortgageDeduction.setIssuccess("0");
                 }
-                mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_FAILURE, ordId);
+                mortgageDeduction.setCheckState("1");
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+            } else {//应对正常返回扣款后页面的情况
+                if (mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2()).doubleValue() == Double.valueOf(ordAmt)
+                        && mortgageDeduction.getResult().equals(ordState)) {
+                    mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_SUCESS, ordId);
+                } else {
+                    if (StringUtils.equals(Constant.SUCCESS, ordState)) {
+                        mortgageDeduction.setResult(Constant.SUCCESS);
+                        mortgageDeduction.setIssuccess("1");
+                        mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
+                        mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+                    }
+                    mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_FAILURE, ordId);
+                }
             }
         }
     }

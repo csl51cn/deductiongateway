@@ -28,13 +28,13 @@ public class AutoBatchAssembler extends Assembler {
         List<AutoBatchDeduction> list = ((Splitter) this.route).getDeductionList();
         for (AutoBatchDeduction autoBatchDeduction : list) {
             GoPayBean goPayBean = autoBatchDeduction.transToGoPayBean();
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
-            goPayBean.setChkValue(chkValue);
             goPayBean.setParam1(handleBankName(goPayBean.getParam1()));
             goPayBean.setParam5(handleCertificateType(goPayBean.getParam5()));
+            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
             if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                 throw new Exception("银联报文签名异常");
             }
+            goPayBean.setChkValue(chkValue);
             getResult().add(goPayBean);
             System.out.println(goPayBean);
         }
