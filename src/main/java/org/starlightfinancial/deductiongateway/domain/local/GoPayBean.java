@@ -95,7 +95,7 @@ public class GoPayBean {
         mortgageDeduction.setOrderDesc(OrdDesc);
         mortgageDeduction.setSplitType(ShareType);
         mortgageDeduction.setSplitData2(splitData2);
-        mortgageDeduction.setCreatId(14);
+        mortgageDeduction.setCreatId(1);
         mortgageDeduction.setCreateDate(new Date());
         mortgageDeduction.setIssuccess("");
         mortgageDeduction.setErrorResult("");

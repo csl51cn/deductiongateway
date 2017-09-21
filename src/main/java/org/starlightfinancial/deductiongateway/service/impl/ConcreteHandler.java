@@ -59,7 +59,7 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
                     if (StringUtils.equals(Constant.SUCCESS, payStat)) {
                         mortgageDeduction.setIssuccess("1");
                     } else {
-                        payStat = "9999";
+                       // payStat = "9999";
                         mortgageDeduction.setIssuccess("0");
                     }
                     mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
