@@ -29,7 +29,7 @@ public class ScheduledTaskService {
 
     public JobParameters jobParameter;
 
-    @Scheduled(cron = "00 00 06 * * ? ")
+    @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
         System.out.println("执行了吗");
         jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
