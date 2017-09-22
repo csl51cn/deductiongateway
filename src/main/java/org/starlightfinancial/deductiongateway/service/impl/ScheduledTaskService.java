@@ -23,9 +23,6 @@ public class ScheduledTaskService {
     @Qualifier("autoDeduction")
     Job autoDeduction;
 
-    @Autowired
-    @Qualifier("accountAutoBatchImport")
-    Job accountAutoBatchImport;
 
     public JobParameters jobParameter;
 
@@ -36,11 +33,5 @@ public class ScheduledTaskService {
         jobLauncher.run(autoDeduction, jobParameter);
     }
 
-    @Scheduled(cron = "00 20 04 * * ? ")
-    public void executeAccountAutoBatchImport() throws Exception {
-        System.out.println("执行了吗");
-        jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
-        jobLauncher.run(accountAutoBatchImport, jobParameter);
 
-    }
 }
