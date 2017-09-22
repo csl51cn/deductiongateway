@@ -118,7 +118,7 @@ public class MortgageDeduction {
         goPayBean.setContractId(contractNo);//设置合同编号
         goPayBean.setCustomerName(customerName);//设置客户名称
         goPayBean.setContractNo(contractNo);//设置合同编号
-        goPayBean.setOrgManagerId(this.transFwfCode());//设置服务费的管理公司
+        goPayBean.setOrgManagerId(target);//设置服务费的管理公司
         goPayBean.setRePlanId("");//设置还款计划的id
         goPayBean.setSplitData1(splitData1);
         goPayBean.setSplitData2(splitData2);
@@ -166,19 +166,19 @@ public class MortgageDeduction {
         return goPayBean;
     }
 
-    private String transFwfCode() {
-        //处理服务费管理公司
-        if (StringUtils.isNotBlank(target) && "铠岳".equals(target)) {
-            return "00145112";
-        } else {
-            return "00160808";
-        }
-    }
+//    private String transFwfCode() {
+//        //处理服务费管理公司
+//        if (StringUtils.isNotBlank(target) && "铠岳".equals(target)) {
+//            return "00145112";
+//        } else {
+//            return "00160808";
+//        }
+//    }
 
     private String getShareData(int m1, int m2) {
         String shareData = "00145111^" + m1;
         if (StringUtils.isNotBlank(target) && m2 != 0) {
-            shareData += ";" + this.transFwfCode() + "^" + m2 + ";";
+            shareData += ";" + target + "^" + m2 + ";";
         }
         // shareData = "00010001^1;00010002^1";
         return shareData;
