@@ -69,7 +69,7 @@
                     <a href="/main.do">主页</a>
                     <i class="icon-angle-right"></i>
                 </li>
-                <li><a href="/extraprocessing.do">额外处理</a></li>
+                <li><a href="/extraprocessing.do">付易贷自动代扣开关</a></li>
             </ul>
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
@@ -102,56 +102,6 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                             <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
-                        </div>
-                    </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
-            <div class="modal fade" id="editModal" style="width: 600px">
-                <div class="modal-dialog">
-                    <div class="modal-content message_align">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">×</span></button>
-                            <h4 class="modal-title" id="modalTitle">新增限额</h4>
-                        </div>
-                        <div class="modal-body">
-                            <form id="editForm">
-                                <table class="table">
-                                    <tbody>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_bankcode">银行代码</label></td>
-                                        <td><input type="text" name="bankCode" id="txt_bankcode" placeholder="银行代码">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_bankname">银行名称</label></td>
-                                        <td><input type="text" name="bankName" id="txt_bankname" placeholder="银行名称">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_cardtype">卡性质</label></td>
-                                        <td>
-                                            <select id="txt_cardtype" name="cardType">
-                                                <option value="0">借记卡</option>
-                                                <option value="1">贷记卡</option>
-                                                <option value="1">准贷记卡</option>
-                                            </select>
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_singlelimit">单笔单卡限额</label></td>
-                                        <td><input type="text" name="singleLimit" id="txt_singlelimit"
-                                                   placeholder="单笔单卡限额"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_singledaylimit">单日单卡限额</label></td>
-                                        <td><input type="text" name="singleDayLimit" id="txt_singledaylimit"
-                                                   placeholder="单日单卡限额"></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </form>
                         </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
@@ -238,7 +188,7 @@
         title: '产品类别'
     }, {
         field: 'status',
-        title: '节假日自动代扣状态',
+        title: '自动代扣状态',
         formatter: function (value, row, index) {
             if (value == 0) {
                 return "关闭";
