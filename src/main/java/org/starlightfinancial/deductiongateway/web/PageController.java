@@ -52,5 +52,10 @@ public class PageController {
         return "union-pay";
     }
 
+    @RequestMapping("/extraprocessing.do")
+    public String toExtraProcessingPage() {
+        return "extra-processing";
+    }
+
 }
 

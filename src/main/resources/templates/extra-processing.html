@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>限额管理</title>
+    <title>额外处理</title>
     <title th:include="common :: #header" th:remove="tag"></title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-editable.css" rel="stylesheet">
@@ -69,7 +69,7 @@
                     <a href="/main.do">主页</a>
                     <i class="icon-angle-right"></i>
                 </li>
-                <li><a href="/limitmanager.do">限额管理</a></li>
+                <li><a href="/extraprocessing.do">额外处理</a></li>
             </ul>
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
@@ -88,7 +88,24 @@
                     </div>
                 </div>
             </div>
-
+            <div class="modal fade" id="confirmModal">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
             <div class="modal fade" id="editModal" style="width: 600px">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
@@ -136,30 +153,15 @@
                                 </table>
                             </form>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
-                        </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>卡号管理</h2>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>额外管理</h2>
                     </div>
                     <div class="box-content">
-                        <div>
-                            <form class="form-horizontal" id="form">
-                                <table class="table-bordered">
-                                    <tr with="33%">
-                                        <td>
-                                            <input type="button" id="addBtn" value="新增"/>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </form>
-                        </div>
                         <table id="table"></table>
                     </div>
                 </div><!--/span-->
@@ -184,10 +186,44 @@
 
 
 <script type="text/javascript" th:inline="javascript">
+    window.operateEvents = {
+        'click .change-status': function (e, value, row, index) {
+            $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
+            $(".btn-success").click(function () {
+                $.ajax({
+                    url: "/extraProcessingController/updateProcessing.do",
+                    method: "POST",
+                    data: {"ids": row.id},
+                    success: function (data) {
+                        if ("1" == data) {
+                            setTimeout("location.reload();", 4020);
+                            noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                });
+            })
+        }
+    };
+
+    function operateFormatter(value, row, index) {
+        return [
+            '<button type="button" id="changeBtn' + index + '" class="change-status btn btn-default  btn-sm" style="margin-right:15px;">更改自动代扣状态</button>'
+        ].join('');
+    }
+    ;
+
     var columns = [{
-        field: 'state',
-        checkbox: true
-    }, {
         field: 'number',
         title: '序号',
         formatter: function (value, row, index) {
@@ -198,64 +234,31 @@
         field: 'id',
         title: 'id'
     }, {
-        field: 'bankCode',
-        title: '银行代码'
+        field: 'product',
+        title: '产品类别'
     }, {
-        field: 'bankName',
-        title: '银行名称'
-    }, {
-        field: 'cardType',
-        title: '卡性质',
+        field: 'status',
+        title: '节假日自动代扣状态',
         formatter: function (value, row, index) {
             if (value == 0) {
-                return "借记卡";
+                return "关闭";
             } else if (value == 1) {
-                return "贷记卡";
-            } else if (value == 2) {
-                return "准贷记卡";
-            } else {
-                return "未知";
+                return "开启";
             }
         }
     }, {
-        field: 'singleLimit',
-        title: '单笔单卡限额',
-        editable: {
-            type: 'text',
-            title: '单笔单卡限额',
-            validate: function (v) {
-                if (!v) return '单笔单卡限额不能为空';
-            }
-        },
-        formatter:function (value, row, index) {
-            if(value == "-1"){
-                return "无限额";
-            }
-            return value;
-        }
-    }, {
-        field: 'singleDayLimit',
-        title: '单日单卡限额',
-        editable: {
-            type: 'text',
-            title: '单日单卡限额',
-            validate: function (v) {
-                if (!v) return '单日单卡限额不能为空';
-            }
-        },
-        formatter:function (value, row, index) {
-            if(value == "-1"){
-                return "无限额";
-            }
-            return value;
-        }
+        field: 'operate',
+        title: '操作',
+        align: 'center',
+        events: operateEvents,
+        formatter: operateFormatter
     }];
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
                 method: "POST",
                 contentType: "application/x-www-form-urlencoded",
-                url: "/limitManagerController/queryLimit.do",
+                url: "/extraProcessingController/queryProcessiong.do",
                 queryParams: queryParams,
                 sidePagination: "server",
                 pageSize: 10,
@@ -265,7 +268,7 @@
                 height: $(window).height() - 300,
                 pagination: true,
                 columns: columns,
-                clickEdit:true,
+                clickEdit: true,
                 rowStyle: function rowStyle(row, index) {
                     if (index % 2 == 0) {
                         return {
@@ -280,27 +283,7 @@
                     }
 
                 },
-                onEditableSave: function (field, row, oldValue, $el) {
-                    $.ajax({
-                        type: "post",
-                        url: "/limitManagerController/saveOrUpdateLimit.do",
-                        data: row,
-                        dataType: 'JSON',
-                        success: function (data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                            if (data == "1") {
-                                noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                            } else {
-                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                            }
-                        },
-                        error: function () {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        },
-
-                    });
-                },
-                OnClickRow:function (e, row, $element, field){
+                OnClickRow: function (e, row, $element, field) {
 
                 }
             });

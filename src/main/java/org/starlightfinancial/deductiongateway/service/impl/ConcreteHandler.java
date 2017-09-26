@@ -13,10 +13,7 @@ import org.starlightfinancial.deductiongateway.service.Handler;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -52,8 +49,8 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
                 MortgageDeduction mortgageDeduction = goPayBean.transToMortgageDeduction();
                 mortgageDeduction.setPayTime(new Date());
                 try {       //应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
-                    Map map = httpClientUtil.send(goPayBean.aggregationToList());
-//                Map map = new HashMap(); //方便测试
+//                    Map map = httpClientUtil.send(goPayBean.aggregationToList());
+                    Map map = new HashMap(); //方便测试
                     String payStat = (String) map.get("PayStat");
                     mortgageDeduction.setResult(payStat);
                     if (StringUtils.equals(Constant.SUCCESS, payStat)) {
