@@ -93,14 +93,15 @@ public class MortgageDeductionController {
      * @param customerName
      * @param pageBean
      * @param type         0:已执行代扣的数据 1:未执行
+     * @param contractNo   合同编号
      * @param session
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/queryDeductionData.do")
     @ResponseBody
-    public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
+    public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, HttpSession session) {
         endDate = Utility.toMidNight(endDate);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, getLoginUserId(session));
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, contractNo.trim(), getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 

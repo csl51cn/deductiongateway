@@ -289,11 +289,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * @param customerName
      * @param pageBean
      * @param type         0:已执行代扣,1:未代扣数据
+     * @param contractNo   合同编号
      * @param creatid
      * @return
      */
     @Override
-    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
+    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type,String contractNo, int creatid) {
         PageRequest pageRequest = buildPageRequest(pageBean, type);
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
             @Override
@@ -302,8 +303,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
                 //客户名非空判断。不为空则加此条件
-                if (StringUtils.isNotEmpty(customerName)) {
+                if (StringUtils.isNotBlank(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
+                }
+                //合同号非空判断。不为空则加此条件
+                if (StringUtils.isNotBlank(contractNo)) {
+                    predicates.add(criteriaBuilder.equal(root.get("contractNo"), contractNo));
                 }
                 String[] typeArr = type.split(",");
                 predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
