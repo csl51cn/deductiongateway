@@ -116,4 +116,11 @@ public class EncryptHelper {
 		}
 		return b2;
 	}
+
+	public static void main(String[] args) {
+        EncryptHelper encryptHelper = new EncryptHelper();
+        String encString = encryptHelper.getEncString("123456a");
+        System.out.println(encString);
+
+    }
 }
