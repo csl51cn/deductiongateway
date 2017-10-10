@@ -121,16 +121,18 @@
                                         <td><input size="16" type="text" id="startDate" class="form_datetime"
                                                    name="startDate" style="width: 150px;"/></td>
                                         <td>结束日期</td>
-                                        <td >
+                                        <td>
                                             <input size="16" type="text" id="endDate" class="form_datetime"
-                                                   name="endDate"  style="width: 150px;"/></td>
+                                                   name="endDate" style="width: 150px;"/></td>
                                         <td>客户名称</td>
-                                        <td  >
-                                            <input type="text" class="" id="customerName" name="customerName"  style="width: 150px;"/>
+                                        <td>
+                                            <input type="text" class="" id="customerName" name="customerName"
+                                                   style="width: 150px;"/>
                                         </td>
                                         <td>合同号</td>
-                                        <td >
-                                            <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
                                         <td rowspan="2">
                                             <input type="button" id="queryBtn" value="查询"/>
                                             <input type="button" id="exportBtn" value="导出结果"/>
@@ -228,13 +230,20 @@
         }
     };
     function operateFormatter(value, row, index) {
-        if (row.creatId == staffId && "1" != row.issuccess) {
+//        if (row.creatId == staffId && "1" != row.issuccess) {
+//            return [
+//                '<button type="button" id="deductionBtn' + index + '" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>',
+//                '<button type="button" id="manualConfirmBtn' + index + '" class="manualConfirm btn btn-default  btn-sm" style="margin-right:15px;">人工确认</button>'
+//            ].join('');
+//
+//        }
+        if (((row.creatId == staffId ) || (row.creatId == 113 && ((staffId == 113) || (staffId == 2371) || (staffId == 1281) || (staffId == 6436) || (staffId == 2338)))) && "1" != row.issuccess) {
             return [
                 '<button type="button" id="deductionBtn' + index + '" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>',
                 '<button type="button" id="manualConfirmBtn' + index + '" class="manualConfirm btn btn-default  btn-sm" style="margin-right:15px;">人工确认</button>'
             ].join('');
-
         }
+
     }
     ;
     var value = 0;

@@ -46,17 +46,17 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
 
             List<GoPayBean> result = assembler.getResult();
             for (GoPayBean goPayBean : result) {
+                goPayBean.setParam6(goPayBean.getParam6().toUpperCase());//将身份证号中的X转换为大写
                 MortgageDeduction mortgageDeduction = goPayBean.transToMortgageDeduction();
                 mortgageDeduction.setPayTime(new Date());
                 try {       //应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
-//                    Map map = httpClientUtil.send(goPayBean.aggregationToList());
-                    Map map = new HashMap(); //方便测试
+                    Map map = httpClientUtil.send(goPayBean.aggregationToList());
+//                    Map map = new HashMap(); //方便测试
                     String payStat = (String) map.get("PayStat");
                     mortgageDeduction.setResult(payStat);
                     if (StringUtils.equals(Constant.SUCCESS, payStat)) {
                         mortgageDeduction.setIssuccess("1");
                     } else {
-                       // payStat = "9999";
                         mortgageDeduction.setIssuccess("0");
                     }
                     mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
