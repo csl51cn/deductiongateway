@@ -7,8 +7,7 @@ import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,6 +17,10 @@ import java.util.Date;
  */
 @Entity
 public class AutoBatchDeduction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
     @Column(name = "dateid")
     private Integer dateId;
@@ -144,6 +147,14 @@ public class AutoBatchDeduction {
         return shareData;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public Integer getDateId() {
         return dateId;
     }
@@ -259,7 +270,8 @@ public class AutoBatchDeduction {
     @Override
     public String toString() {
         return "AutoBatchDeduction{" +
-                "dateId=" + dateId +
+                "id=" + id +
+                ", dateId=" + dateId +
                 ", busiNo='" + busiNo + '\'' +
                 ", bankName='" + bankName + '\'' +
                 ", cardAndPassbook='" + cardAndPassbook + '\'' +

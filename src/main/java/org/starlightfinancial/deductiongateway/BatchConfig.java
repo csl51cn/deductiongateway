@@ -5,6 +5,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -15,8 +16,8 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.support.DatabaseType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -25,8 +26,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.starlightfinancial.deductiongateway.common.MyJobListener;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRowMapper;
-import org.starlightfinancial.deductiongateway.domain.local.ExtraProcessing;
-import org.starlightfinancial.deductiongateway.domain.local.ExtraProcessingRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeductionRowMapper;
 import org.starlightfinancial.deductiongateway.service.impl.AutoBatchItemWriter;
@@ -44,8 +43,6 @@ import java.util.List;
 @EnableScheduling
 public class BatchConfig {
 
-    @Autowired
-    private ExtraProcessingRepository extraProcessingRepository;
 
     @Bean
     public JobRepository jobRepository(@Qualifier("localDataSource") DataSource dataSource,
@@ -239,14 +236,14 @@ public class BatchConfig {
     }
 
     @Bean(name = "r1")
-    public ItemReader<AutoBatchDeduction> reader(@Qualifier("remoteDataSource") DataSource dataSource) {
+    @StepScope
+    public ItemReader<AutoBatchDeduction> reader(@Qualifier("remoteDataSource") DataSource dataSource, @Value("#{jobParameters['autoSwitch']}") String autoSwitch) {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
 
-        ExtraProcessing extraProcessing = extraProcessingRepository.findOne(1); //付易贷id是1
         String sql = null;
-        if ("1".equals(extraProcessing.getStatus())) { //状态1代表开启自动代扣,0代表关闭自动代扣
+        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表开启自动代扣,0代表关闭自动代扣
             sql = "SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
         } else {
             sql = "SELECT a.* FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +

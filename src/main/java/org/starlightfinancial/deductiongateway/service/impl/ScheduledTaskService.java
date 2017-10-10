@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
+import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
+
+import java.time.LocalDate;
 
 /**
  * Created by sili.chen on 2017/8/23
@@ -23,14 +27,23 @@ public class ScheduledTaskService {
     @Qualifier("autoDeduction")
     Job autoDeduction;
 
+    @Autowired
+    private HolidayRepository holidayRepository;
 
-    public JobParameters jobParameter;
+    public JobParameters jobParameters;
 
     @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
         System.out.println("执行了吗");
-        jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
-        jobLauncher.run(autoDeduction, jobParameter);
+        Holiday holiday = holidayRepository.findByNonOverTime(LocalDate.now().toString());
+        String autoSwitch = null;
+        if (holiday == null) { //holiday为空表示非节假日,开启付易贷自动代扣
+            autoSwitch = "1";
+        } else {
+            autoSwitch = "0";
+        }
+        jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
+        jobLauncher.run(autoDeduction, jobParameters);
     }
 
 
