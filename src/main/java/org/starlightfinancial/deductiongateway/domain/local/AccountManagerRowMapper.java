@@ -22,6 +22,8 @@ public class AccountManagerRowMapper implements RowMapper {
     public static final String CERTIFICATETYPE_COLUMN = "certificatetype";
     public static final String CERTIFICATENO_COLUMN = "certificateno";
     public static final String SORT_COLUMN = "sort";
+    public static final String LOANDATE_COLUMN = "loandate";
+
 
 
 
@@ -38,6 +40,7 @@ public class AccountManagerRowMapper implements RowMapper {
         accountManager.setCertificateNo(resultSet.getString(CERTIFICATENO_COLUMN));
         accountManager.setSort(resultSet.getInt(SORT_COLUMN));
         accountManager.setChangeTime(new Date());
+        accountManager.setLoanDate(resultSet.getDate(LOANDATE_COLUMN));
         return accountManager;
     }
 }

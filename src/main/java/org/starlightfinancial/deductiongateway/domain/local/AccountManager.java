@@ -81,6 +81,12 @@ public class AccountManager {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS" ,timezone = "GMT+8")
     private Date changeTime;
 
+    /**
+     * 放款时间
+     */
+    @Column(name = "loandate")
+    private Date loanDate;
+
 
     public Integer getId() {
         return id;
@@ -170,6 +176,14 @@ public class AccountManager {
         this.changeTime = changeTime;
     }
 
+    public Date getLoanDate() {
+        return loanDate;
+    }
+
+    public void setLoanDate(Date loanDate) {
+        this.loanDate = loanDate;
+    }
+
     @Override
     public String toString() {
         return "AccountManager{" +
@@ -184,6 +198,7 @@ public class AccountManager {
                 ", certificateNo='" + certificateNo + '\'' +
                 ", sort=" + sort +
                 ", changeTime=" + changeTime +
+                ", loanDate=" + loanDate +
                 '}';
     }
 }

@@ -125,7 +125,7 @@
                                         <td><input type="text" class="" id="accountName" name="accountName"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="importBtn" value="批量导入昨日放款代扣卡"/>
+                                            <input type="button" id="importBtn" value="批量导入放款代扣卡"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -290,6 +290,14 @@
                         if ("1" == data) {
                             setTimeout("location.reload();", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
                         } else {
                             noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                         }

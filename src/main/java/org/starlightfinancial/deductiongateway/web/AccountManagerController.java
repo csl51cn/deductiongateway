@@ -21,6 +21,9 @@ import org.starlightfinancial.deductiongateway.service.AccountManagerService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,7 +45,7 @@ public class AccountManagerController {
     @Qualifier("accountAutoBatchImport")
     Job accountAutoBatchImport;
 
-    public JobParameters jobParameter;
+    public JobParameters jobParameters;
 
     /**
      * 根据条件查询卡号
@@ -59,6 +62,7 @@ public class AccountManagerController {
 
     /**
      * 更新记录
+     *
      * @param accountManager
      * @return
      */
@@ -76,21 +80,39 @@ public class AccountManagerController {
 
     /**
      * 手动执行代扣卡批量导入
+     *
      * @return
      */
     @RequestMapping(value = "/executeAccountAutoBatchImport.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public String executeAccountAutoBatchImport() {
+        List<AccountManager> lastAccount = accountManagerService.findLastAccount();
+        String lastLoanDate = null;
+        if (lastAccount.size() > 0) {
+            AccountManager accountManager = lastAccount.get(0);
+            Date loanDate = accountManager.getLoanDate();
+            if (loanDate != null) {
+                lastLoanDate = Utility.convertToString(loanDate);
+            } else {
+                lastLoanDate = setLastLoanDate();
+            }
+        } else {
+            lastLoanDate = setLastLoanDate();
+        }
 
         try {
-            jobParameter = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
-            jobLauncher.run(accountAutoBatchImport, jobParameter);
+            jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("lastLoanDate",lastLoanDate).toJobParameters();
+            jobLauncher.run(accountAutoBatchImport, jobParameters);
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
-            log.debug("代扣卡批量导入失败 ",e);
+            log.debug("代扣卡批量导入失败 ", e);
             return "0";
         }
-        return  "1";
+        return "1";
     }
 
+    private String setLastLoanDate() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        return yesterday.toString();
+    }
 
 }

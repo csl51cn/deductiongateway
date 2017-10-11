@@ -31,15 +31,16 @@ public class AccountManagerServiceImpl implements AccountManagerService {
 
     /**
      * 查询卡号
-     * @param contractNo 合同编号
-     * @param bizNo 业务编号
+     *
+     * @param contractNo  合同编号
+     * @param bizNo       业务编号
      * @param accountName 账户名
-     * @param pageBean 分页对象
+     * @param pageBean    分页对象
      * @return 返回分页对象
      */
     @Override
     public PageBean queryAccount(String contractNo, String bizNo, String accountName, PageBean pageBean) {
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean);
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 1);
 
         Specification<AccountManager> specification = new Specification<AccountManager>() {
             @Override
@@ -71,6 +72,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
 
     /**
      * 更新操作
+     *
      * @param accountManager
      */
     @Override
@@ -79,6 +81,26 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         accountManagerRepository.saveAndFlush(accountManager);
     }
 
+    /**
+     * 查询最后一条记录
+     * @return
+     */
+    @Override
+    public List findLastAccount() {
+        PageBean pageBean = new PageBean();
+        pageBean.setPageSize(1);
+        Specification<AccountManager> specification = new Specification<AccountManager>() {
+            @Override
+            public Predicate toPredicate(Root<AccountManager> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                List<Predicate> predicates = new ArrayList<Predicate>();
+
+                return cb.and(predicates.toArray(new Predicate[]{}));
+            }
+        };
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
+        Page<AccountManager> accountManagers = accountManagerRepository.findAll(specification, pageRequest);
+        return accountManagers.getContent();
+    }
 
 
 }

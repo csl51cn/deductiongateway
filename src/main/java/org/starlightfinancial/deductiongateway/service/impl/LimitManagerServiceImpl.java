@@ -32,7 +32,7 @@ public class LimitManagerServiceImpl implements LimitManagerService {
      */
     @Override
     public PageBean queryAllLimit(PageBean pageBean) {
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean);
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean,1);
         Page<LimitManager> limitManagers = limitManagerRepository.findAll(new Specification<LimitManager>() {
             @Override
             public Predicate toPredicate(Root<LimitManager> root, CriteriaQuery<?> query, CriteriaBuilder cb) {

@@ -96,9 +96,8 @@ public class BatchConfig {
     }
 
     @Bean(name = "r0")
-    public ItemReader<AccountManager> accountAutoBatchReader(@Qualifier("remoteDataSource") DataSource dataSource) {
-        LocalDate now = LocalDate.now();
-        LocalDate yesterday = now.minusDays(1);
+    @StepScope
+    public JdbcCursorItemReader<AccountManager> accountAutoBatchReader(@Qualifier("remoteDataSource") DataSource dataSource, @Value("#{jobParameters['lastLoanDate']}") String lastLoanDate) {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AccountManagerRowMapper());
@@ -109,6 +108,7 @@ public class BatchConfig {
                 " f.Word AS certificatetype, " +
                 " b.客户名称 AS accountName, " +
                 " b.身份证号码 AS certificateno, " +
+                " d.放款日期 AS loandate, " +
                 " g.content AS account, " +
                 " i.Word AS bankname, " +
                 " ( " +
@@ -207,11 +207,9 @@ public class BatchConfig {
                 "AND g.GoBackId = 0 " +
                 "AND h.GoBackId = 0 " +
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
-//                "AND d.放款日期 <= '2017-08-29' " +
-//                "AND d.放款日期 >= '2017-06-2'");
-                "AND d.放款日期 >= '" + yesterday.toString() + "'");
-
-
+//                "AND d.放款日期 <= '2017-10-10' " +
+//                "AND d.放款日期 >= '2012-01-01'");
+                "AND d.放款日期 >= '" + lastLoanDate + "'");
         return jdbcCursorItemReader;
     }
 
