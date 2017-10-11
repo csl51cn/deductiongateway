@@ -237,7 +237,7 @@ public class BatchConfig {
 
     @Bean(name = "r1")
     @StepScope
-    public ItemReader<AutoBatchDeduction> reader(@Qualifier("remoteDataSource") DataSource dataSource, @Value("#{jobParameters['autoSwitch']}") String autoSwitch) {
+    public JdbcCursorItemReader<AutoBatchDeduction> reader(@Qualifier("remoteDataSource") DataSource dataSource, @Value("#{jobParameters['autoSwitch']}") String autoSwitch) {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());

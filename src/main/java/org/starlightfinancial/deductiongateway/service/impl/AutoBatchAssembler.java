@@ -30,6 +30,7 @@ public class AutoBatchAssembler extends Assembler {
             GoPayBean goPayBean = autoBatchDeduction.transToGoPayBean();
             goPayBean.setParam1(handleBankName(goPayBean.getParam1()));
             goPayBean.setParam5(handleCertificateType(goPayBean.getParam5()));
+            goPayBean.setParam6(goPayBean.getParam6().toUpperCase());//将身份证号中的X转换为大写
             String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
             if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                 throw new Exception("银联报文签名异常");
