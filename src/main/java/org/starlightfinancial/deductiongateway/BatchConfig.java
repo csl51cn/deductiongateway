@@ -101,6 +101,7 @@ public class BatchConfig {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AccountManagerRowMapper());
+        String yesterday = LocalDate.now().minusDays(1).toString();
         jdbcCursorItemReader.setSql("SELECT " +
                 " a.date_id  AS dateid , " +
                 " d.合同编号 AS contractno, " +
@@ -209,6 +210,7 @@ public class BatchConfig {
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
 //                "AND d.放款日期 <= '2017-10-10' " +
 //                "AND d.放款日期 >= '2012-01-01'");
+                "AND d.放款日期 <= '"+ yesterday+" 23:59:59'" +
                 "AND d.放款日期 >= '" + lastLoanDate + "'");
         return jdbcCursorItemReader;
     }
