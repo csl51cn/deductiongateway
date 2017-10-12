@@ -211,7 +211,7 @@ public class BatchConfig {
 //                "AND d.放款日期 <= '2017-10-10' " +
 //                "AND d.放款日期 >= '2012-01-01'");
                 "AND d.放款日期 <= '"+ yesterday+" 23:59:59'" +
-                "AND d.放款日期 >= '" + lastLoanDate + "'");
+                "AND d.放款日期 > '" + lastLoanDate + "'");
         return jdbcCursorItemReader;
     }
 
