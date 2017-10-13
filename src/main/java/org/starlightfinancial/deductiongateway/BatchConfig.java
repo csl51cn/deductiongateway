@@ -209,9 +209,9 @@ public class BatchConfig {
                 "AND h.GoBackId = 0 " +
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
 //                "AND d.放款日期 <= '2017-10-10' " +
-//                "AND d.放款日期 >= '2012-01-01'");
+//                "AND d.放款日期 >= '2012-01-01'  ORDER BY d.放款日期");
                 "AND d.放款日期 <= '"+ yesterday+" 23:59:59'" +
-                "AND d.放款日期 > '" + lastLoanDate + "'");
+                "AND d.放款日期 > '" + lastLoanDate + "' ORDER BY d.放款日期");
         return jdbcCursorItemReader;
     }
 
