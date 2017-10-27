@@ -40,7 +40,6 @@ public class AccountManagerServiceImpl implements AccountManagerService {
      */
     @Override
     public PageBean queryAccount(String contractNo, String bizNo, String accountName, PageBean pageBean) {
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 1);
 
         Specification<AccountManager> specification = new Specification<AccountManager>() {
             @Override
@@ -59,7 +58,13 @@ public class AccountManagerServiceImpl implements AccountManagerService {
                 return cb.and(predicates.toArray(new Predicate[]{}));
             }
         };
-
+        long count = accountManagerRepository.count(specification);
+        double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
+        double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
+        if (totalPageCount < pageBean.getPageNumber()) {
+            pageBean.setPageNumber(1);
+        }
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 1);
         Page<AccountManager> accountManagers = accountManagerRepository.findAll(specification, pageRequest);
         if (accountManagers.hasContent()) {
             pageBean.setTotal(accountManagers.getTotalElements());

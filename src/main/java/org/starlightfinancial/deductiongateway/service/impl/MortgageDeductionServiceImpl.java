@@ -241,7 +241,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         BigDecimal bxAmount = mortgageDeduction.getSplitData1();
         BigDecimal fwfAmount = mortgageDeduction.getSplitData2();
 
-        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue()  ||  singleLimit.doubleValue() == -1 ) {
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1) {
             result.add(mortgageDeduction);
         } else {
             result = recurLimit(limitManager, mortgageDeduction);
@@ -294,8 +294,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * @return
      */
     @Override
-    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type,String contractNo, int creatid) {
-        PageRequest pageRequest = buildPageRequest(pageBean, type);
+    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, int creatid) {
+
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -319,6 +319,14 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             }
         };
+
+        long count = mortgageDeductionRepository.count(specification);
+        double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
+        double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
+        if (totalPageCount < pageBean.getPageNumber()) {
+            pageBean.setPageNumber(1);
+        }
+        PageRequest pageRequest = buildPageRequest(pageBean, type);
         Page<MortgageDeduction> page = mortgageDeductionRepository.findAll(specification, pageRequest);
         if (page.hasContent()) {
             List<MortgageDeduction> mortgageDeductionList = page.getContent();
