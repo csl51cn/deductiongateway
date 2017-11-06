@@ -3,7 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import java.util.Date;
@@ -29,22 +29,25 @@ public interface MortgageDeductionService {
      * @param list the list
      * @return the list
      */
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list);
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception;
 
     /**
      * 查询代扣数据
+     *
      * @param startDate
      * @param endDate
      * @param customerName
      * @param pageBean
-     * @param type 0:已执行代扣,1:未代扣数据
+     * @param type         0:已执行代扣,1:未代扣数据
+     * @param contractNo   合同编号
      * @param creatid
      * @return
      */
-    PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String  type, int creatid);
+    PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, int creatid);
 
     /**
      * 根据id查询代扣数据
+     *
      * @param ids
      * @return
      */
@@ -52,6 +55,7 @@ public interface MortgageDeductionService {
 
     /**
      * 导出代扣结果excel
+     *
      * @param startDate
      * @param endDate
      * @param customerName
@@ -61,12 +65,14 @@ public interface MortgageDeductionService {
 
     /**
      * 更新代扣数据
+     *
      * @param list
      */
     void updateMortgageDeductions(List<MortgageDeduction> list);
 
     /**
      * 删除代扣数据
+     *
      * @param list
      */
     void deleteMortgageDeductions(List<MortgageDeduction> list);

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>主页面</title>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <link href="/css/jquery.noty.css" rel="stylesheet">
+    <link href="/css/uploadify.css" rel="stylesheet">
+    <link href="/css/fileinput.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="main.html"><span>润通代扣系统</span></a>
+
+            <!-- start: Header Menu -->
+            <div class="nav-no-collapse header-nav">
+                <ul class="nav pull-right">
+                    <!-- start: User Dropdown -->
+                    <li class="dropdown">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-menu-title">
+                                <span>账户设置</span>
+                            </li>
+                            <li><a href="/logout.do"><i class="halflings-icon off"></i> 退出</a></li>
+                        </ul>
+                    </li>
+                    <!-- end: User Dropdown -->
+                </ul>
+            </div>
+            <!-- end: Header Menu -->
+
+        </div>
+    </div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/unionpay.do">导入银联订单信息</a></li>
+            </ul>
+
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>导入银联订单信息</h2>
+                    </div>
+                    <div class="box-content">
+                        <form class="form-horizontal" id="fileInputForm">
+                            <fieldset>
+
+                                <div class="control-group">
+                                    <label class="control-label" for="uploadify">文件上传</label>
+                                    <div class="controls">
+                                        <input class="input-file uniform_on" id="uploadify" type="file"
+                                               name="uploadFile">
+                                        <div id="fileQueue"></div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+
+        </div><!--/row-->
+    </div><!--/.fluid-container-->
+
+    <!-- end: Content -->
+</div><!--/#content.span10-->
+</div><!--/fluid-row-->
+
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/piexif.min.js"></script>
+<script src="/js/sortable.min.js"></script>
+<script src="/js/purify.min.js"></script>
+<script src="/js/fileinput.min.js"></script>
+<script src="/js/theme.min.js"></script>
+<script src="/js/zh.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#uploadify").fileinput({
+            language: 'zh', //设置语言
+            uploadUrl: "/unionPayController/upload.do", //上传的地址
+            allowedFileExtensions: ['xls'],//['xls', 'xlsx']指定文件后缀
+            showUpload: true, //是否显示上传按钮
+            showCaption: true,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            maxFileCount: 10,//最大上传文件数限制
+            uploadAsync: true,
+            maxFileSize: 10240
+        });
+        //导入文件上传完成之后的事件
+        $("#uploadify").on("fileuploaded", function (event, data, previewId, index) {
+            var result = data.response.result;
+            var msg = data.response.msg;
+            if ("1" == result) {
+                noty({'text':  msg + '上传成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+            } else {
+                noty({'text':  '上传失败,'+ msg, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            }
+        })
+    })
+</script>
+<!--end : JavaScript-->
+</body>
+</html>

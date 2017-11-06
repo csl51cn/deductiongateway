@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.common.SameUrlData;
-import org.starlightfinancial.deductiongateway.domain.MD5Value;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.SysUser;
+import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.service.ReconciliationService;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -39,9 +40,10 @@ public class MortgageDeductionController {
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
-
     @Autowired
     private SystemService systemService;
+    @Autowired
+    private ReconciliationService reconciliationService;
 
     /**
      * 代扣账户数据文件导入
@@ -91,14 +93,15 @@ public class MortgageDeductionController {
      * @param customerName
      * @param pageBean
      * @param type         0:已执行代扣的数据 1:未执行
+     * @param contractNo   合同编号
      * @param session
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/queryDeductionData.do")
     @ResponseBody
-    public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, HttpSession session) {
-        endDate = Utility.addDay(endDate, 1);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, getLoginUserId(session));
+    public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, HttpSession session) {
+        endDate = Utility.toMidNight(endDate);
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, contractNo.trim(), getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 
@@ -107,7 +110,7 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
-     * @param reGenerate 扣款结果页面发起的代扣需要重新生成数据
+     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
@@ -126,10 +129,13 @@ public class MortgageDeductionController {
                     MortgageDeduction newMortgageDeduction = new MortgageDeduction();
                     BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
                     newMortgageDeduction.setId(null);
+                    newMortgageDeduction.setIssuccess("2");
+                    newMortgageDeduction.setErrorResult(null);
+                    newMortgageDeduction.setType("1");
                     newMortgageDeduction.setCreateDate(new Date());
                     mortgageDeductionList.add(newMortgageDeduction);
                 }
-                    list = mortgageDeductionList;
+                list = mortgageDeductionList;
             }
             mortgageDeductionService.saveMortgageDeductions(list);
             return "1";
@@ -150,7 +156,7 @@ public class MortgageDeductionController {
      */
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
     public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
-        endDate = Utility.addDay(endDate, 1);
+        endDate = Utility.toMidNight(endDate);
         Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName.trim());
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String fileName = "扣款结果统计报表" + format.format(new Date());
@@ -188,7 +194,7 @@ public class MortgageDeductionController {
     }
 
 
-    @RequestMapping(value="/mortgageDeductionController/deleteMortgageDeductions")
+    @RequestMapping(value = "/mortgageDeductionController/deleteMortgageDeductions")
     @ResponseBody
     public String deleteMortgageDeductions(String ids) {
         try {
@@ -204,7 +210,7 @@ public class MortgageDeductionController {
                 return "0";
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug("删除代扣记录失败", e);
             return "0";
         }
     }

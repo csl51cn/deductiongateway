@@ -7,6 +7,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.domain.*;
+import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.*;
 
@@ -41,6 +42,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     @Autowired
     SysDictRepository sysDictRepository;
+
+    @Autowired
+    HttpClientUtil httpClientUtil;
+
+    @Autowired
+    private LimitManagerRepository limitManagerRepository;
 
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
@@ -152,6 +159,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                             mortgageDeduction.setParam2("0");
                         }
 
+
                         //处理开户行
                         for (int k = 0; k < openBankList.size(); k++) {
                             if (mortgageDeduction.getParam1().equals(openBankList.get(k).getDicValue())) {
@@ -179,7 +187,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     }
                 }
 
-                mortgageDeductionRepository.save(list);
+                for (MortgageDeduction mortgageDeduction : list) {
+                    List<MortgageDeduction> result = this.doSplitAccount(mortgageDeduction);
+                    for (MortgageDeduction deduction : result) {
+                        mortgageDeductionRepository.save(deduction);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,96 +204,81 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     }
 
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) {
-        List<GoPayBean> messages = new ArrayList<GoPayBean>();
-        String splitData;
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception {
         for (int i = 0; i < list.size(); i++) {
-            GoPayBean goPayBean = new GoPayBean();
             MortgageDeduction mortgageDeduction = list.get(i);
-            goPayBean.setContractId(String.valueOf(mortgageDeduction.getApplyMainId()));//设置合同编号
-            goPayBean.setCustomerNo(mortgageDeduction.getCustomerNo());//设置客户编号
-            goPayBean.setCustomerName(mortgageDeduction.getCustomerName());//设置客户名称
-            goPayBean.setContractNo(mortgageDeduction.getContractNo());//设置合同编号
-            goPayBean.setOrgManagerId(mortgageDeduction.getTarget());//设置服务费的管理公司
-            goPayBean.setRePlanId("");//设置还款计划的id
-
-            //计算账户管理费
-            int m1 = 0;
-            int m2 = 0;
-            String amount1 = mortgageDeduction.getSplitData1().toString();
-            String amount2 = mortgageDeduction.getSplitData2().toString();
-            if (StringUtils.isNotBlank(amount1)) {
-                m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
+            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
+            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
+                throw new Exception("银联报文签名异常");
             }
-            if (StringUtils.isNotBlank(amount2)) {
-                m2 = new BigDecimal(amount2).movePointRight(2).intValue();
-            }
-            goPayBean.setOrdAmt(m1 + m2 + "");
-            // 商户分账数据
-            splitData = "00145111^" + m1;
-            if (StringUtils.isNotBlank(goPayBean.getOrgManagerId()) && m2 != 0 ) {
-                splitData += ";" + goPayBean.getOrgManagerId() + "^" + m2 + ";";
-            }
-//            splitData = "00010001^1;00010002^1";
+            goPayBean.setChkValue(chkValue);
+            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
 
-            goPayBean.setSplitData1(new BigDecimal(amount1));
-            goPayBean.setSplitData2(new BigDecimal(amount2));
-            goPayBean.setBusiId("");
-            goPayBean.setOrdId(MerSeq.tickOrder());
-            goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
-            goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
-            goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
-            goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
-            goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
-            goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
-//            goPayBean.setParam1("0410");//开户行号
-//            goPayBean.setParam2("0");//卡折标志
-//            goPayBean.setParam3("6216261000000000018");//卡号/折号
-//            goPayBean.setParam4("全渠道");//持卡人姓名
-//            goPayBean.setParam5("01");//证件类型
-//            goPayBean.setParam6("341126197709218366"); //证件号
-            goPayBean.setParam1(mortgageDeduction.getParam1());//开户行号
-            goPayBean.setParam2(mortgageDeduction.getParam2());//卡折标志
-            goPayBean.setParam3(mortgageDeduction.getParam3());//卡号/折号
-            goPayBean.setParam4(mortgageDeduction.getParam4());//持卡人姓名
-            goPayBean.setParam5(mortgageDeduction.getParam5());//证件类型
-            goPayBean.setParam6(mortgageDeduction.getParam6()); //证件号
-            goPayBean.setParam7("");
-            goPayBean.setParam8("");
-            goPayBean.setParam9("");
-            goPayBean.setParam10("");
-            goPayBean.setOrdDesc("批量代扣款");
-            goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
-            goPayBean.setShareData(splitData);
-            goPayBean.setPriv1("");
-            goPayBean.setCustomIp("");
-            messages.add(goPayBean);
-            this.goPayBeanToMortgageDeduction(mortgageDeduction, goPayBean);
-        }
-
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-        try {
-            List<Map> result = httpClientUtil.sendInformation(messages);
-            Iterator iterator = result.iterator();
-            while (iterator.hasNext()) {
-                Map map = (Map) iterator.next();
-                String ordId = (String) map.get("OrdId");
+            try {
+                Map map = httpClientUtil.send(goPayBean.aggregationToList());
                 String payStat = (String) map.get("PayStat");
-                MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
                 mortgageDeduction.setResult(payStat);
                 if (StringUtils.equals(Constant.SUCCESS, payStat))
                     mortgageDeduction.setIssuccess("1");
                 else
                     mortgageDeduction.setIssuccess("0");
                 mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-                mortgageDeductionRepository.save(mortgageDeduction);
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
             }
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         return null;
+    }
+
+    public List<MortgageDeduction> doSplitAccount(MortgageDeduction mortgageDeduction) {
+        List<MortgageDeduction> result = new ArrayList<>();
+        LimitManager limitManager = limitManagerRepository.findByBankCode(mortgageDeduction.getParam1());
+        BigDecimal singleLimit = limitManager.getSingleLimit();
+        BigDecimal bxAmount = mortgageDeduction.getSplitData1();
+        BigDecimal fwfAmount = mortgageDeduction.getSplitData2();
+
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1) {
+            result.add(mortgageDeduction);
+        } else {
+            result = recurLimit(limitManager, mortgageDeduction);
+        }
+
+        return result;
+    }
+
+    private List recurLimit(LimitManager limitManager, MortgageDeduction mortgageDeduction) {
+        List result = new ArrayList();
+        BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        BigDecimal drawDownAmount = totalAmount;
+        BigDecimal drawDownBxAmount = mortgageDeduction.getSplitData1();
+        BigDecimal drawDownFwfAmount = mortgageDeduction.getSplitData2();
+
+        while (drawDownAmount.doubleValue() > 0) {
+            BigDecimal bxAmount;
+            if (drawDownAmount.doubleValue() > limitManager.getSingleLimit().doubleValue()) {
+                bxAmount = limitManager.getSingleLimit().subtract(drawDownFwfAmount);
+                if (bxAmount.doubleValue() >= limitManager.getSingleLimit().doubleValue()) {
+                    bxAmount = limitManager.getSingleLimit();
+                }
+            } else {
+                bxAmount = drawDownAmount;
+            }
+            MortgageDeduction newObj = new MortgageDeduction();
+            BeanUtils.copyProperties(mortgageDeduction, newObj);
+            newObj.setSplitData1(bxAmount);
+            newObj.setSplitData2(drawDownFwfAmount);
+            drawDownAmount = drawDownAmount.subtract(bxAmount).subtract(drawDownFwfAmount);
+            drawDownBxAmount = drawDownBxAmount.subtract(bxAmount);
+            drawDownFwfAmount = drawDownFwfAmount.subtract(drawDownFwfAmount);
+
+            result.add(newObj);
+        }
+
+        return result;
     }
 
     /**
@@ -291,12 +289,13 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * @param customerName
      * @param pageBean
      * @param type         0:已执行代扣,1:未代扣数据
+     * @param contractNo   合同编号
      * @param creatid
      * @return
      */
     @Override
-    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, int creatid) {
-        PageRequest pageRequest = buildPageRequest(pageBean, type);
+    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, int creatid) {
+
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -304,8 +303,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
                 //客户名非空判断。不为空则加此条件
-                if (StringUtils.isNotEmpty(customerName)) {
+                if (StringUtils.isNotBlank(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
+                }
+                //合同号非空判断。不为空则加此条件
+                if (StringUtils.isNotBlank(contractNo)) {
+                    predicates.add(criteriaBuilder.equal(root.get("contractNo"), contractNo));
                 }
                 String[] typeArr = type.split(",");
                 predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
@@ -316,6 +319,14 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             }
         };
+
+        long count = mortgageDeductionRepository.count(specification);
+        double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
+        double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
+        if (totalPageCount < pageBean.getPageNumber()) {
+            pageBean.setPageNumber(1);
+        }
+        PageRequest pageRequest = buildPageRequest(pageBean, type);
         Page<MortgageDeduction> page = mortgageDeductionRepository.findAll(specification, pageRequest);
         if (page.hasContent()) {
             List<MortgageDeduction> mortgageDeductionList = page.getContent();
@@ -377,8 +388,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         //表头
         String[] headers = new String[]
                 {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)", ""};
-        sheet.setDefaultColumnWidth(15);
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
+        sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
         HSSFFont font = workbook.createFont();
@@ -470,18 +481,31 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             cell = row.createCell(12);
             cell.setCellValue(mortgageDeduction.getErrorResult());
+
             cell = row.createCell(13);
+            String checkState = mortgageDeduction.getCheckState() == null ? "" : mortgageDeduction.getCheckState();
+            if ("0".equals(checkState)) {
+                cell.setCellValue("不一致");
+            } else if ("1".equals(checkState)) {
+                cell.setCellValue("一致");
+            } else {
+                cell.setCellValue("未对账");
+            }
+
+            cell = row.createCell(14);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
-            cell = row.createCell(14);
+            cell = row.createCell(15);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
             } else {
                 cell.setCellValue("");
             }
+
+
             i = i + 1;
         }
         return workbook;
@@ -528,7 +552,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
 
-    private void goPayBeanToMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
+    private void updateMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
         mortgageDeduction.setOrdId(goPayBean.getOrdId());
         mortgageDeduction.setMerId(goPayBean.getMerId());
         mortgageDeduction.setCuryId(goPayBean.getCuryId());
@@ -536,6 +560,5 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
         mortgageDeduction.setPayTime(new Date());
-        mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
     }
 }

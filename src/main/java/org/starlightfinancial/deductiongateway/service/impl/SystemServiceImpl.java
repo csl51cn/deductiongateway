@@ -3,10 +3,10 @@ package org.starlightfinancial.deductiongateway.service.impl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.starlightfinancial.deductiongateway.domain.MD5Value;
-import org.starlightfinancial.deductiongateway.domain.MD5ValueRepository;
-import org.starlightfinancial.deductiongateway.domain.SysUser;
-import org.starlightfinancial.deductiongateway.domain.SysUserRepository;
+import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
+import org.starlightfinancial.deductiongateway.domain.local.MD5ValueRepository;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
+import org.starlightfinancial.deductiongateway.domain.local.SysUserRepository;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.utility.EncryptHelper;
 

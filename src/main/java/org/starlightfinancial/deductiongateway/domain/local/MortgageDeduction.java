@@ -1,4 +1,9 @@
-package org.starlightfinancial.deductiongateway.domain;
+package org.starlightfinancial.deductiongateway.domain.local;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.apache.commons.lang.StringUtils;
+import org.starlightfinancial.deductiongateway.utility.MerSeq;
+import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -75,6 +80,7 @@ public class MortgageDeduction {
     private Date createDate;
 
     @Column(name = "paytime")
+    @JsonFormat(pattern = "yyyy/MM/dd.HH:mm:ss", timezone = "GMT+8")
     private Date payTime;
 
     @Column(name = "issuccess")
@@ -87,7 +93,7 @@ public class MortgageDeduction {
     private String isoffs;
 
     @Column(name = "type")
-    private String type;//type为0时表示存放扣款统计的结果，type为1时表示存放扣款信息的维护
+    private String type;//type为0表示已发起过代扣，type为1时未发起过代扣
 
     @Column(name = "target")
     private String target;
@@ -103,6 +109,80 @@ public class MortgageDeduction {
 
     @Column(name = "planno")
     private int planNo;
+
+    @Column(name = "checkstate")
+    private String checkState;
+
+    public GoPayBean transToGoPayBean() {
+        GoPayBean goPayBean = new GoPayBean();
+        goPayBean.setContractId(contractNo);//设置合同编号
+        goPayBean.setCustomerName(customerName);//设置客户名称
+        goPayBean.setContractNo(contractNo);//设置合同编号
+        goPayBean.setOrgManagerId(target);//设置服务费的管理公司
+        goPayBean.setRePlanId("");//设置还款计划的id
+        goPayBean.setSplitData1(splitData1);
+        goPayBean.setSplitData2(splitData2);
+        goPayBean.setBusiId("");
+        goPayBean.setOrdId(MerSeq.tickOrder());
+        String amount1 = splitData1.toString();
+        String amount2 = splitData2.toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        goPayBean.setOrdAmt(m1 + m2 + "");
+        goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
+        goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
+        goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
+        goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
+        goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
+        goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
+//        goPayBean.setOrdAmt("2");
+//        goPayBean.setParam1("0410");//开户行号
+//        goPayBean.setParam2("0");//卡折标志
+//        goPayBean.setParam3("6216261000000000018");//卡号/折号
+//        goPayBean.setParam4("全渠道");//持卡人姓名
+//        goPayBean.setParam5("01");//证件类型
+//        goPayBean.setParam6("341126197709218366"); //证件号
+        goPayBean.setParam1(param1);//开户行号
+        goPayBean.setParam2(param2);//卡折标志
+        goPayBean.setParam3(param3);//卡号/折号
+        goPayBean.setParam4(param4);//持卡人姓名
+        goPayBean.setParam5(param5);//证件类型
+        goPayBean.setParam6(param6); //证件号
+        goPayBean.setParam7("");
+        goPayBean.setParam8("");
+        goPayBean.setParam9("");
+        goPayBean.setParam10("");
+        goPayBean.setOrdDesc("批量代扣款");
+        goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
+        goPayBean.setShareData(this.getShareData(m1, m2));
+        goPayBean.setPriv1("");
+        goPayBean.setCustomIp("");
+        return goPayBean;
+    }
+
+//    private String transFwfCode() {
+//        //处理服务费管理公司
+//        if (StringUtils.isNotBlank(target) && "铠岳".equals(target)) {
+//            return "00145112";
+//        } else {
+//            return "00160808";
+//        }
+//    }
+
+    private String getShareData(int m1, int m2) {
+        String shareData = "00145111^" + m1;
+        if (StringUtils.isNotBlank(target) && m2 != 0) {
+            shareData += ";" + target + "^" + m2 + ";";
+        }
+        // shareData = "00010001^1;00010002^1";
+        return shareData;
+    }
 
     public MortgageDeduction() {
     }
@@ -349,5 +429,13 @@ public class MortgageDeduction {
 
     public void setPlanNo(int planNo) {
         this.planNo = planNo;
+    }
+
+    public String getCheckState() {
+        return checkState;
+    }
+
+    public void setCheckState(String checkState) {
+        this.checkState = checkState;
     }
 }

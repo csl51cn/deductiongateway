@@ -1,9 +1,13 @@
-package org.starlightfinancial.deductiongateway.domain;
+package org.starlightfinancial.deductiongateway.domain.local;
+
+import org.apache.http.message.BasicNameValuePair;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class GoPayBean {
     private String MerId;
@@ -39,10 +43,95 @@ public class GoPayBean {
     private String contractNo;
     private String orgManagerId;
     private String rePlanId;
-
-
     private BigDecimal splitData1;
     private BigDecimal splitData2;
+
+    public List<BasicNameValuePair> aggregationToList() {
+        List<BasicNameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("MerId", MerId));//商户号
+        nvps.add(new BasicNameValuePair("BusiId", BusiId));//业务号，可选
+        nvps.add(new BasicNameValuePair("OrdId", OrdId));//订单号
+        nvps.add(new BasicNameValuePair("OrdAmt", OrdAmt));//金额
+        nvps.add(new BasicNameValuePair("CuryId", CuryId));//币种
+        nvps.add(new BasicNameValuePair("Version", Version));//版本号，由银联提供
+        nvps.add(new BasicNameValuePair("BgRetUrl", BgRetUrl));//后台通知URL
+        nvps.add(new BasicNameValuePair("PageRetUrl", PageRetUrl));//前台返回URL
+        nvps.add(new BasicNameValuePair("GateId", GateId));//网关ID，由银联提供
+        nvps.add(new BasicNameValuePair("Param1", Param1));//开户行
+        nvps.add(new BasicNameValuePair("Param2", Param2));//卡折标志
+        nvps.add(new BasicNameValuePair("Param3", Param3));//卡号/折号
+        nvps.add(new BasicNameValuePair("Param4", Param4));//持卡人姓名
+        nvps.add(new BasicNameValuePair("Param5", Param5));//证件类型
+        nvps.add(new BasicNameValuePair("Param6", Param6));//证件号
+        nvps.add(new BasicNameValuePair("Param7", Param7));
+        nvps.add(new BasicNameValuePair("Param8", Param8));
+        nvps.add(new BasicNameValuePair("Param9", Param9));
+        nvps.add(new BasicNameValuePair("Param10", Param10));
+        nvps.add(new BasicNameValuePair("OrdDesc", OrdDesc));//订单描述
+        nvps.add(new BasicNameValuePair("ShareType", ShareType));
+        nvps.add(new BasicNameValuePair("ShareData", ShareData));
+        nvps.add(new BasicNameValuePair("Priv1", Priv1));
+        nvps.add(new BasicNameValuePair("CustomIp", CustomIp));
+        nvps.add(new BasicNameValuePair("ChkValue", ChkValue));
+        return nvps;
+    }
+
+    public MortgageDeduction transToMortgageDeduction() {
+        MortgageDeduction mortgageDeduction = new MortgageDeduction();
+        mortgageDeduction.setApplyMainId(-1);
+        mortgageDeduction.setOrdId(OrdId);
+        mortgageDeduction.setCustomerNo(customerNo);
+        mortgageDeduction.setCustomerName(customerName);
+        mortgageDeduction.setContractNo(contractNo);
+        mortgageDeduction.setParam1(Param1);
+        mortgageDeduction.setParam2(Param2);
+        mortgageDeduction.setParam3(Param3);
+        mortgageDeduction.setParam4(Param4);
+        mortgageDeduction.setParam5(Param5);
+        mortgageDeduction.setParam6(Param6);
+        mortgageDeduction.setMerId(MerId);
+        mortgageDeduction.setSplitData1(splitData1);
+        mortgageDeduction.setCuryId(CuryId);
+        mortgageDeduction.setOrderDesc(OrdDesc);
+        mortgageDeduction.setSplitType(ShareType);
+        mortgageDeduction.setSplitData2(splitData2);
+        mortgageDeduction.setCreatId(113);
+        mortgageDeduction.setCreateDate(new Date());
+        mortgageDeduction.setIssuccess("");
+        mortgageDeduction.setErrorResult("");
+        mortgageDeduction.setIsoffs("0");
+        mortgageDeduction.setType("0");
+        mortgageDeduction.setTarget(orgManagerId);
+        return mortgageDeduction;
+    }
+
+    public String createStringBuffer() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(MerId);
+        sb.append(BusiId);
+        sb.append(OrdId);
+        sb.append(OrdAmt);
+        sb.append(CuryId);
+        sb.append(Version);
+        sb.append(BgRetUrl);
+        sb.append(PageRetUrl);
+        sb.append(GateId);
+        sb.append(Param1);
+        sb.append(Param2);
+        sb.append(Param3);
+        sb.append(Param4);
+        sb.append(Param5);
+        sb.append(Param6);
+        sb.append(Param7);
+        sb.append(Param8);
+        sb.append(Param9);
+        sb.append(Param10);
+        sb.append(ShareType);
+        sb.append(ShareData);
+        sb.append(Priv1);
+        sb.append(CustomIp);
+        return sb.toString();
+    }
 
     public String getCustomIp() {
         return this.CustomIp;
@@ -260,30 +349,6 @@ public class GoPayBean {
         this.Priv1 = priv1;
     }
 
-    public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        StringBuffer sb = new StringBuffer();
-        Field[] fields = this.getClass().getDeclaredFields();
-        sb.append(this.getClass().getName() + "{");
-        for (int i = 0; i < fields.length; i++) {
-            try {
-                if (fields[i].get(this) instanceof Date) {
-                    if (fields[i].get(this) != null) {
-                        sb.append(fields[i].getName() + ":").append(
-                                sdf.format(fields[i].get(this))).append(";");
-                        continue;
-                    }
-                }
-                sb.append(fields[i].getName()).append(":").append(
-                        fields[i].get(this)).append(";");
-            } catch (IllegalArgumentException e) {
-            } catch (IllegalAccessException e) {
-            }
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
     public BigDecimal getSplitData1() {
         return splitData1;
     }
@@ -348,4 +413,27 @@ public class GoPayBean {
         this.rePlanId = rePlanId;
     }
 
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        StringBuffer sb = new StringBuffer();
+        Field[] fields = this.getClass().getDeclaredFields();
+        sb.append(this.getClass().getName() + "{");
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                if (fields[i].get(this) instanceof Date) {
+                    if (fields[i].get(this) != null) {
+                        sb.append(fields[i].getName() + ":").append(
+                                sdf.format(fields[i].get(this))).append(";");
+                        continue;
+                    }
+                }
+                sb.append(fields[i].getName()).append(":").append(
+                        fields[i].get(this)).append(";");
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+            }
+        }
+        sb.append("}");
+        return sb.toString();
+    }
 }

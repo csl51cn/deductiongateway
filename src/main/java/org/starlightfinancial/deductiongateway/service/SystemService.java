@@ -1,7 +1,7 @@
 package org.starlightfinancial.deductiongateway.service;
 
-import org.starlightfinancial.deductiongateway.domain.MD5Value;
-import org.starlightfinancial.deductiongateway.domain.SysUser;
+import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import java.util.List;
 

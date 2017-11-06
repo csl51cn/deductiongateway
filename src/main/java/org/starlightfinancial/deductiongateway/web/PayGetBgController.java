@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.starlightfinancial.deductiongateway.domain.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.MortgageDeductionRepository;
-import org.starlightfinancial.deductiongateway.utility.Constant;
+import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -60,18 +58,7 @@ public class PayGetBgController {
         log.info(bean.getPayTime());
         log.info(bean.getChkValue());
         log.info("=========== 打印商户收到的后台响应信息  end =================");
-
-        try {
-            if (Constant.SUCCESS.equals(bean.getPayStat())) {
-                MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(bean.getOrdId());
-                mortgageDeduction.setIssuccess("1");
-                mortgageDeductionRepository.save(mortgageDeduction);
-            }
-        } catch (Exception e) {
-            log.error("订单：{} 状态更新失败", bean.getOrdId());
-        }
-
-        log.info("=========== 订单:{} 交易成功  end =================", bean.getOrdId());
+        
     }
 
     public GoPayBean getGoPayBean(HttpServletRequest req) {

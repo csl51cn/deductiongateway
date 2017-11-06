@@ -48,18 +48,7 @@
 <div class="container-fluid-full">
     <div class="row-fluid">
         <!-- start: Main Menu -->
-        <div id="sidebar-left" class="span2">
-            <div class="nav-collapse sidebar-nav">
-                <ul class="nav nav-tabs nav-stacked main-menu">
-                    <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入账户信息</span></a>
-                    </li>
-                    <li><a href="/deduction.do"><i class="icon-align-justify"></i><span class="hidden-tablet"> 代扣</span></a>
-                    </li>
-                    <li><a href="/result.do"><i class="icon-bar-chart"></i><span
-                            class="hidden-tablet"> 扣款结果统计</span></a></li>
-                </ul>
-            </div>
-        </div>
+        <div th:include="common :: #menu" th:remove="tag"></div>
         <!-- end: Main Menu -->
 
         <noscript>
@@ -112,7 +101,6 @@
                             <p>您确认要执行吗？</p>
                         </div>
                         <div class="modal-footer">
-                            <input type="hidden" id="functionName"/>
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                             <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
                         </div>
@@ -131,18 +119,21 @@
                                     <tr with="33%">
                                         <td>开始日期</td>
                                         <td><input size="16" type="text" id="startDate" class="form_datetime"
-                                                   name="startDate"/></td>
+                                                   name="startDate"  style="width: 150px;"/></td>
                                         <td>结束日期</td>
                                         <td>
                                             <input size="16" type="text" id="endDate" class="form_datetime"
-                                                   name="endDate"/></td>
+                                                   name="endDate"  style="width: 150px;"/></td>
                                         <td>客户名称</td>
                                         <td>
-                                            <input type="text" class="" id="customerName" name="customerName"/></td>
+                                            <input type="text" class="" id="customerName" name="customerName"  style="width: 150px;"/></td>
+                                        <td>合同号</td>
+                                        <td >
+                                            <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
                                             <input type="button" id="deductionBtn" value="执行代扣"/>
-                                            <input type="button" id="deletBtn" value="删除"/>
+                                            <input type="button" id="deleteBtn" value="删除"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -282,6 +273,7 @@
                 startDate: starDate,
                 endDate: endDate,
                 customerName: $("#customerName").val(),
+                contractNo: $("#contractNo").val(),
                 type: 1
             }
         };
@@ -311,6 +303,7 @@
         $('#endDate').datetimepicker("setValue");
         <!--查询按钮功能-->
         $("#queryBtn").click(function () {
+            $('#table').bootstrapTable('removeAll');
             $('#table').bootstrapTable('refresh', {
                 url: '/mortgageDeductionController/queryDeductionData.do',
                 query: queryParams()
@@ -336,7 +329,7 @@
                     success: function (data) {
                         $('#myModal').modal('hide');
                         if ("1" == data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4020);
+                            setTimeout("location.reload();", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
                             if (data.length > 5) {
@@ -356,7 +349,7 @@
             })
         });
         <!--删除按钮功能-->
-        $("#deletBtn").click(function () {
+        $("#deleteBtn").click(function () {
             $('#confirmModal').modal();
             $(".btn-success").click(function () {
                 var ids = [];
@@ -375,7 +368,7 @@
                     success: function (data) {
                         $('#myModal').modal('hide');
                         if ("1" == data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4020);
+                            setTimeout("location.reload();", 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
                             if (data.length > 5) {
