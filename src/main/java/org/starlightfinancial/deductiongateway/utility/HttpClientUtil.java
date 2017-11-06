@@ -2,6 +2,7 @@ package org.starlightfinancial.deductiongateway.utility;
 
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
@@ -35,6 +36,9 @@ public class HttpClientUtil {
         CloseableHttpAsyncClient httpclient = httpAsyncClientBuilder.build();
         String url = Utility.SEND_BANK_URL;
         HttpPost httpPost = new HttpPost(url);
+        //设置读取数据超时时间:2min
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(120000).build();
+        httpPost.setConfig(requestConfig);
         CountDownLatch latch = new CountDownLatch(1);
         try {
             //将表单的值放入postMethod中
