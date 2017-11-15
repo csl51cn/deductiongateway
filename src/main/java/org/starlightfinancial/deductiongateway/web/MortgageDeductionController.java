@@ -133,6 +133,7 @@ public class MortgageDeductionController {
                     newMortgageDeduction.setErrorResult(null);
                     newMortgageDeduction.setType("1");
                     newMortgageDeduction.setCreateDate(new Date());
+                    newMortgageDeduction.setCheckState(null);
                     mortgageDeductionList.add(newMortgageDeduction);
                 }
                 list = mortgageDeductionList;
