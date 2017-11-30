@@ -243,7 +243,7 @@ public class BatchConfig {
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
 
         String sql = null;
-        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表开启自动代扣,0代表关闭自动代扣
+        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表付易贷日扣开启自动代扣,0代表关闭自动代扣
             sql = "SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
         } else {
             sql = "SELECT a.* FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +

@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
@@ -8,11 +9,13 @@ import org.starlightfinancial.deductiongateway.service.Decorator;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by sili.chen on 2017/11/29
  */
+@Component
 public class Filter extends Decorator {
 
     private List deductionList = new ArrayList();
@@ -28,12 +31,13 @@ public class Filter extends Decorator {
 
     private void filter() {
         List<AutoBatchDeduction> list = ((Splitter) this.route).getDeductionList();
-        for (AutoBatchDeduction autoBatchDeduction : list) {
+        Iterator<AutoBatchDeduction> iterator = list.iterator();
+        while(iterator.hasNext()){
+            AutoBatchDeduction autoBatchDeduction = iterator.next();
             AccountManager accountManager = accountManagerRepository.findByAccountAndSort(autoBatchDeduction.getAccout(), 1);
             if (null != accountManager && Constant.ENABLED_FALSE.equals(accountManager.getIsEnabled())) {
-                list.remove(autoBatchDeduction);
+               iterator.remove();
             }
-
         }
         this.deductionList = list;
     }

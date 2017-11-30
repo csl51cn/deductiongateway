@@ -169,6 +169,9 @@
     },{
         field: 'dateId',
         title: 'dateId'
+    },{
+        field: 'loandate',
+        title: 'loandate'
     },  {
         field: 'bizNo',
         title: '业务编号'
@@ -198,6 +201,23 @@
             title: '扣款顺序',
             validate: function (v) {
                 if (!v) return '扣款顺序不能为空';
+            }
+        }
+    },{
+        field: 'isEnabled',
+        title: '是否自动代扣',
+        editable: {
+            type: 'text',
+            title: '是否自动代扣(1表示是,0表示否)',
+            validate: function (v) {
+                if (!v) return '不能为空';
+            }
+        },
+        formatter: function (value, row, index) {
+            if (value == '1') {
+                return '是';
+            } else if (value == '0') {
+                return '否';
             }
         }
     }];
@@ -255,6 +275,7 @@
         initTable();
         $('#table').bootstrapTable('hideColumn', 'id');
         $('#table').bootstrapTable('hideColumn', 'dateId');
+        $('#table').bootstrapTable('hideColumn', 'loandate');
         function queryParams() {
             return {
                 pageNumber: this.pageNumber,

@@ -85,13 +85,15 @@ public class AccountManager {
      * 放款时间
      */
     @Column(name = "loandate")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date loanDate;
 
     /**
+     * 标志是否开启自动代扣,0:关闭,1:开启
      * @return
      */
-    @Column(name = "isEnabled")
-    private Integer isEnabled;
+    @Column(name = "isenabled")
+    private Integer isEnabled = 1;
 
     public Integer getId() {
         return id;
