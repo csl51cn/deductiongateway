@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 /**
  * Created by senlin.deng on 2017-08-29.
  */
-public interface AccountManagerRepository extends JpaRepository<AccountManager,Integer> ,JpaSpecificationExecutor<AccountManager> {
+public interface AccountManagerRepository extends JpaRepository<AccountManager, Integer>, JpaSpecificationExecutor<AccountManager> {
+
+    AccountManager findByAccountAndSort(String account, int sort);
 }

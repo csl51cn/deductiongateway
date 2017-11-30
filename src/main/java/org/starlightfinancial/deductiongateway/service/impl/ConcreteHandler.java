@@ -25,6 +25,9 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
     Splitter splitter;
 
     @Autowired
+    Filter filter;
+
+    @Autowired
     AssemblerFactory assemblerFactory;
 
     @Autowired
@@ -41,7 +44,8 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
         try {
             Assembler assembler = assemblerFactory.getAssembleImpl("auto");
             splitter.setRoute(metadataValidator);
-            assembler.setRoute(splitter);
+            filter.setRoute(splitter);
+            assembler.setRoute(filter);
             assembler.doRoute();
 
             List<GoPayBean> result = assembler.getResult();

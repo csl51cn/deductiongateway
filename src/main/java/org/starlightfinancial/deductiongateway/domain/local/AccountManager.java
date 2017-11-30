@@ -78,7 +78,7 @@ public class AccountManager {
      * 修改时间
      */
     @Column(name = "changetime")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS" ,timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "GMT+8")
     private Date changeTime;
 
     /**
@@ -87,6 +87,11 @@ public class AccountManager {
     @Column(name = "loandate")
     private Date loanDate;
 
+    /**
+     * @return
+     */
+    @Column(name = "isEnabled")
+    private Integer isEnabled;
 
     public Integer getId() {
         return id;
@@ -182,6 +187,14 @@ public class AccountManager {
 
     public void setLoanDate(Date loanDate) {
         this.loanDate = loanDate;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
     }
 
     @Override

@@ -25,7 +25,7 @@ public class AutoBatchAssembler extends Assembler {
     @Override
     public void assembleMessage() throws Exception {
 
-        List<AutoBatchDeduction> list = ((Splitter) this.route).getDeductionList();
+        List<AutoBatchDeduction> list = ((Filter) this.route).getDeductionList();
         for (AutoBatchDeduction autoBatchDeduction : list) {
             GoPayBean goPayBean = autoBatchDeduction.transToGoPayBean();
             goPayBean.setParam1(handleBankName(goPayBean.getParam1()));
