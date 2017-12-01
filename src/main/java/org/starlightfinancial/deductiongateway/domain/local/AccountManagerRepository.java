@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  */
 public interface AccountManagerRepository extends JpaRepository<AccountManager, Integer>, JpaSpecificationExecutor<AccountManager> {
 
-    AccountManager findByAccountAndSort(String account, int sort);
+    AccountManager findByAccountAndSortAndContractNo(String account, int sort, String contractNo);
 }

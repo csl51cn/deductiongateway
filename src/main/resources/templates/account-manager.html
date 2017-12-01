@@ -155,7 +155,7 @@
 
 
 <script type="text/javascript" th:inline="javascript">
-
+    var staffId = [[${session.loginUser.staffId}]];
     var columns = [{
         field: 'number',
         title: '序号',
@@ -166,13 +166,13 @@
     }, {
         field: 'id',
         title: 'id'
-    },{
+    }, {
         field: 'dateId',
         title: 'dateId'
-    },{
+    }, {
         field: 'loandate',
         title: 'loandate'
-    },  {
+    }, {
         field: 'bizNo',
         title: '业务编号'
     }, {
@@ -203,21 +203,15 @@
                 if (!v) return '扣款顺序不能为空';
             }
         }
-    },{
+    }, {
         field: 'isEnabled',
         title: '是否自动代扣',
         editable: {
-            type: 'text',
-            title: '是否自动代扣(1表示是,0表示否)',
+            type: 'select',
+            title: '是否自动代扣',
+            source: [{value: 1, text: "是"}, {value: 0, text: "否"}],
             validate: function (v) {
                 if (!v) return '不能为空';
-            }
-        },
-        formatter: function (value, row, index) {
-            if (value == '1') {
-                return '是';
-            } else if (value == '0') {
-                return '否';
             }
         }
     }];
@@ -251,24 +245,34 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    $.ajax({
-                        type: "post",
-                        url: "/accountManagerController/updateAccount.do",
-                        data: row,
-                        dataType: 'JSON',
-                        success: function (data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                            if (data == "1") {
-                                noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                            }else{
+                    if (staffId == 113 || staffId == 237 || staffId == 1281 || staffId == 6436 || staffId == 2338 || staffId == 3387 || staffId == 1 ) {
+                        $.ajax({
+                            type: "post",
+                            url: "/accountManagerController/updateAccount.do",
+                            data: row,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                if (data == "1") {
+                                    noty({
+                                        'text': '执行完成',
+                                        'layout': 'center',
+                                        'type': 'information',
+                                        "timeout": "4000"
+                                    });
+                                } else {
+                                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                }
+                            },
+                            error: function () {
                                 noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             }
-                        },
-                        error: function () {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        },
 
-                    });
+                        })
+                    }else {
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                    ;
                 }
             });
         };

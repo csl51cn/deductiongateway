@@ -55,7 +55,7 @@ public class AccountManagerController {
     @RequestMapping(value = "/queryAccount.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public Map<String, Object> queryAccount(String contractNo, String bizNo, String accountName, PageBean pageBean) {
-        PageBean result = accountManagerService.queryAccount(contractNo, bizNo, accountName, pageBean);
+        PageBean result = accountManagerService.queryAccount(contractNo.trim(), bizNo.trim(), accountName.trim(), pageBean);
         return Utility.pageBean2Map(result);
     }
 

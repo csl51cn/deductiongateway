@@ -34,7 +34,7 @@ public class Filter extends Decorator {
         Iterator<AutoBatchDeduction> iterator = list.iterator();
         while(iterator.hasNext()){
             AutoBatchDeduction autoBatchDeduction = iterator.next();
-            AccountManager accountManager = accountManagerRepository.findByAccountAndSort(autoBatchDeduction.getAccout(), 1);
+            AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(autoBatchDeduction.getAccout(), 1,autoBatchDeduction.getContractNo());
             if (null != accountManager && Constant.ENABLED_FALSE.equals(accountManager.getIsEnabled())) {
                iterator.remove();
             }

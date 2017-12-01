@@ -64,8 +64,11 @@ public class AccountManagerRepositoryTest {
 
     @Test
     public void function2()throws Exception {
-        List lastAccount = accountManagerService.findLastAccount();
-        System.out.println(lastAccount.get(0));
+        AccountManager ac = accountManagerRepository.findByAccountAndSortAndContractNo("5240943764011888", 1, "JK991601111");
+        System.out.println(ac);
     }
+
+
+
 
 }
