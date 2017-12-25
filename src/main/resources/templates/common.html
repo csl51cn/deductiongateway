@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head id="header">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- end: Mobile Specific -->
 
@@ -22,7 +24,6 @@
     <!--[if IE 9]>
     <link id="ie9style" href="/css/ie9.css" rel="stylesheet">
     <![endif]-->
-
 </head>
 <body>
 <div id="script">
@@ -78,6 +79,7 @@
 
     <script src="/js/custom.js"></script>
     <script type="text/javascript">
+       $('.collapse').collapse();
         $(function () {
             var now = new Date();
             var year = now.getFullYear();
@@ -87,8 +89,8 @@
 </div>
 <div id="menu">
     <div id="sidebar-left" class="span2">
-        <div class="nav-collapse sidebar-nav">
-            <ul class="nav nav-tabs nav-stacked main-menu">
+        <div class="collapse nav-collapse sidebar-nav">
+            <ul class="nav nav-tabs nav-stacked">
                 <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入账户信息</span></a>
                 </li>
                 <li><a href="/unionpay.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入银联结果</span></a>
