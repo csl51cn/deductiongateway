@@ -29,3 +29,5 @@ target
 wechat.properties
 *.xls
 *.key
+*.cer
+*.pfx
