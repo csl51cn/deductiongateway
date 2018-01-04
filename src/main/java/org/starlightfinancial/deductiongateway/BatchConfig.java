@@ -247,7 +247,7 @@ public class BatchConfig {
             sql = "SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
         } else {
             sql = "SELECT a.* FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +
-                    " WHERE a.LoginId = 14  AND b.授信期限单位 <> 2081  AND (b.产品类别 <> 2082) AND " +
+                    " WHERE a.LoginId = 14  AND b.授信期限单位 <> 2081   AND " +
                     "CONVERT (VARCHAR,a.计划还款日,1) = CONVERT (VARCHAR, GETDATE(), 1)";
         }
         jdbcCursorItemReader.setSql(sql);
