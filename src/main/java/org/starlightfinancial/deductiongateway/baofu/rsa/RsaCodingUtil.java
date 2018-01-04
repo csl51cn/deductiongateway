@@ -1,7 +1,6 @@
 package org.starlightfinancial.deductiongateway.baofu.rsa;
 
 import org.starlightfinancial.deductiongateway.baofu.util.FormatUtil;
-import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -91,7 +90,6 @@ public class RsaCodingUtil {
      * 根据私钥文件流解密
      *
      * @param src
-     * @param pfxPath
      * @param priKeyPass
      * @return
      */
@@ -147,9 +145,9 @@ public class RsaCodingUtil {
     public static String encryptByPriPfxFile(String src, String pfxPath, String priKeyPass) {
         String line = File.separator;
         if ("\\".equals(line)) {
-            pfxPath = "D://" + Utility.SEND_BANK_KEY_FILE;
+            pfxPath = "D://" + pfxPath;
         } else if ("/".equals(line)) {
-            pfxPath = "/root/" + Utility.SEND_BANK_KEY_FILE;
+            pfxPath = "/root/" + pfxPath;
         }
         PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(pfxPath, priKeyPass);
         if (privateKey == null) {
@@ -198,6 +196,12 @@ public class RsaCodingUtil {
      * @return
      */
     public static String decryptByPubCerFile(String src, String pubCerPath) {
+        String line = File.separator;
+        if ("\\".equals(line)) {
+            pubCerPath = "D://" + pubCerPath;
+        } else if ("/".equals(line)) {
+            pubCerPath = "/root/" + pubCerPath;
+        }
         PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(pubCerPath);
         if (publicKey == null) {
             return null;

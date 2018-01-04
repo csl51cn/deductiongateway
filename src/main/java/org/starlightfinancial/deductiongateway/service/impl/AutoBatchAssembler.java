@@ -70,6 +70,9 @@ public class AutoBatchAssembler extends Assembler {
             requestParams.setTxnSubType(baofuConfig.getTxnSubType());
             requestParams.setMemberId(baofuConfig.getMemberId());
             requestParams.setDataType(baofuConfig.getDataType());
+            requestParams.setContractNo(autoBatchDeduction.getContractNo());
+            requestParams.setBxAmount(autoBatchDeduction.getBxAmount());
+            requestParams.setFwfAmount(autoBatchDeduction.getFwfAmount());
 
             DataContent dataContent = autoBatchDeduction.transToDataContent();
             dataContent.setTxnSubType(baofuConfig.getTxnSubType());

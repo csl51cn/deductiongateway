@@ -49,19 +49,19 @@ public class ApplicationTest {
         nvps.add(new BasicNameValuePair("member_id", "100000276"));
         nvps.add(new BasicNameValuePair("data_type", "json"));
 
-        String pfxpath = "E:\\bfkey_100000276@@100000990.pfx"; // 私钥
-        String cerpath = "E:\\bfkey_100000276@@100000990.cer"; // 公钥
+        String pfxpath = "bfkey_100000276@@100000990.pfx"; // 私钥
+        String cerpath = "bfkey_100000276@@100000990.cer"; // 公钥
 
-        File pfxfile = new File(pfxpath);
-        if (!pfxfile.exists()) {
-            System.out.printf("\"私钥文件不存在！\"");
-            return;
-        }
-
-        File cerfile = new File(cerpath);
-        if (!cerfile.exists()) {//判断宝付公钥是否为空
-            System.out.printf("公钥文件不存在！");
-        }
+//        File pfxfile = new File(pfxpath);
+//        if (!pfxfile.exists()) {
+//            System.out.printf("\"私钥文件不存在！\"");
+//            return;
+//        }
+//
+//        File cerfile = new File(cerpath);
+//        if (!cerfile.exists()) {//判断宝付公钥是否为空
+//            System.out.printf("公钥文件不存在！");
+//        }
 
         Map<String, String> jsonMap = new HashMap<>();
         jsonMap.put("txn_sub_type", "25");
@@ -74,7 +74,7 @@ public class ApplicationTest {
         jsonMap.put("id_card_type", "01"); // 身份证类型 默认01
         jsonMap.put("id_card", "320301198502169142"); // 身份证号
         jsonMap.put("id_holder", "张宝"); // 持卡人姓名
-        jsonMap.put("mobile", ""); // 银行卡绑定手机号
+        jsonMap.put("mobile", "13637983147"); // 银行卡绑定手机号
         jsonMap.put("valid_date", ""); // 信用卡有效期
         jsonMap.put("valid_no", ""); // 信用卡安全码
         jsonMap.put("trans_id", "TID" + System.currentTimeMillis()); // 商户订单号
@@ -123,7 +123,9 @@ public class ApplicationTest {
                             System.out.printf("检查解密公钥是否正确！");
                         }
                         postString = SecurityUtil.Base64Decode(postString);
-                        System.out.println("postString" + postString);
+                        JSONObject jsonObject1 = (JSONObject) JSONObject.parse(postString);
+                        String aa = jsonObject1.getObject("resp_msg", String.class);
+                        System.out.println("postString" + aa);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

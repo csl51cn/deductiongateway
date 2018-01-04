@@ -1,8 +1,11 @@
 package org.starlightfinancial.deductiongateway.baofu.domain;
 
 import org.apache.http.message.BasicNameValuePair;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,6 +21,9 @@ public class RequestParams {
     private String dataType; // 数据类型
     private String dataContent; // 加密数据串
     private DataContent content;
+    private String contractNo; // 合同号
+    private BigDecimal bxAmount; // 本息金额
+    private BigDecimal fwfAmount; // 服务费金额
 
     public List<BasicNameValuePair> switchToNvpList() {
         List<BasicNameValuePair> nvps = new ArrayList<>();
@@ -29,6 +35,36 @@ public class RequestParams {
         nvps.add(new BasicNameValuePair("data_type", dataType));
         nvps.add(new BasicNameValuePair("data_content", dataContent));
         return nvps;
+    }
+
+    public MortgageDeduction switchToMortgageDeduction() {
+        MortgageDeduction mortgageDeduction = new MortgageDeduction();
+        mortgageDeduction.setApplyMainId(-1);
+        mortgageDeduction.setOrdId(content.getTransId());
+        mortgageDeduction.setCustomerNo("");
+        mortgageDeduction.setCustomerName(content.getIdHolder());
+        mortgageDeduction.setContractNo(contractNo);
+        mortgageDeduction.setParam1(BankCodeEnum.getIdByCode(content.getPayCode()));
+        mortgageDeduction.setParam2("0");
+        mortgageDeduction.setParam3(content.getAccNo());
+        mortgageDeduction.setParam4(content.getIdHolder());
+        mortgageDeduction.setParam5(content.getIdCardType());
+        mortgageDeduction.setParam6(content.getIdCard());
+        mortgageDeduction.setMerId(content.getMemberId());
+        mortgageDeduction.setSplitData1(bxAmount);
+        mortgageDeduction.setCuryId("156");
+        mortgageDeduction.setOrderDesc("宝付代扣分账");
+        mortgageDeduction.setSplitType(txnType);
+        mortgageDeduction.setSplitData2(fwfAmount);
+        mortgageDeduction.setCreatId(113);
+        mortgageDeduction.setCreateDate(new Date());
+        mortgageDeduction.setIssuccess("");
+        mortgageDeduction.setErrorResult("");
+        mortgageDeduction.setIsoffs("0");
+        mortgageDeduction.setType("0");
+        mortgageDeduction.setTarget(content.getFeeMemberId());
+
+        return mortgageDeduction;
     }
 
     public String getVersion() {
@@ -93,5 +129,29 @@ public class RequestParams {
 
     public void setContent(DataContent content) {
         this.content = content;
+    }
+
+    public String getContractNo() {
+        return contractNo;
+    }
+
+    public void setContractNo(String contractNo) {
+        this.contractNo = contractNo;
+    }
+
+    public BigDecimal getBxAmount() {
+        return bxAmount;
+    }
+
+    public void setBxAmount(BigDecimal bxAmount) {
+        this.bxAmount = bxAmount;
+    }
+
+    public BigDecimal getFwfAmount() {
+        return fwfAmount;
+    }
+
+    public void setFwfAmount(BigDecimal fwfAmount) {
+        this.fwfAmount = fwfAmount;
     }
 }
