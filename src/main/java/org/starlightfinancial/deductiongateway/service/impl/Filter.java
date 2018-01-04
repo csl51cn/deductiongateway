@@ -8,7 +8,6 @@ import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.service.Decorator;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
 @Component
 public class Filter extends Decorator {
 
-    private List deductionList = new ArrayList();
+    private List<AutoBatchDeduction> deductionList;
 
     @Autowired
     AccountManagerRepository accountManagerRepository;
@@ -32,17 +31,18 @@ public class Filter extends Decorator {
     private void filter() {
         List<AutoBatchDeduction> list = ((Splitter) this.route).getDeductionList();
         Iterator<AutoBatchDeduction> iterator = list.iterator();
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             AutoBatchDeduction autoBatchDeduction = iterator.next();
-            AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(autoBatchDeduction.getAccout(), 1,autoBatchDeduction.getContractNo());
+            AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(autoBatchDeduction.getAccout(),
+                    1, autoBatchDeduction.getContractNo());
             if (null != accountManager && Constant.ENABLED_FALSE.equals(accountManager.getIsEnabled())) {
-               iterator.remove();
+                iterator.remove();
             }
         }
         this.deductionList = list;
     }
 
-    public List getDeductionList() {
-        return deductionList;
+    public List<AutoBatchDeduction> getDeductionList() {
+        return this.deductionList;
     }
 }

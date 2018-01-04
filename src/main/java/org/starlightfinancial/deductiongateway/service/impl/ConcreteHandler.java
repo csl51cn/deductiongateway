@@ -9,11 +9,15 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.service.Assembler;
 import org.starlightfinancial.deductiongateway.service.AssemblerFactory;
+import org.starlightfinancial.deductiongateway.service.Delivery;
 import org.starlightfinancial.deductiongateway.service.Handler;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -34,6 +38,9 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
     MetadataValidator metadataValidator;
 
     @Autowired
+    Delivery delivery;
+
+    @Autowired
     HttpClientUtil httpClientUtil;
 
     private AutoBatchDeduction autoBatchDeduction;
@@ -46,6 +53,7 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
             splitter.setRoute(metadataValidator);
             filter.setRoute(splitter);
             assembler.setRoute(filter);
+            delivery.setRoute(assembler);
             assembler.doRoute();
 
             List<GoPayBean> result = assembler.getResult();
@@ -53,7 +61,7 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
                 MortgageDeduction mortgageDeduction = goPayBean.transToMortgageDeduction();
                 mortgageDeduction.setPayTime(new Date());
                 try {       //应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
-                    Map map = httpClientUtil.send(goPayBean.aggregationToList());
+                    Map map = httpClientUtil.send("", goPayBean.aggregationToList());
 //                    Map map = new HashMap(); //方便测试
                     String payStat = (String) map.get("PayStat");
                     mortgageDeduction.setResult(payStat);
@@ -77,10 +85,10 @@ public class ConcreteHandler extends Handler implements ItemProcessor {
     }
 
     @Override
-    public Object process(Object o) throws Exception {
+    public Object process(Object o) {
         this.autoBatchDeduction = (AutoBatchDeduction) o;
-        splitter.setAutoBatchDeduction(autoBatchDeduction);
         metadataValidator.setAutoBatchDeduction(autoBatchDeduction);
+        splitter.setAutoBatchDeduction(autoBatchDeduction);
         return this.handleRequest();
     }
 }

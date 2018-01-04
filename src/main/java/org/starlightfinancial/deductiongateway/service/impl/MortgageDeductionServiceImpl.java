@@ -216,7 +216,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             this.updateMortgageDeduction(mortgageDeduction, goPayBean);
 
             try {
-                Map map = httpClientUtil.send(goPayBean.aggregationToList());
+                Map map = httpClientUtil.send("", goPayBean.aggregationToList());
                 String payStat = (String) map.get("PayStat");
                 mortgageDeduction.setResult(payStat);
                 if (StringUtils.equals(Constant.SUCCESS, payStat))

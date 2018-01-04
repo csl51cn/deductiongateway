@@ -49,14 +49,14 @@ public enum ErrorCodeEnum {
     CODE_000042("0003", "消费交易失败", "1111"),
     CODE_000043("2075", "密码输错次数超限，请联系发卡行", "3389"),
     CODE_000044("9999", "系统处理失败", "3251"),
-    CODE_000045("2036","受限制的卡","3233");
+    CODE_000045("2036", "受限制的卡", "3233");
 
 
     private String code;
     private String value;
     private String newCode;
 
-    private ErrorCodeEnum(String code, String value, String newCode) {
+    ErrorCodeEnum(String code, String value, String newCode) {
         this.code = code;
         this.value = value;
         this.newCode = newCode;

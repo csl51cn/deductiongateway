@@ -1,6 +1,5 @@
 package org.starlightfinancial.deductiongateway.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +13,6 @@ public abstract class Assembler extends Decorator {
 
     @Override
     public void doRoute() throws Exception {
-        result = new ArrayList();
         super.doRoute();
         this.assembleMessage();
     }

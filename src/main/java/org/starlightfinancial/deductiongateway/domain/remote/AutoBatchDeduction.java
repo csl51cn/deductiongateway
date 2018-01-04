@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.domain.remote;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -10,6 +11,7 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -121,12 +123,33 @@ public class AutoBatchDeduction {
         goPayBean.setParam10("");
         goPayBean.setOrdDesc("批量代扣款");
         goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
-        goPayBean.setShareData(this.getShareData(m1,m2));
+        goPayBean.setShareData(this.getShareData(m1, m2));
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
         goPayBean.setPayStat("");
         goPayBean.setPayTime("");
         return goPayBean;
+    }
+
+    public DataContent transToDataContent() {
+        DataContent dataContent = new DataContent();
+        dataContent.setAccNo(accout);
+        dataContent.setIdCardType("01");
+        dataContent.setIdCard(certificateNo);
+        dataContent.setIdHolder(customerName);
+        dataContent.setMobile("");
+        dataContent.setValidDate("");
+        dataContent.setValidNo("");
+        dataContent.setTransId("TID" + System.currentTimeMillis());
+        dataContent.setTxnAmt(bxAmount.add(fwfAmount).multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+        dataContent.setTradeDate(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+        dataContent.setAdditionalInfo("");
+        dataContent.setReqReserved("");
+        dataContent.setTransSerialNo("TSN" + System.currentTimeMillis());
+        dataContent.setShareInfo("100000749," + bxAmount.multiply(BigDecimal.valueOf(100)).setScale(0).toString()
+                + ";100000178," + fwfAmount.multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+        dataContent.setFeeMemberId("100000749");
+        return dataContent;
     }
 
     private String transFwfCode() {
@@ -138,9 +161,9 @@ public class AutoBatchDeduction {
         }
     }
 
-    private String getShareData(int m1,int m2) {
+    private String getShareData(int m1, int m2) {
         String shareData = "00145111^" + m1;
-        if (StringUtils.isNotBlank(fwfCompamny) && m2!= 0) {
+        if (StringUtils.isNotBlank(fwfCompamny) && m2 != 0) {
             shareData += ";" + this.transFwfCode() + "^" + m2 + ";";
         }
 //        shareData = "00010001^1;00010002^1";
