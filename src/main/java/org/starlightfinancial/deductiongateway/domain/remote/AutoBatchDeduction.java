@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
-import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
@@ -98,12 +97,6 @@ public class AutoBatchDeduction {
         }
         goPayBean.setOrdAmt(m1 + m2 + "");
         goPayBean.setOrdId(MerSeq.tickOrder());
-        goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
-        goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
-        goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
-        goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
-        goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
-        goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
         //  goPayBean.setOrdAmt("2");
 //        goPayBean.setParam1("0410");//开户行号
 //        goPayBean.setParam2("0");//卡折标志
@@ -121,8 +114,7 @@ public class AutoBatchDeduction {
         goPayBean.setParam8("");
         goPayBean.setParam9("");
         goPayBean.setParam10("");
-        goPayBean.setOrdDesc("批量代扣款");
-        goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
+        goPayBean.setOrdDesc("银联");
         goPayBean.setShareData(this.getShareData(m1, m2));
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
@@ -140,7 +132,7 @@ public class AutoBatchDeduction {
         dataContent.setMobile("");
         dataContent.setValidDate("");
         dataContent.setValidNo("");
-        dataContent.setTransId("TID" + System.currentTimeMillis());
+        dataContent.setTransId(MerSeq.tickOrder());
         dataContent.setTxnAmt(bxAmount.add(fwfAmount).multiply(BigDecimal.valueOf(100)).setScale(0).toString());
         dataContent.setTradeDate(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
         dataContent.setAdditionalInfo("");

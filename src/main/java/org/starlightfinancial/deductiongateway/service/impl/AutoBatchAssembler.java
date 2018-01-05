@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
+import org.starlightfinancial.deductiongateway.UnionPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
@@ -34,9 +35,13 @@ public class AutoBatchAssembler extends Assembler {
     private String router;
 
     @Autowired
-    private BaofuConfig baofuConfig;
+    BaofuConfig baofuConfig;
+
+    @Autowired
+    UnionPayConfig unionPayConfig;
 
     @Override
+
     public void assembleMessage() throws Exception {
         List<AutoBatchDeduction> list = ((Filter) this.route).getDeductionList();
         if ("UNIONPAY".equals(router)) {
@@ -49,6 +54,13 @@ public class AutoBatchAssembler extends Assembler {
     private void assembleUNIONPAY(List<AutoBatchDeduction> list) throws Exception {
         for (AutoBatchDeduction autoBatchDeduction : list) {
             GoPayBean goPayBean = autoBatchDeduction.transToGoPayBean();
+            goPayBean.setMerId(unionPayConfig.getMerId());
+            goPayBean.setCuryId(unionPayConfig.getCuryId());
+            goPayBean.setVersion(unionPayConfig.getVersion());
+            goPayBean.setBgRetUrl(unionPayConfig.getBgRetUrl());
+            goPayBean.setPageRetUrl(unionPayConfig.getPageRetUrl());
+            goPayBean.setGateId(unionPayConfig.getGateId());
+            goPayBean.setShareType(unionPayConfig.getType());
             goPayBean.setParam1(handleBankName(goPayBean.getParam1()));
             goPayBean.setParam5(handleCertificateType(goPayBean.getParam5()));
             goPayBean.setParam6(goPayBean.getParam6().toUpperCase());//将身份证号中的X转换为大写

@@ -9,6 +9,7 @@ import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
+import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
@@ -84,9 +85,10 @@ public class Delivery extends Decorator {
             MortgageDeduction mortgageDeduction = requestParams.switchToMortgageDeduction();
             mortgageDeduction.setPayTime(new Date());
             try {
-                Map map = httpClientUtil.send(unionPayConfig.getUrl(), requestParams.switchToNvpList());
+                Map map = httpClientUtil.send(baofuConfig.getUrl(), requestParams.switchToNvpList());
                 String returnData = (String) map.get("returnData");
                 returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getCerFile());
+                returnData = SecurityUtil.Base64Decode(returnData);
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
                 returnData = jsonObject.getObject("resp_msg", String.class);
                 if (StringUtils.equals("交易成功", returnData)) {

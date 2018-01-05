@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.baofu.domain;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.http.message.BasicNameValuePair;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 
@@ -53,7 +54,7 @@ public class RequestParams {
         mortgageDeduction.setMerId(content.getMemberId());
         mortgageDeduction.setSplitData1(bxAmount);
         mortgageDeduction.setCuryId("156");
-        mortgageDeduction.setOrderDesc("宝付代扣分账");
+        mortgageDeduction.setOrderDesc("宝付");
         mortgageDeduction.setSplitType(txnType);
         mortgageDeduction.setSplitData2(fwfAmount);
         mortgageDeduction.setCreatId(113);

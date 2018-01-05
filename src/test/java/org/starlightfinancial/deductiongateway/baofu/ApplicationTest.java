@@ -86,7 +86,7 @@ public class ApplicationTest {
         jsonMap.put("req_reserved", "保留");
         jsonMap.put("trans_serial_no", "TSN" + System.currentTimeMillis());
         jsonMap.put("share_info", "100000749,10;100000178,90"); // 分账信息
-        jsonMap.put("notify_url", "http://113.204.117.46:8081/PayGetBgAsyn"); // 通知地址
+        jsonMap.put("notify_url", "http://113.204.117.46:8082/PayGetBgAsyn"); // 通知地址
         jsonMap.put("fee_member_id", ""); // 分账手续费商户
 
         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(jsonMap);

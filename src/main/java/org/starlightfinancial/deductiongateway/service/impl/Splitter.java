@@ -21,7 +21,7 @@ public class Splitter extends Decorator {
 
     private AutoBatchDeduction autoBatchDeduction;
 
-    private List<AutoBatchDeduction> deductionList;
+    private List<AutoBatchDeduction> deductionList = new ArrayList<>();
 
     @Autowired
     private LimitManagerRepository limitManagerRepository;
