@@ -16,6 +16,7 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class Delivery extends Decorator {
     @Autowired
     BaofuConfig baofuConfig;
 
-    List<MortgageDeduction> result;
+    List<MortgageDeduction> result = new ArrayList<>();
 
     @Override
     public void doRoute() throws Exception {
@@ -96,8 +97,10 @@ public class Delivery extends Decorator {
                 } else {
                     mortgageDeduction.setIssuccess("0");
                 }
+                result.add(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
+                result.add(mortgageDeduction);
             }
         }
     }

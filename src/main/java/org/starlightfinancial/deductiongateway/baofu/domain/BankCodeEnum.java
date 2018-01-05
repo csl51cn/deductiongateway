@@ -31,6 +31,7 @@ public enum BankCodeEnum {
     private String bankName;
 
     BankCodeEnum(String id, String code, String bankName) {
+        this.id = id;
         this.code = code;
         this.bankName = bankName;
     }
