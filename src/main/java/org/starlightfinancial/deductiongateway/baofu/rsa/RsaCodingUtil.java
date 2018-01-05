@@ -8,6 +8,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -143,13 +144,15 @@ public class RsaCodingUtil {
      * @return
      */
     public static String encryptByPriPfxFile(String src, String pfxPath, String priKeyPass) {
-        String line = File.separator;
-        if ("\\".equals(line)) {
-            pfxPath = "D://" + pfxPath;
-        } else if ("/".equals(line)) {
-            pfxPath = "/root/" + pfxPath;
-        }
-        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(pfxPath, priKeyPass);
+        ClassLoader classLoader = RsaCodingUtil.class.getClassLoader();
+        URL url = classLoader.getResource(pfxPath);
+//        String line = File.separator;
+//        if ("\\".equals(line)) {
+//            pfxPath = "D://" + pfxPath;
+//        } else if ("/".equals(line)) {
+//            pfxPath = "/root/" + pfxPath;
+//        }
+        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(url.getPath(), priKeyPass);
         if (privateKey == null) {
             return null;
         }
@@ -196,13 +199,15 @@ public class RsaCodingUtil {
      * @return
      */
     public static String decryptByPubCerFile(String src, String pubCerPath) {
-        String line = File.separator;
-        if ("\\".equals(line)) {
-            pubCerPath = "D://" + pubCerPath;
-        } else if ("/".equals(line)) {
-            pubCerPath = "/root/" + pubCerPath;
-        }
-        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(pubCerPath);
+        ClassLoader classLoader = RsaCodingUtil.class.getClassLoader();
+        URL url = classLoader.getResource(pubCerPath);
+//        String line = File.separator;
+//        if ("\\".equals(line)) {
+//            pubCerPath = "D://" + pubCerPath;
+//        } else if ("/".equals(line)) {
+//            pubCerPath = "/root/" + pubCerPath;
+//        }
+        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(url.getPath());
         if (publicKey == null) {
             return null;
         }
