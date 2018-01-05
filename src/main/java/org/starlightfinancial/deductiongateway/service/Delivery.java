@@ -39,10 +39,11 @@ public class Delivery extends Decorator {
     @Autowired
     BaofuConfig baofuConfig;
 
-    List<MortgageDeduction> result = new ArrayList<>();
+    List<MortgageDeduction> result;
 
     @Override
     public void doRoute() throws Exception {
+        result = new ArrayList<>();
         super.doRoute();
         delivery();
     }
