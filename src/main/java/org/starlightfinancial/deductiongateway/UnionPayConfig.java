@@ -11,35 +11,90 @@ import org.springframework.stereotype.Component;
 @Configuration
 public class UnionPayConfig {
 
-    @Value("${baofu.api.notify.url}")
-    private String notifyUrl;
+    @Value("${unionpay.api.version}")
+    private String version;
 
-    @Value("${baofu.api.pri.key}")
-    private String priKey;
+    @Value("${unionpay.api.member.id}")
+    private String merId;
 
-    @Value("${baofu.api.pfx.file}")
+    @Value("${unionpay.api.cury.id}")
+    private String curyId;
+
+    @Value("${unionpay.api.bg.ret.url}")
+    private String bgRetUrl;
+
+    @Value("${unionpay.api.pg.ret.url}")
+    private String pageRetUrl;
+
+    @Value("${unionpay.api.gate.id}")
+    private String gateId;
+
+    @Value("${unionpay.api.type}")
+    private String type;
+
+    @Value("${unionpay.api.pfx.file}")
     private String pfxFile;
 
-    @Value("${baofu.api.cer.file}")
+    @Value("${unionpay.api.cer.file}")
     private String cerFile;
 
     @Value("${unionpay.api.url}")
     private String url;
 
-    public String getNotifyUrl() {
-        return notifyUrl;
+    public String getVersion() {
+        return version;
     }
 
-    public void setNotifyUrl(String notifyUrl) {
-        this.notifyUrl = notifyUrl;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
-    public String getPriKey() {
-        return priKey;
+    public String getMerId() {
+        return merId;
     }
 
-    public void setPriKey(String priKey) {
-        this.priKey = priKey;
+    public void setMerId(String merId) {
+        this.merId = merId;
+    }
+
+    public String getCuryId() {
+        return curyId;
+    }
+
+    public void setCuryId(String curyId) {
+        this.curyId = curyId;
+    }
+
+    public String getBgRetUrl() {
+        return bgRetUrl;
+    }
+
+    public void setBgRetUrl(String bgRetUrl) {
+        this.bgRetUrl = bgRetUrl;
+    }
+
+    public String getPageRetUrl() {
+        return pageRetUrl;
+    }
+
+    public void setPageRetUrl(String pageRetUrl) {
+        this.pageRetUrl = pageRetUrl;
+    }
+
+    public String getGateId() {
+        return gateId;
+    }
+
+    public void setGateId(String gateId) {
+        this.gateId = gateId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getPfxFile() {
