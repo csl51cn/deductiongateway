@@ -110,13 +110,14 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
-     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录
+     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
+     * @param deductionMethod  代扣方式:UNIONPAY 使用银联代扣,BAOFU 使用宝付代扣
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
     @SameUrlData
     @ResponseBody
-    public String saveMortgageDeductions(String ids, String reGenerate) {
+    public String saveMortgageDeductions(String ids, String reGenerate,String deductionMethod) {
         try {
             if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
@@ -138,7 +139,7 @@ public class MortgageDeductionController {
                 }
                 list = mortgageDeductionList;
             }
-            mortgageDeductionService.saveMortgageDeductions(list);
+            mortgageDeductionService.saveMortgageDeductions(list,deductionMethod);
             return "1";
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,6 +184,7 @@ public class MortgageDeductionController {
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
             if (list != null) {
                 list.get(0).setIssuccess("1");
+                list.get(0).setErrorResult("成功");
                 mortgageDeductionService.updateMortgageDeductions(list);
                 return "1";
             } else {

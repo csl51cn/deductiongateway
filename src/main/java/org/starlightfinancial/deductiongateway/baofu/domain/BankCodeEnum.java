@@ -77,4 +77,25 @@ public enum BankCodeEnum {
         }
         return null;
     }
+
+
+    public static String getCodeById(String id) {
+        for (BankCodeEnum _enum : BankCodeEnum.values()) {
+            if (id.equals(_enum.getId())) {
+                return _enum.getCode();
+            }
+        }
+        return null;
+    }
+
+
+
+    public static String getBankNameById(String id) {
+        for (BankCodeEnum _enum : BankCodeEnum.values()) {
+            if (id.equals(_enum.getId())) {
+                return _enum.getBankName();
+            }
+        }
+        return null;
+    }
 }

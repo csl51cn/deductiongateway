@@ -54,7 +54,7 @@ public class ApplicationTest {
 //        File file = new File("src/main/resources/代扣粘贴模版.xls");
 //        mortgageDeductionService.importCustomerData(file, 14);
         List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
-        mortgageDeductionService.saveMortgageDeductions(list);
+        mortgageDeductionService.saveMortgageDeductions(list,"0");
 
     }
 }

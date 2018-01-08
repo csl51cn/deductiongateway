@@ -15,7 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.service.AssemblerFactory;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.*;
 
@@ -48,6 +50,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     @Autowired
     private LimitManagerRepository limitManagerRepository;
+
+    @Autowired
+    private AssemblerFactory assemblerFactory;
 
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
@@ -204,32 +209,39 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     }
 
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception {
-        for (int i = 0; i < list.size(); i++) {
-            MortgageDeduction mortgageDeduction = list.get(i);
-            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
-            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-                throw new Exception("银联报文签名异常");
-            }
-            goPayBean.setChkValue(chkValue);
-            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
-
-            try {
-                Map map = httpClientUtil.send("", goPayBean.aggregationToList());
-                String payStat = (String) map.get("PayStat");
-                mortgageDeduction.setResult(payStat);
-                if (StringUtils.equals(Constant.SUCCESS, payStat))
-                    mortgageDeduction.setIssuccess("1");
-                else
-                    mortgageDeduction.setIssuccess("0");
-                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
-            } catch (Exception e) {
-                e.printStackTrace();
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
-            }
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception {
+//        for (int i = 0; i < list.size(); i++) {
+//            MortgageDeduction mortgageDeduction = list.get(i);
+//            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
+//            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
+//            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
+//                throw new Exception("银联报文签名异常");
+//            }
+//            goPayBean.setChkValue(chkValue);
+//            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
+//
+//            try {
+//                Map map = httpClientUtil.send("", goPayBean.aggregationToList());
+//                String payStat = (String) map.get("PayStat");
+//                mortgageDeduction.setResult(payStat);
+//                if (StringUtils.equals(Constant.SUCCESS, payStat))
+//                    mortgageDeduction.setIssuccess("1");
+//                else
+//                    mortgageDeduction.setIssuccess("0");
+//                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
+//                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
+//            }
+//        }
+        ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
+        if (StringUtils.equals("UNIONPAY", deductionMethod)) {
+            assembler.saveUNIONPAY(list);
+        } else if (StringUtils.equals("BAOFU", deductionMethod)) {
+            assembler.saveBAOFU(list);
         }
+
 
         return null;
     }
@@ -345,6 +357,12 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     mortgageDeduction.setTarget("铠岳");
                 } else {
                     mortgageDeduction.setTarget("润坤");
+                }
+
+                //处理代扣卡银行名
+                String bankName = BankCodeEnum.getBankNameById(mortgageDeduction.getParam1());
+                if (bankName != null) {
+                    mortgageDeduction.setParam1(bankName);
                 }
             }
             pageBean.setRows(mortgageDeductionList);
@@ -552,13 +570,4 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
 
-    private void updateMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
-        mortgageDeduction.setOrdId(goPayBean.getOrdId());
-        mortgageDeduction.setMerId(goPayBean.getMerId());
-        mortgageDeduction.setCuryId(goPayBean.getCuryId());
-        mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
-        mortgageDeduction.setPlanNo(0);
-        mortgageDeduction.setType("0");
-        mortgageDeduction.setPayTime(new Date());
-    }
 }

@@ -26,10 +26,11 @@ public interface MortgageDeductionService {
     /**
      * 执行代扣.
      *
-     * @param list the list
+     * @param list            the list
+     * @param deductionMethod 代扣方式:UNIONPAY 使用银联代扣,BAOFU使用宝付代扣
      * @return the list
      */
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception;
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception;
 
     /**
      * 查询代扣数据

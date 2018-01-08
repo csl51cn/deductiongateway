@@ -4,46 +4,87 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
-import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
+import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
  * Created by Administrator on 2017-7-22.
+ * 银联后台接收页面
  */
 @RestController
 public class PayGetBgController {
     private static final Logger log = LoggerFactory.getLogger(PayGetBgController.class);
 
     @RequestMapping("/PayGetBgAsyn")
-    public String UpdateDeduction(HttpServletRequest req) throws IOException {
-        System.out.println("I'm in");
-        String cerpath = "E:\\bfkey_100000276@@100000990.cer";
-
-        File cerfile = new File(cerpath);
-        if (!cerfile.exists()) {//判断宝付公钥是否为空
-            System.out.printf("公钥文件不存在！");
-        }
-
+    public void UpdateDeduction(HttpServletRequest req) {
         try {
             req.setCharacterEncoding("utf-8");
         } catch (UnsupportedEncodingException e) {
             log.error("UnsupportedEncodingException");
         }
 
-        String dataContent = null;
-        try {
-            dataContent = RsaCodingUtil.decryptByPubCerFile(req.getParameter("data_content"), cerpath);
-            dataContent = SecurityUtil.Base64Decode(dataContent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        GoPayBean bean = this.getGoPayBean(req);
 
-        System.out.println("returnData" + dataContent);
-        return "OK";
+        // 打印出接口发送过来的信息
+        log.info("=========== 打印商户收到的后台响应信息  start=================");
+        log.info(bean.getMerId());
+        log.info(bean.getBusiId());
+        log.info(bean.getOrdId());
+        log.info(bean.getOrdAmt());
+        log.info(bean.getCuryId());
+        log.info(bean.getVersion());
+        log.info(bean.getGateId());
+        log.info(bean.getParam1());
+        log.info(bean.getParam2());
+        log.info(bean.getParam3());
+        log.info(bean.getParam4());
+        log.info(bean.getParam5());
+        log.info(bean.getParam6());
+        log.info(bean.getParam7());
+        log.info(bean.getParam8());
+        log.info(bean.getParam9());
+        log.info(bean.getParam10());
+        log.info(bean.getOrdDesc());
+        log.info(bean.getShareType());
+        log.info(bean.getShareData());
+        log.info(bean.getPriv1());
+        log.info(bean.getCustomIp());
+        log.info(bean.getPayStat());
+        log.info(bean.getPayTime());
+        log.info(bean.getChkValue());
+        log.info("=========== 打印商户收到的后台响应信息  end =================");
+
+    }
+
+    public GoPayBean getGoPayBean(HttpServletRequest req) {
+        GoPayBean goPayBean = new GoPayBean();
+        goPayBean.setMerId(req.getParameter("MerId"));
+        goPayBean.setBusiId(req.getParameter("BusiId"));
+        goPayBean.setOrdId(req.getParameter("OrdId"));
+        goPayBean.setOrdAmt(req.getParameter("OrdAmt"));
+        goPayBean.setCuryId(req.getParameter("CuryId"));
+        goPayBean.setVersion(req.getParameter("Version"));
+        goPayBean.setGateId(req.getParameter("GateId"));
+        goPayBean.setParam1(req.getParameter("Param1"));
+        goPayBean.setParam2(req.getParameter("Param2"));
+        goPayBean.setParam3(req.getParameter("Param3"));
+        goPayBean.setParam4(req.getParameter("Param4"));
+        goPayBean.setParam5(req.getParameter("Param5"));
+        goPayBean.setParam6(req.getParameter("Param6"));
+        goPayBean.setParam7(req.getParameter("Param7"));
+        goPayBean.setParam8(req.getParameter("Param8"));
+        goPayBean.setParam9(req.getParameter("Param9"));
+        goPayBean.setParam10(req.getParameter("Param10"));
+        goPayBean.setOrdDesc(req.getParameter("OrdDesc"));
+        goPayBean.setShareType(req.getParameter("ShareType"));
+        goPayBean.setShareData(req.getParameter("ShareData"));
+        goPayBean.setPriv1(req.getParameter("Priv1"));
+        goPayBean.setCustomIp(req.getParameter("CustomIp"));
+        goPayBean.setPayStat(req.getParameter("PayStat"));
+        goPayBean.setPayTime(req.getParameter("PayTime"));
+        goPayBean.setChkValue(req.getParameter("ChkValue"));
+        return goPayBean;
     }
 }

@@ -130,7 +130,7 @@ public class AutoBatchDeduction {
         dataContent.setIdCard(certificateNo);
         dataContent.setIdHolder(customerName);
         // TODO: 2018/1/5 电话号码不能为空，否则会报交易要素缺失，但是测试环境送错误的号码也可以通过交易
-        dataContent.setMobile("13999999999");
+        dataContent.setMobile("18223309960");//13999999999
         dataContent.setValidDate("");
         dataContent.setValidNo("");
         dataContent.setTransId(MerSeq.tickOrder());
@@ -139,11 +139,7 @@ public class AutoBatchDeduction {
         dataContent.setAdditionalInfo("");
         dataContent.setReqReserved("");
         dataContent.setTransSerialNo("TSN" + System.currentTimeMillis());
-        // TODO: 2018/1/5 有分账账户但分账金额为0，交易不能通过
-        dataContent.setShareInfo("100000749," + bxAmount.multiply(BigDecimal.valueOf(100)).setScale(0).toString()
-                + ";100000178," + fwfAmount.multiply(BigDecimal.valueOf(100)).setScale(0).toString());
-        // TODO: 2018/1/5 分账手续费账户可以不填
-        dataContent.setFeeMemberId("100000749");
+
         return dataContent;
     }
 

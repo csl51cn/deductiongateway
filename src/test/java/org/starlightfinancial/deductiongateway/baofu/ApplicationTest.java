@@ -20,7 +20,6 @@ import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 
 import javax.transaction.Transactional;
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -74,7 +73,7 @@ public class ApplicationTest {
         jsonMap.put("id_card_type", "01"); // 身份证类型 默认01
         jsonMap.put("id_card", "320301198502169142"); // 身份证号
         jsonMap.put("id_holder", "张宝"); // 持卡人姓名
-        jsonMap.put("mobile", ""); // 银行卡绑定手机号
+        jsonMap.put("mobile", "12345678901"); // 银行卡绑定手机号
         jsonMap.put("valid_date", ""); // 信用卡有效期
         jsonMap.put("valid_no", ""); // 信用卡安全码
         jsonMap.put("trans_id", "TID" + System.currentTimeMillis()); // 商户订单号

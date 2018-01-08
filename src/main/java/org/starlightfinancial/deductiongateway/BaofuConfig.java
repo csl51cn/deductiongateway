@@ -26,6 +26,10 @@ public class BaofuConfig {
     @Value("${baofu.api.member.id}")
     private String memberId;
 
+
+    @Value("${baofu.api.service.member.id}")
+    private String serviceMemberId;
+
     @Value("${baofu.api.data.type}")
     private String dataType;
 
@@ -152,5 +156,13 @@ public class BaofuConfig {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getServiceMemberId() {
+        return serviceMemberId;
+    }
+
+    public void setServiceMemberId(String serviceMemberId) {
+        this.serviceMemberId = serviceMemberId;
     }
 }

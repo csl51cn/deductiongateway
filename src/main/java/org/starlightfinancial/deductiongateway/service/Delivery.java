@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
@@ -92,8 +93,11 @@ public class Delivery extends Decorator {
                 returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getCerFile());
                 returnData = SecurityUtil.Base64Decode(returnData);
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                returnData = jsonObject.getObject("resp_msg", String.class);
-                if (StringUtils.equals("交易成功", returnData)) {
+                String resp_msg = jsonObject.getObject("resp_msg", String.class);
+                String resp_code = jsonObject.getObject("resp_code", String.class);
+                mortgageDeduction.setResult(resp_code);
+                mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(resp_code));
+                if (StringUtils.equals("交易成功", resp_msg)) {
                     mortgageDeduction.setIssuccess("1");
                 } else {
                     mortgageDeduction.setIssuccess("0");

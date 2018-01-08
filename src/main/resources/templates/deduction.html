@@ -132,7 +132,8 @@
                                             <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="deductionBtn" value="执行代扣"/>
+                                            <input type="button" id="deductionBtn" value="银联代扣"/>
+                                            <input type="button" id="baoFuDeductionBtn" value="宝付代扣"/>
                                             <input type="button" id="deleteBtn" value="删除"/>
                                         </td>
                                     </tr>
@@ -195,24 +196,18 @@
         }, {
             field: 'param1',
             title: '开户行'
-        }, {
-            field: 'param2',
-            title: '卡折标志'
-        }, {
+        },  {
             field: 'param3',
             title: '银行卡号'
-        }, {
-            field: 'param5',
-            title: '证件类型'
         }, {
             field: 'param6',
             title: '证件号码'
         }, {
             field: 'splitData1',
-            title: '分账数据1'
+            title: '本息金额'
         }, {
             field: 'splitData2',
-            title: '分账数据2'
+            title: '服务费金额'
         }, {
             field: 'target',
             title: '服务费管理公司'
@@ -309,8 +304,9 @@
                 query: queryParams()
             })
         });
-        <!--执行代扣按钮功能-->
-        $("#deductionBtn").click(function () {
+
+        <!--执行代扣功能-->
+        function executeDeduct(deductionMethod) {
             $('#confirmModal').modal();
             $(".btn-success").click(function () {
                 var ids = [];
@@ -325,7 +321,7 @@
                     url: "/mortgageDeductionController/saveMortgageDeductions.do",
                     timeout: 1800000,
                     method: "POST",
-                    data: {"ids": ids.toString(),"reGenerate":"0"},
+                    data: {"ids": ids.toString(), "reGenerate": "0", "deductionMethod": deductionMethod},
                     success: function (data) {
                         $('#myModal').modal('hide');
                         if ("1" == data) {
@@ -347,7 +343,19 @@
                     }
                 })
             })
+        }
+
+
+        <!--银联代扣按钮功能-->
+        $("#deductionBtn").click(function () {
+            executeDeduct("UNIONPAY");
         });
+        <!--宝付代扣按钮功能-->
+        $("#baoFuDeductionBtn").click(function () {
+            executeDeduct("BAOFU");
+        });
+
+
         <!--删除按钮功能-->
         $("#deleteBtn").click(function () {
             $('#confirmModal').modal();

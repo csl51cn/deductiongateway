@@ -21,6 +21,7 @@ import org.starlightfinancial.deductiongateway.utility.DictionaryType;
 import org.starlightfinancial.deductiongateway.utility.UnionPayUtil;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -87,6 +88,18 @@ public class AutoBatchAssembler extends Assembler {
             requestParams.setFwfAmount(autoBatchDeduction.getFwfAmount());
 
             DataContent dataContent = autoBatchDeduction.transToDataContent();
+
+            // 有服务费且服务费走账公司为铠岳时才分账
+            if (autoBatchDeduction.getFwfAmount().doubleValue() > 0 && StringUtils.equals("铠岳", autoBatchDeduction.getFwfCompamny())) {
+                dataContent.setShareInfo(baofuConfig.getMemberId() + "," + autoBatchDeduction.getBxAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
+                        + ";" + baofuConfig.getServiceMemberId() + "," + autoBatchDeduction.getFwfAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+            } else {
+                //无服务费或者服务费走账公司不是铠岳的情况
+                dataContent.setShareInfo(baofuConfig.getMemberId() + "," + dataContent.getTxnAmt());
+            }
+
+            // 分账手续费从本息账户扣除
+            dataContent.setFeeMemberId(baofuConfig.getMemberId());
             dataContent.setTxnSubType(baofuConfig.getTxnSubType());
             dataContent.setBizType(baofuConfig.getBizType());
             dataContent.setTerminalId(baofuConfig.getTerminalId());

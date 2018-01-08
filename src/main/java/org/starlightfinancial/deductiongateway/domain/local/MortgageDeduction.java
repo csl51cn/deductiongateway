@@ -2,11 +2,12 @@ package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang.StringUtils;
+import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
-import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -80,7 +81,7 @@ public class MortgageDeduction {
     private Date createDate;
 
     @Column(name = "paytime")
-    @JsonFormat(pattern = "yyyy/MM/dd.HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss", timezone = "GMT+8")
     private Date payTime;
 
     @Column(name = "issuccess")
@@ -113,6 +114,11 @@ public class MortgageDeduction {
     @Column(name = "checkstate")
     private String checkState;
 
+
+
+    @Column(name = "ledgerstate")
+    private String ledgerState;
+
     public GoPayBean transToGoPayBean() {
         GoPayBean goPayBean = new GoPayBean();
         goPayBean.setContractId(contractNo);//设置合同编号
@@ -135,12 +141,7 @@ public class MortgageDeduction {
             m2 = new BigDecimal(amount2).movePointRight(2).intValue();
         }
         goPayBean.setOrdAmt(m1 + m2 + "");
-        goPayBean.setMerId(Utility.SEND_BANK_MERID);//商户号
-        goPayBean.setCuryId(Utility.SEND_BANK_CURYID);//订单交易币种
-        goPayBean.setVersion(Utility.SEND_BANK_VERSION);//版本号
-        goPayBean.setBgRetUrl(Utility.SEND_BANK_BGRETURL);//后台交易接收URL地址
-        goPayBean.setPageRetUrl(Utility.SEND_BANK_PAGERETURL);//页面交易接收URL地址
-        goPayBean.setGateId(Utility.SEND_BANK_GATEID);//支付网关号
+
 //        goPayBean.setOrdAmt("2");
 //        goPayBean.setParam1("0410");//开户行号
 //        goPayBean.setParam2("0");//卡折标志
@@ -158,8 +159,7 @@ public class MortgageDeduction {
         goPayBean.setParam8("");
         goPayBean.setParam9("");
         goPayBean.setParam10("");
-        goPayBean.setOrdDesc("批量代扣款");
-        goPayBean.setShareType(Utility.SEND_BANK_TYPE);//分账类型
+        goPayBean.setOrdDesc("银联");
         goPayBean.setShareData(this.getShareData(m1, m2));
         goPayBean.setPriv1("");
         goPayBean.setCustomIp("");
@@ -183,6 +183,26 @@ public class MortgageDeduction {
         // shareData = "00010001^1;00010002^1";
         return shareData;
     }
+
+    public DataContent transToDataContent() {
+        DataContent dataContent = new DataContent();
+        dataContent.setAccNo(param3);
+        dataContent.setIdCardType("01");
+        dataContent.setIdCard(param6);
+        dataContent.setIdHolder(customerName);
+        // TODO: 2018-01-05 手机号码
+        dataContent.setMobile("13008338782");//
+        dataContent.setValidDate("");
+        dataContent.setValidNo("");
+        dataContent.setTransId(MerSeq.tickOrder());
+        dataContent.setTxnAmt(splitData1.add(splitData2).multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+        dataContent.setTradeDate(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+        dataContent.setAdditionalInfo("");
+        dataContent.setReqReserved("");
+        dataContent.setTransSerialNo("TSN" + System.currentTimeMillis());
+        return dataContent;
+    }
+
 
     public MortgageDeduction() {
     }
@@ -437,5 +457,13 @@ public class MortgageDeduction {
 
     public void setCheckState(String checkState) {
         this.checkState = checkState;
+    }
+
+    public String getLedgerState() {
+        return ledgerState;
+    }
+
+    public void setLedgerState(String ledgerState) {
+        this.ledgerState = ledgerState;
     }
 }
