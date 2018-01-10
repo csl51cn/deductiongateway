@@ -149,65 +149,6 @@
                     </div>
                 </div>
             </div>
-            <!--<div class="modal fade" id="moreInfoModal" role="dialog"  aria-labelledby="moreInfoModalLabel">-->
-                <!--<div class="modal-dialog">-->
-                    <!--<div class="modal-content message_align">-->
-                        <!--<div class="modal-header">-->
-                            <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span-->
-                                    <!--aria-hidden="true">×</span></button>-->
-                            <!--<h4 class="modal-title" id = "moreInfoModalLabel">代扣信息</h4>-->
-                        <!--</div>-->
-                        <!--<div class="modal-body">-->
-                            <!--<table class="table table-bordered table-hover">-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">订单号:</td>-->
-                                    <!--<td id="orderId" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣人:</td>-->
-                                    <!--<td id="accountName" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣人身份证:</td>-->
-                                    <!--<td id="identityNo" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣银行:</td>-->
-                                    <!--<td id="bankName" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣卡号:</td>-->
-                                    <!--<td id="accountNo" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">本息(元):</td>-->
-                                    <!--<td id="principalAndInterest" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">服务费(元):</td>-->
-                                    <!--<td id="serviceCharge" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣渠道:</td>-->
-                                    <!--<td id="deductionMethod" style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣时间:</td>-->
-                                    <!--<td id="payTime"  style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td style="width: 100px;text-align: right;">代扣结果:</td>-->
-                                    <!--<td id="status"  style="width: 200px;text-align: left;"></td>-->
-                                <!--</tr>-->
-                            <!--</table>-->
-                        <!--</div>-->
-                        <!--<div class="modal-footer">-->
-                        <!--</div>-->
-                    <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-                <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
-            <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
-
             <div class="modal fade" id="confirmModal" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
@@ -480,7 +421,7 @@
                         var status  = null;
                         if (row.issuccess == '1') {
                             status =  '交易成功';
-                        } else if (value == '0') {
+                        } else if (row.issuccess == '0') {
                             status =  '交易失败';
                         } else {
                             status =  '暂无结果'
@@ -508,6 +449,11 @@
             var date = new Date(strTime);
             return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
         }
+
+        $('#moreInfoModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
+
 
         function queryParams() {
             var date = FormatDate(new Date())

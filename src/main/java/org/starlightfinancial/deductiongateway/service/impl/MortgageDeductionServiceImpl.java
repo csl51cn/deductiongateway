@@ -210,31 +210,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception {
-//        for (int i = 0; i < list.size(); i++) {
-//            MortgageDeduction mortgageDeduction = list.get(i);
-//            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
-//            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
-//            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-//                throw new Exception("银联报文签名异常");
-//            }
-//            goPayBean.setChkValue(chkValue);
-//            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
-//
-//            try {
-//                Map map = httpClientUtil.send("", goPayBean.aggregationToList());
-//                String payStat = (String) map.get("PayStat");
-//                mortgageDeduction.setResult(payStat);
-//                if (StringUtils.equals(Constant.SUCCESS, payStat))
-//                    mortgageDeduction.setIssuccess("1");
-//                else
-//                    mortgageDeduction.setIssuccess("0");
-//                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-//                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
-//            }
-//        }
+
         ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
         if (StringUtils.equals("UNIONPAY", deductionMethod)) {
             assembler.saveUNIONPAY(list);
@@ -406,7 +382,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         //表头
         String[] headers = new String[]
                 {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果","代扣渠道","银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
         sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
@@ -511,19 +487,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
 
             cell = row.createCell(14);
+            cell.setCellValue(mortgageDeduction.getOrderDesc());
+            cell = row.createCell(15);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
-            cell = row.createCell(15);
+            cell = row.createCell(16);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
             } else {
                 cell.setCellValue("");
             }
-
-
             i = i + 1;
         }
         return workbook;

@@ -99,6 +99,7 @@
                         </div>
                         <div class="modal-body">
                             <p>您确认要执行吗？</p>
+                            <span id="logoImage"></span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
@@ -345,13 +346,14 @@
             })
         }
 
-
         <!--银联代扣按钮功能-->
         $("#deductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
             executeDeduct("UNIONPAY");
         });
         <!--宝付代扣按钮功能-->
         $("#baoFuDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
             executeDeduct("BAOFU");
         });
 

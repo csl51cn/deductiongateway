@@ -191,7 +191,7 @@ public class MortgageDeduction {
         dataContent.setIdCard(param6);
         dataContent.setIdHolder(customerName);
         // TODO: 2018-01-05 手机号码
-        dataContent.setMobile("13008338782");//
+        dataContent.setMobile("18223309960");
         dataContent.setValidDate("");
         dataContent.setValidNo("");
         dataContent.setTransId(MerSeq.tickOrder());
