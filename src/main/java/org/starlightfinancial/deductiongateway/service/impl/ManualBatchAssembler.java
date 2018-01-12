@@ -103,9 +103,14 @@ public class ManualBatchAssembler extends Assembler {
             DataContent dataContent = mortgageDeduction.transToDataContent();
 
             // 有服务费且服务费走账公司为铠岳时才分账
-            if (mortgageDeduction.getSplitData2().doubleValue() > 0 && StringUtils.equals("00145112", mortgageDeduction.getTarget())) {
-                dataContent.setShareInfo(baofuConfig.getMemberId() + "," + mortgageDeduction.getSplitData1().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
-                        + ";" + baofuConfig.getServiceMemberId() + "," + mortgageDeduction.getSplitData2().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+            if (mortgageDeduction.getSplitData2().doubleValue() > 0 ) {
+                if ( StringUtils.equals("00145112", mortgageDeduction.getTarget())){
+                    dataContent.setShareInfo(baofuConfig.getMemberId() + "," + mortgageDeduction.getSplitData1().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
+                            + ";" + baofuConfig.getKaiyueServiceMemberId() + "," + mortgageDeduction.getSplitData2().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+                }else if (StringUtils.equals("00160808", mortgageDeduction.getTarget())){
+                    dataContent.setShareInfo(baofuConfig.getMemberId() + "," + mortgageDeduction.getSplitData1().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
+                            + ";" + baofuConfig.getRunkunServiceMemberId() + "," + mortgageDeduction.getSplitData2().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
+                }
             } else {
                 //无服务费或者服务费走账公司不是铠岳的情况
                 dataContent.setShareInfo(baofuConfig.getMemberId() + "," + dataContent.getTxnAmt());

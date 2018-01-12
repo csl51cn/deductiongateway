@@ -13,6 +13,8 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.support.DatabaseType;
@@ -80,6 +82,27 @@ public class BatchConfig {
                 .flow(s0)
                 .end()
                 .listener(myJobListener())
+                .build();
+    }
+
+    @Bean(name = "deductionTemplatBatchImport")
+    public Job deductionTemplateBatchImport(JobBuilderFactory jobs, @Qualifier("s2") Step s2) {
+        return jobs.get("deductionTemplatBatchImport")
+                .incrementer(new RunIdIncrementer())
+                .flow(s2)
+                .end()
+                .build();
+    }
+
+
+    @Bean(name = "s2")
+    public Step step2(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader,  ItemWriter<AutoBatchDeduction> writer
+            , @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
+        return stepBuilderFactory.get("step2")
+                .transactionManager(tx)
+                .<AutoBatchDeduction, AutoBatchDeduction>chunk(65000)
+                .reader(reader)
+                .writer(writer)
                 .build();
     }
 
@@ -210,7 +233,7 @@ public class BatchConfig {
                 "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
 //                "AND d.放款日期 <= '2017-10-10' " +
 //                "AND d.放款日期 >= '2012-01-01'  ORDER BY d.放款日期");
-                "AND d.放款日期 <= '"+ yesterday+" 23:59:59'" +
+                "AND d.放款日期 <= '" + yesterday + " 23:59:59'" +
                 "AND d.放款日期 > '" + lastLoanDate + "' ORDER BY d.放款日期");
         return jdbcCursorItemReader;
     }
@@ -272,4 +295,19 @@ public class BatchConfig {
     public MyJobListener myJobListener() {
         return new MyJobListener();
     }
+
+    @Bean(name = "w2")
+    @StepScope
+    public JdbcBatchItemWriter<AutoBatchDeduction> deductionTemplateWriter(@Qualifier("localDataSource") DataSource dataSource) {
+        JdbcBatchItemWriter<AutoBatchDeduction> jdbcBatchItemWriter = new JdbcBatchItemWriter<>();
+        jdbcBatchItemWriter.setDataSource(dataSource);
+        jdbcBatchItemWriter.setSql("INSERT INTO BU_DEDUCTION_TEMPLATE ([dateid],[业务编号],[合同编号],[计划期数],[计划还款日]," +
+                "[还款账号银行],[代扣卡折类型],[还款账号], [还款账户名],[代扣人证件类型], [代扣人证件号码],[当期应还本息],[当期应还服务费], " +
+                "[服务费管理司],[是否代扣成功],[当期未扣本息],[当期未扣服务费]  ) VALUES ( :dateId, :busiNo, :contractNo,:planVolume, :planDate, :bankName, :cardAndPassbook, :accout, :customerName," +
+                " :certificateType, :certificateNo,:bxAmount,:fwfAmount, :fwfCompamny,'0',:bxAmount,:fwfAmount)");
+        jdbcBatchItemWriter.setItemSqlParameterSourceProvider( new BeanPropertyItemSqlParameterSourceProvider<AutoBatchDeduction>(){});
+        return jdbcBatchItemWriter;
+    }
+
+
 }

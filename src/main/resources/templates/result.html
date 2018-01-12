@@ -104,9 +104,6 @@
                                             <input type="button" id="exportBtn" value="导出结果"/>
                                         </td>
                                     </tr>
-                                    <tr>
-
-                                    </tr>
                                 </table>
                             </form>
                         </div>
@@ -509,7 +506,7 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
-            var startDate = $("#startDate").val();
+                      var startDate = $("#startDate").val();
             var endDate = $("#endDate").val();
             var customerName = $("#customerName").val()
             location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;

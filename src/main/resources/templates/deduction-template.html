@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <title>代扣模板</title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/main.do"><span>润通代扣系统</span></a>
+
+            <!-- start: Header Menu -->
+            <div class="nav-no-collapse header-nav">
+                <ul class="nav pull-right">
+                    <!-- start: User Dropdown -->
+                    <li class="dropdown">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="halflings-icon white user"></i>
+                            <div th:text="${session.loginUser.loginName}" th:remove="tag"></div>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-menu-title">
+                                <span>账户设置</span>
+                            </li>
+                            <li><a href="/logout.do"><i class="halflings-icon off"></i> 退出</a></li>
+                        </ul>
+                    </li>
+                    <!-- end: User Dropdown -->
+                </ul>
+            </div>
+            <!-- end: Header Menu -->
+
+        </div>
+    </div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/deductiontemplate.do">代扣模板</a></li>
+            </ul>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行中 请不要关闭进度条</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="confirmModal">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>代扣模板</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form class="form-horizontal" id="form">
+                                <table class="table-bordered">
+                                    <tr with="33%">
+                                        <td>还款开始日期</td>
+                                        <td><input size="16" type="text" id="startDate" class="form_datetime"
+                                                   name="startDate" style="width: 150px;"/></td>
+                                        <td>结束日期</td>
+                                        <td>
+                                            <input size="16" type="text" id="endDate" class="form_datetime"
+                                                   name="endDate" style="width: 150px;"/></td>
+                                        <td>业务编号</td>
+                                        <td>
+                                            <input type="text" class="" id="bizNo" name="bizNo"
+                                                   style="width: 150px;"/>
+                                        </td>
+                                        <td>合同号</td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
+
+                                        <td rowspan="2">
+                                            <input type="button" id="queryBtn" value="查询"/>
+                                            <input type="button" id="exportBtn" value="导出模板"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>交易结果</td>
+                                        <td>
+                                            <select id="result"  style="width: 150px;">
+                                                <option value="0,1" selected>全部</option>
+                                                <option value="0">失败</option>
+                                                <option value="1">成功</option>
+                                            </select>
+                                        </td>
+
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <table id="table"></table>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
+
+
+
+<script type="text/javascript" th:inline="javascript">
+    var staffId = [[${session.loginUser.staffId}]];
+    var columns = [{
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
+        field: 'id',
+        title: 'id'
+    }, {
+        field: 'dateId',
+        title: 'dateId'
+    },  {
+        field: 'contractNo',
+        title: '合同编号'
+    }, {
+        field: 'bankName',
+        title: '银行名称'
+    }, {
+        field: 'account',
+        title: '银行卡号'
+    }, {
+        field: 'customerName',
+        title: '姓名'
+    }, {
+        field: 'certificateNo',
+        title: '证件号码'
+    }, {
+        field: 'bxAmount',
+        title: '本息'
+    }, {
+        field: 'fwfAmount',
+        title: '服务费'
+    }, {
+        field: 'fwfCompamny',
+        title: '服务费管理司'
+    }, {
+        field: 'bxRemain',
+        title: '未扣本息'
+    }, {
+        field: 'fwfRemain',
+        title: '未扣服务费'
+    },{
+        field: 'isSuccess',
+        title: '代扣状态',
+        formatter:function (value, row, index) {
+            if (value =="1"){
+                return '<img src="/img/success.png" style="width:20%">';
+            }else{
+                return '<img src="/img/fail.png" style="width:20%">';
+            }
+        }
+    }];
+    $(function () {
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/deductionTemplateController/queryDeductionTemplate.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 10,
+                pageList: [10, 20, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                }
+            });
+        };
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+        $('#table').bootstrapTable('hideColumn', 'dateId');
+
+        function FormatDate(strTime) {
+            var date = new Date(strTime);
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        }
+
+        function queryParams() {
+            var date = FormatDate(new Date())
+            var starDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            if (starDate == "") {
+                starDate = date;
+            }
+            if (endDate == "") {
+                endDate = date;
+            }
+
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                startDate: starDate,
+                endDate: endDate,
+                contractNo: $("#contractNo").val(),
+                bizNo: $("#bizNo").val(),
+                isSuccess: $("#result").val()
+            }
+        };
+
+
+
+        $("#startDate").datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            $("#startDate").datetimepicker("setEndDate", $("#endDate").val())
+        });
+        $("#endDate").datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            todayBtn: true,
+            autoclose: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            $("#endDate").datetimepicker("setStartDate", $("#startDate").val())
+        });
+        <!--设置默认时间_当天-->
+        $('#startDate').datetimepicker("setValue");
+        $('#endDate').datetimepicker("setValue");
+
+
+        function query() {
+            $('#table').bootstrapTable('removeAll');
+            $('#table').bootstrapTable('refresh', {
+                url: '/deductionTemplateController/queryDeductionTemplate.do',
+                query: queryParams()
+            })
+        }
+
+        <!--查询按钮功能-->
+        $("#queryBtn").click(function () {
+            query();
+            }
+        );
+        <!--交易结果选择变化重新加载数据-->
+        $("#result").change(function(){
+            query();
+        });
+
+        <!--导出结果按钮功能-->
+        $("#exportBtn").click(function () {
+            var startDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            var contractNo= $("#contractNo").val();
+            var bizNo = $("#bizNo").val();
+            var isSuccess =$("#result").val()
+            location.href = "/deductionTemplateController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&contractNo=" + contractNo+"&bizNo=" + bizNo+"&isSuccess=" + isSuccess;
+        });
+
+
+        var value = 0;
+        <!--进度条自动增长-->
+        function increment() {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
+
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

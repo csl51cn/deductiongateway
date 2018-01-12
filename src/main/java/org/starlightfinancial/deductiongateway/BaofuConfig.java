@@ -26,9 +26,11 @@ public class BaofuConfig {
     @Value("${baofu.api.member.id}")
     private String memberId;
 
+    @Value("${baofu.api.kaiyue.service.member.id}")
+    private String kaiyueServiceMemberId;
 
-    @Value("${baofu.api.service.member.id}")
-    private String serviceMemberId;
+    @Value("${baofu.api.runkun.service.member.id}")
+    private String runkunServiceMemberId;
 
     @Value("${baofu.api.data.type}")
     private String dataType;
@@ -158,11 +160,21 @@ public class BaofuConfig {
         this.url = url;
     }
 
-    public String getServiceMemberId() {
-        return serviceMemberId;
+    public String getKaiyueServiceMemberId() {
+        return kaiyueServiceMemberId;
     }
 
-    public void setServiceMemberId(String serviceMemberId) {
-        this.serviceMemberId = serviceMemberId;
+    public void setKaiyueServiceMemberId(String kaiyueServiceMemberId) {
+
+        this.kaiyueServiceMemberId = kaiyueServiceMemberId;
     }
+
+    public String getRunkunServiceMemberId() {
+        return runkunServiceMemberId;
+    }
+
+    public void setRunkunServiceMemberId(String runkunServiceMemberId) {
+        this.runkunServiceMemberId = runkunServiceMemberId;
+    }
+
 }

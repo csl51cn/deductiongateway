@@ -28,7 +28,6 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -402,7 +401,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
         HSSFCellStyle numericStyle = workbook.createCellStyle();
         numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         int i = 1;
 
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
