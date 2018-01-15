@@ -6,7 +6,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.File;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -28,7 +28,7 @@ public class RsaCodingUtil {
      */
     public static String encryptByPubCerFile(String src, String pubCerPath) {
 
-        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(pubCerPath);
+        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(RsaCodingUtil.class.getClassLoader().getResourceAsStream(pubCerPath));
         if (publicKey == null) {
             return null;
         }
@@ -80,7 +80,7 @@ public class RsaCodingUtil {
         if (FormatUtil.isEmpty(src) || FormatUtil.isEmpty(pfxPath)) {
             return null;
         }
-        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(pfxPath, priKeyPass);
+        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(RsaCodingUtil.class.getResourceAsStream(pfxPath), priKeyPass);
         if (privateKey == null) {
             return null;
         }
@@ -145,8 +145,10 @@ public class RsaCodingUtil {
      */
     public static String encryptByPriPfxFile(String src, String pfxPath, String priKeyPass) {
         ClassLoader classLoader = RsaCodingUtil.class.getClassLoader();
+        System.out.println("私钥:"+pfxPath);
         URL url = classLoader.getResource(pfxPath);
-        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(url.getPath(), priKeyPass);
+        InputStream priKeyStream = classLoader.getResourceAsStream(pfxPath);
+        PrivateKey privateKey = RsaReadUtil.getPrivateKeyFromFile(priKeyStream, priKeyPass);
         if (privateKey == null) {
             return null;
         }
@@ -195,7 +197,8 @@ public class RsaCodingUtil {
     public static String decryptByPubCerFile(String src, String pubCerPath) {
         ClassLoader classLoader = RsaCodingUtil.class.getClassLoader();
         URL url = classLoader.getResource(pubCerPath);
-        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(url.getPath());
+        InputStream pubKeyStream = classLoader.getResourceAsStream(pubCerPath);
+        PublicKey publicKey = RsaReadUtil.getPublicKeyFromFile(pubKeyStream);
         if (publicKey == null) {
             return null;
         }

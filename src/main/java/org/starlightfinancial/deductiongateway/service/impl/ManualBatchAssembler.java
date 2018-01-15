@@ -141,6 +141,7 @@ public class ManualBatchAssembler extends Assembler {
             System.out.println("contentData" + contentData);
 
             String base64str = SecurityUtil.Base64Encode(contentData);
+
             String data_content = RsaCodingUtil.encryptByPriPfxFile(base64str, baofuConfig.getPfxFile(), baofuConfig.getPriKey());
             requestParams.setDataContent(data_content);
             requestParams.setContent(dataContent);

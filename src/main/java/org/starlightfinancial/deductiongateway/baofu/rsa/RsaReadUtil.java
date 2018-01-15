@@ -16,13 +16,14 @@ public class RsaReadUtil {
     /**
      * 根据Cer文件读取公钥
      *
-     * @param pubCerPath
+     * @param pubKeyStream
      * @return
      */
-    public static PublicKey getPublicKeyFromFile(String pubCerPath) {
-        FileInputStream pubKeyStream = null;
+    public static PublicKey getPublicKeyFromFile(InputStream pubKeyStream) {
+        // TODO: 2018-01-15 linux下使用FileInputStream不能读取到文件,直接使用ClassLoader的getResourceAsStream获取流就可以
+//        FileInputStream pubKeyStream = null;
         try {
-            pubKeyStream = new FileInputStream(pubCerPath);
+//            pubKeyStream = new FileInputStream(pubCerPath);
             byte[] reads = new byte[pubKeyStream.available()];
             pubKeyStream.read(reads);
             return getPublicKeyByText(new String(reads));
@@ -70,14 +71,15 @@ public class RsaReadUtil {
     /**
      * 根据私钥路径读取私钥
      *
-     * @param pfxPath
+     * @param priKeyStream
      * @param priKeyPass
      * @return
      */
-    public static PrivateKey getPrivateKeyFromFile(String pfxPath, String priKeyPass) {
-        InputStream priKeyStream = null;
+    public static PrivateKey getPrivateKeyFromFile(InputStream priKeyStream, String priKeyPass) {
+        // TODO: 2018-01-15 linux下使用FileInputStream不能读取到文件,直接使用ClassLoader的getResourceAsStream获取流就可以
+//        InputStream priKeyStream = null;
         try {
-            priKeyStream = new FileInputStream(pfxPath);
+//            priKeyStream = new FileInputStream(pfxPath);
             byte[] reads = new byte[priKeyStream.available()];
             priKeyStream.read(reads);
             return getPrivateKeyByStream(reads, priKeyPass);
