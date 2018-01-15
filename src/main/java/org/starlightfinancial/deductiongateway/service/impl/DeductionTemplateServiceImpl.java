@@ -41,16 +41,16 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
      * @param pageBean
      * @param isSuccess
      * @param contractNo
-     * @param bizNo
+     * @param customerName
      * @param startDate
      * @param endDate
      * @return
      */
     @Override
-    public PageBean queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate) {
+    public PageBean queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
 
         //从前端传入的条件设置specification
-        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, bizNo, startDate, endDate);
+        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, customerName, startDate, endDate);
         long count = deductionTemplateRepository.count(specification);
         double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
         double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
@@ -162,12 +162,12 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
     }
 
     @Override
-    public Workbook exportXLS(String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate) {
+    public Workbook exportXLS(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
         //表头
         String[] headers = new String[]{"业务编号", "银行名称", "卡折标识", "银行卡号", "姓名", "证件类型", "证件号码", "分账户数据1",
-                "分账户数据2", "服务费管理司"};
+                "分账户数据2", "服务费管理司", "业务号"};
         sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
@@ -186,7 +186,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
         HSSFCellStyle numericStyle = workbook.createCellStyle();
         numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
         int i = 1;
-        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, bizNo, startDate, endDate);
+        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, customerName, startDate, endDate);
         List<DeductionTemplate> deductionTemplates = deductionTemplateRepository.findAll(specification);
         for (DeductionTemplate deductionTemplate : deductionTemplates) {
             row = sheet.createRow(i);
@@ -211,6 +211,8 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
             cell.setCellValue(deductionTemplate.getFwfRemain().doubleValue());
             cell = row.createCell(9);
             cell.setCellValue(deductionTemplate.getFwfCompamny());
+            cell = row.createCell(10);
+            cell.setCellValue(deductionTemplate.getBizNo());
             i = i + 1;
         }
         return workbook;
@@ -218,7 +220,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
     }
 
 
-    private Specification<DeductionTemplate> getSpecification(String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate) {
+    private Specification<DeductionTemplate> getSpecification(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
         Specification<DeductionTemplate> specification = new Specification<DeductionTemplate>() {
             @Override
             public Predicate toPredicate(Root<DeductionTemplate> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
@@ -226,8 +228,8 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
                 String[] isSuccessArr = isSuccess.split(",");
                 predicates.add(cb.in(root.get("isSuccess")).value(Arrays.asList(isSuccessArr)));
 
-                if (StringUtils.isNotBlank(bizNo)) {
-                    predicates.add(cb.equal(root.get("bizNo"), bizNo));
+                if (StringUtils.isNotBlank(customerName)) {
+                    predicates.add(cb.equal(root.get("customerName"), customerName));
                 }
 
                 if (StringUtils.isNotBlank(contractNo)) {

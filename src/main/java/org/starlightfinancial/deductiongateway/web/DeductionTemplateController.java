@@ -29,19 +29,38 @@ public class DeductionTemplateController {
     @Autowired
     private DeductionTemplateService deductionTemplateService;
 
+    /**
+     * 查询代扣模板
+     * @param pageBean
+     * @param isSuccess  金额是否代扣完,0:还有金额未代扣,1:金额已经扣完
+     * @param contractNo    合同编号
+     * @param customerName  客户名称
+     * @param startDate
+     * @param endDate
+     * @return
+     */
     @RequestMapping(value = "/queryDeductionTemplate.do",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Map<String, Object> queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate) {
+    public Map<String, Object> queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
         endDate = Utility.toMidNight(endDate);
-        PageBean result = deductionTemplateService.queryDeductionTemplate(pageBean, isSuccess,contractNo.trim(),bizNo.trim(),startDate,endDate);
+        PageBean result = deductionTemplateService.queryDeductionTemplate(pageBean, isSuccess,contractNo.trim(),customerName.trim(),startDate,endDate);
         return Utility.pageBean2Map(result);
     }
 
-
+    /**
+     * 导出代扣模板
+     * @param isSuccess
+     * @param contractNo
+     * @param customerName
+     * @param startDate
+     * @param endDate
+     * @param response
+     * @throws IOException
+     */
     @RequestMapping(value = "/exportXLS.do",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void exportXLS(String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate, HttpServletResponse response) throws IOException {
+    public void exportXLS(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate, HttpServletResponse response) throws IOException {
         endDate = Utility.toMidNight(endDate);
-        Workbook workbook = deductionTemplateService.exportXLS(isSuccess,contractNo.trim(),bizNo.trim(),startDate,endDate);
+        Workbook workbook = deductionTemplateService.exportXLS(isSuccess,contractNo.trim(),customerName.trim(),startDate,endDate);
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String fileName = "代扣模板" + format.format(new Date());
         response.setContentType("application/vnd.ms-excel");

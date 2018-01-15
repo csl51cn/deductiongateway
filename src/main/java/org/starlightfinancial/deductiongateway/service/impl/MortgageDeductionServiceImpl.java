@@ -210,7 +210,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception {
 
-        ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
+         ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
         if (StringUtils.equals("UNIONPAY", deductionMethod)) {
             assembler.saveUNIONPAY(list);
         } else if (StringUtils.equals("BAOFU", deductionMethod)) {
@@ -525,6 +525,17 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         for (MortgageDeduction mortgageDeduction : list) {
             mortgageDeductionRepository.delete(mortgageDeduction);
         }
+    }
+
+    /**
+     * 根据订单号查询
+     * @param ordId
+     * @return
+     */
+    @Override
+    public MortgageDeduction findByOrdId(String ordId) {
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
+        return mortgageDeduction;
     }
 
     /**

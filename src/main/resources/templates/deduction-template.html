@@ -124,9 +124,9 @@
                                         <td>
                                             <input size="16" type="text" id="endDate" class="form_datetime"
                                                    name="endDate" style="width: 150px;"/></td>
-                                        <td>业务编号</td>
+                                        <td>客户姓名</td>
                                         <td>
-                                            <input type="text" class="" id="bizNo" name="bizNo"
+                                            <input type="text" class="" id="customerName" name="customerName"
                                                    style="width: 150px;"/>
                                         </td>
                                         <td>合同号</td>
@@ -290,7 +290,7 @@
                 startDate: starDate,
                 endDate: endDate,
                 contractNo: $("#contractNo").val(),
-                bizNo: $("#bizNo").val(),
+                customerName: $("#customerName").val(),
                 isSuccess: $("#result").val()
             }
         };
@@ -345,9 +345,9 @@
             var startDate = $("#startDate").val();
             var endDate = $("#endDate").val();
             var contractNo= $("#contractNo").val();
-            var bizNo = $("#bizNo").val();
+            var customerName = $("#customerName").val();
             var isSuccess =$("#result").val()
-            location.href = "/deductionTemplateController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&contractNo=" + contractNo+"&bizNo=" + bizNo+"&isSuccess=" + isSuccess;
+            location.href = "/deductionTemplateController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&contractNo=" + contractNo+"&customerName=" + customerName+"&isSuccess=" + isSuccess;
         });
 
 

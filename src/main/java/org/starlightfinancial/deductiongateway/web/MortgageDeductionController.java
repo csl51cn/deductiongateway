@@ -119,7 +119,7 @@ public class MortgageDeductionController {
     @ResponseBody
     public String saveMortgageDeductions(String ids, String reGenerate,String deductionMethod) {
         try {
-            if (StringUtils.isEmpty(ids)) {
+             if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
             }
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);

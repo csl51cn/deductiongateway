@@ -130,7 +130,7 @@ public class AutoBatchDeduction {
         dataContent.setIdCard(certificateNo);
         dataContent.setIdHolder(customerName);
         // TODO: 2018/1/5 电话号码不能为空，否则会报交易要素缺失，但是测试环境送错误的号码也可以通过交易
-        dataContent.setMobile("18223309960");//13999999999
+        dataContent.setMobile("");//13999999999
         dataContent.setValidDate("");
         dataContent.setValidNo("");
         dataContent.setTransId(MerSeq.tickOrder());

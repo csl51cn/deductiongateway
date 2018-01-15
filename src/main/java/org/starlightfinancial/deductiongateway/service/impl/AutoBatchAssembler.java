@@ -89,7 +89,7 @@ public class AutoBatchAssembler extends Assembler {
 
             DataContent dataContent = autoBatchDeduction.transToDataContent();
 
-            // 有服务费且服务费走账公司为铠岳时才分账
+            // 有服务费时才分账
             if (autoBatchDeduction.getFwfAmount().doubleValue() > 0 ) {
                 if (StringUtils.equals("铠岳", autoBatchDeduction.getFwfCompamny())){
                     dataContent.setShareInfo(baofuConfig.getMemberId() + "," + autoBatchDeduction.getBxAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
@@ -100,7 +100,7 @@ public class AutoBatchAssembler extends Assembler {
                 }
 
             } else {
-                //无服务费或者服务费走账公司不是铠岳的情况
+                //无服务费的情况
                 dataContent.setShareInfo(baofuConfig.getMemberId() + "," + dataContent.getTxnAmt());
             }
 

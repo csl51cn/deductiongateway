@@ -77,4 +77,9 @@ public interface MortgageDeductionService {
      * @param list
      */
     void deleteMortgageDeductions(List<MortgageDeduction> list);
+
+    /**
+     * 根据订单号查询代扣记录
+     */
+    MortgageDeduction findByOrdId(String  ordId);
 }

@@ -11,7 +11,26 @@ import java.util.Date;
 public interface DeductionTemplateService {
 
 
-    PageBean queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate);
+    /**
+     * 根据条件查询代扣模板
+     * @param pageBean
+     * @param isSuccess
+     * @param contractNo
+     * @param customerName
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    PageBean queryDeductionTemplate(PageBean pageBean, String isSuccess, String contractNo, String customerName, Date startDate, Date endDate);
 
-    Workbook exportXLS(String isSuccess, String contractNo, String bizNo, Date startDate, Date endDate);
+    /**
+     * 根据条件下载代扣模板
+     * @param isSuccess
+     * @param contractNo
+     * @param customerName
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    Workbook exportXLS(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate);
 }

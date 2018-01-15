@@ -11,13 +11,15 @@ import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
-import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.Arrays;
 
 /**
  * Created by Administrator on 2017-7-22.
@@ -27,7 +29,7 @@ public class BaoFuPayGetBgController {
     private static final Logger log = LoggerFactory.getLogger(BaoFuPayGetBgController.class);
 
     @Autowired
-    private MortgageDeductionRepository mortgageDeductionRepository;
+    private MortgageDeductionService mortgageDeductionService;
     @Autowired
     private BaofuConfig baofuConfig;
 
@@ -55,18 +57,22 @@ public class BaoFuPayGetBgController {
 
         String dataContent = null;
         try {
-            dataContent = RsaCodingUtil.decryptByPubCerFile(req.getParameter("data_content"), cerpath);
-            dataContent = SecurityUtil.Base64Decode(dataContent);
-            JSONObject jsonObject = (JSONObject) JSONObject.parse(dataContent);
+            System.out.println("返回的数据:"+req.getParameter("data_content"));
+            dataContent = RsaCodingUtil.decryptByPubCerFile(req.getParameter("data_content"), baofuConfig.getCerFile());
+            String  returnData = SecurityUtil.Base64Decode(dataContent);
+            JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
             String ordId = jsonObject.getObject("trans_id", String.class);
             String resp_code = jsonObject.getObject("resp_code", String.class);
             String valueByCode = BFErrorCodeEnum.getValueByCode(resp_code);
+            MortgageDeduction mortgageDeduction = mortgageDeductionService.findByOrdId(ordId);
+
             //BF00338 分账成功
-            if(valueByCode !=null && StringUtils.equals("BF00338",valueByCode)){
-                mortgageDeductionRepository.setLedgerStateFor(ordId, "1");
+            if(valueByCode !=null && StringUtils.equals("分账成功",valueByCode)){
+                mortgageDeduction.setLedgerState("1");
             }else{
-                mortgageDeductionRepository.setLedgerStateFor(ordId, "0");
+                mortgageDeduction.setLedgerState("0");
             }
+            mortgageDeductionService.updateMortgageDeductions(Arrays.asList(mortgageDeduction));
 
         } catch (Exception e) {
             e.printStackTrace();
