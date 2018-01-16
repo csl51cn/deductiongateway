@@ -222,7 +222,9 @@ public enum BFErrorCodeEnum {
 
     BF08702("BF08702", "该商户本次可支付***元，请更换其他银行卡或咨询商户客服！"),
 
-    BF08703("BF08703", "支付金额不能低于最低限额...元！ ");
+    BF08703("BF08703", "支付金额不能低于最低限额...元！ "),
+
+    BF00342("BF00342","单卡单日余额不足次数超限");
 
     private String code;
     private String value;
