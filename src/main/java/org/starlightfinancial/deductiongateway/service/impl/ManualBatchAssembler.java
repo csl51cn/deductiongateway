@@ -178,6 +178,7 @@ public class ManualBatchAssembler extends Assembler {
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
         mortgageDeduction.setPayTime(new Date());
+        mortgageDeduction.setOrderDesc("银联");
     }
 
 
