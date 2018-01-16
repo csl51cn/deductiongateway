@@ -30,6 +30,7 @@ public class Splitter extends Decorator {
     private String router;
 
     public void splitter() {
+        deductionList.clear();
         // 宝付不分账
         if (router.equals("BAOFU")) {
             deductionList.add(autoBatchDeduction);

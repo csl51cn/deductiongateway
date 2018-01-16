@@ -8,13 +8,13 @@ import java.util.List;
  */
 public abstract class Assembler extends Decorator {
 
-    private List result;
+    private List result = new ArrayList();
 
     public abstract void assembleMessage() throws Exception;
 
     @Override
     public void doRoute() throws Exception {
-        result = new ArrayList();
+        result.clear();
         super.doRoute();
         this.assembleMessage();
     }
