@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
-import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
@@ -160,7 +159,7 @@ public class ManualBatchAssembler extends Assembler {
                 }
                 String resp_code = parse.getObject("resp_code", String.class);
                 mortgageDeduction.setResult(resp_code);
-                mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(resp_code));
+                mortgageDeduction.setErrorResult(resp_msg);
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -178,7 +177,6 @@ public class ManualBatchAssembler extends Assembler {
         mortgageDeduction.setPlanNo(0);
         mortgageDeduction.setType("0");
         mortgageDeduction.setPayTime(new Date());
-        mortgageDeduction.setOrderDesc("银联");
     }
 
 
