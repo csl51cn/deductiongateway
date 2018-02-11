@@ -204,7 +204,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
             cell = row.createCell(5);
             cell.setCellValue(deductionTemplate.getCertificateType());
             cell = row.createCell(6);
-            cell.setCellValue(deductionTemplate.getCertificateNo());
+            cell.setCellValue(deductionTemplate.getCertificateNo().toUpperCase());
             cell = row.createCell(7);
             cell.setCellValue(deductionTemplate.getBxRemain().doubleValue());
             cell = row.createCell(8);
