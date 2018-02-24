@@ -415,7 +415,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
                 }
                 criteriaQuery.where(predicates.toArray(new Predicate[0]));
-                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("id")));
+                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("payTime")));
                 return criteriaQuery.getRestriction();
             }
         };
