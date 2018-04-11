@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.starlightfinancial.deductiongateway.common.SessionManager;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 
@@ -27,7 +28,8 @@ public class LoginController {
 
         SysUser loginUser = systemService.findSysUser(loginName, password);
         if (loginUser != null && loginUser.getId() > 0) {
-            session.setAttribute("loginUser", loginUser);
+//            session.setAttribute("loginUser", loginUser);
+            SessionManager.userLoginHandle(loginUser,session);
             return "main";
         }
         session.setAttribute("msg", "登录失败,用户名或密码错误/账户不可用");
@@ -36,8 +38,9 @@ public class LoginController {
 
     @RequestMapping("/logout.do")
     public String logout(HttpSession session) {
-        session.removeAttribute("loginUser");
-        session.removeAttribute("msg");
+        SessionManager.destorySession(session);
+//        session.removeAttribute("loginUser");
+//        session.removeAttribute("msg");
         return "login";
     }
 
