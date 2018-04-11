@@ -22,7 +22,7 @@ public class SessionListener implements HttpSessionListener {
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession();
-        SessionManager.destorySession(session);
+        SessionManager.destroySession(session);
     }
 
 }

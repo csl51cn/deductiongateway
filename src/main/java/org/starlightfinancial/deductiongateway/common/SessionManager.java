@@ -20,13 +20,14 @@ public class SessionManager {
     private static final Map<Integer, HttpSession> USER_SESSION = new ConcurrentHashMap<>();
 
     /**
-     * seeionId和用户的绑定关系
+     * SessionId和用户的绑定关系
      */
     private static final Map<String, Integer> SESSIONID_USER = new ConcurrentHashMap<>();
 
     /**
      * 用户登录时的处理
      *
+     * @param user
      * @param session
      */
     public synchronized static void userLoginHandle(SysUser user, HttpSession session) {
@@ -66,7 +67,7 @@ public class SessionManager {
      *
      * @param session
      */
-    public static void destorySession(HttpSession session) {
+    public static void destroySession(HttpSession session) {
         String sessionId = session.getId();
         //当前session销毁时删除当前session绑定的用户信息,同时删除当前session绑定用户的HttpSession
         Integer userId = null;

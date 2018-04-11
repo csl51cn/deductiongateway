@@ -38,7 +38,7 @@ public class LoginController {
 
     @RequestMapping("/logout.do")
     public String logout(HttpSession session) {
-        SessionManager.destorySession(session);
+        SessionManager.destroySession(session);
 //        session.removeAttribute("loginUser");
 //        session.removeAttribute("msg");
         return "login";
