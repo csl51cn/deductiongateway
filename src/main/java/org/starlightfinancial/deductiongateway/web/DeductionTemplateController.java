@@ -2,12 +2,15 @@ package org.starlightfinancial.deductiongateway.web;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.starlightfinancial.deductiongateway.service.DeductionTemplateService;
+import org.starlightfinancial.deductiongateway.service.impl.ScheduledTaskService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -25,9 +28,13 @@ import java.util.Map;
 @RequestMapping(value = "/deductionTemplateController")
 public class DeductionTemplateController {
 
+    private static final Logger log = LoggerFactory.getLogger(DeductionTemplateController.class);
 
     @Autowired
     private DeductionTemplateService deductionTemplateService;
+
+    @Autowired
+    private ScheduledTaskService scheduledTaskService;
 
     /**
      * 查询代扣模板
@@ -70,6 +77,26 @@ public class DeductionTemplateController {
         workbook.write(outputStream);
         IOUtils.closeQuietly(outputStream);
     }
+
+    /**
+     * 手动触发导入当日代扣模板
+     *
+     * @return
+     */
+    @RequestMapping(value = "/manualImportTemplate.do")
+    @ResponseBody
+    public  String  manualImportTemplate(){
+        try {
+            scheduledTaskService.deductionTemplateImport();
+            return "1";
+        }catch (Exception e){
+            return "0";
+        }
+
+    }
+
+
+
 
 
 

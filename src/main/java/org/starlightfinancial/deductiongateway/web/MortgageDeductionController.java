@@ -19,6 +19,7 @@ import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.service.ReconciliationService;
 import org.starlightfinancial.deductiongateway.service.SystemService;
+import org.starlightfinancial.deductiongateway.service.impl.ScheduledTaskService;
 import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -44,6 +45,9 @@ public class MortgageDeductionController {
     private SystemService systemService;
     @Autowired
     private ReconciliationService reconciliationService;
+    @Autowired
+    private ScheduledTaskService scheduledTaskService;
+
 
     /**
      * 代扣账户数据文件导入
@@ -110,16 +114,16 @@ public class MortgageDeductionController {
      * 执行代扣
      *
      * @param ids
-     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
-     * @param deductionMethod  代扣方式:UNIONPAY 使用银联代扣,BAOFU 使用宝付代扣
+     * @param reGenerate      扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
+     * @param deductionMethod 代扣方式:UNIONPAY 使用银联代扣,BAOFU 使用宝付代扣
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
     @SameUrlData
     @ResponseBody
-    public String saveMortgageDeductions(String ids, String reGenerate,String deductionMethod) {
+    public String saveMortgageDeductions(String ids, String reGenerate, String deductionMethod) {
         try {
-             if (StringUtils.isEmpty(ids)) {
+            if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
             }
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
@@ -139,7 +143,7 @@ public class MortgageDeductionController {
                 }
                 list = mortgageDeductionList;
             }
-            mortgageDeductionService.saveMortgageDeductions(list,deductionMethod);
+            mortgageDeductionService.saveMortgageDeductions(list, deductionMethod);
             return "1";
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,6 +220,25 @@ public class MortgageDeductionController {
             log.debug("删除代扣记录失败", e);
             return "0";
         }
+    }
+
+    /**
+     * 手动触发批量代扣
+     *
+     * @return
+     */
+    @RequestMapping(value = "/mortgageDeductionController/manualBatchDeduction.do")
+    @ResponseBody
+    public String manualBatchDeduction() {
+
+        try {
+            scheduledTaskService.execute();
+            return "1";
+        } catch (Exception e) {
+            log.debug("手动触发批量代扣失败", e);
+            return "0";
+        }
+
     }
 
 

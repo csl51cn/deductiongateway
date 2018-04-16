@@ -134,9 +134,11 @@
                                             <input type="text" class="" id="contractNo" name="contractNo"
                                                    style="width: 150px;"/></td>
 
-                                        <td rowspan="2">
+                                        <td rowspan="4">
                                             <input type="button" id="queryBtn" value="查询"/>
                                             <input type="button" id="exportBtn" value="导出模板"/>
+                                            <input type='button' id='manualImportBtn' value='手动导入模板'/>
+                                            <input type='button' id='manualBatchDeduction' value='手动批量代扣'/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -362,7 +364,79 @@
             $("#prog").css("width", value + "%")
             st = setTimeout(increment, 500);
         }
+        <!--非管理员用户不展示手动导入模板,手动执行批量代扣按钮-->
+        if(staffId != '1'){
+            $("#manualImportBtn").hide();
+            $("#manualBatchDeduction").hide();
+        }
 
+        <!--手动导入模板按钮功能-->
+        $("#manualImportBtn").click(function () {
+            $('#confirmModal').modal();
+            $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/deductionTemplateController/manualImportTemplate.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout("location.reload();", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            if (data.length > 5) {
+                                noty({
+                                    'text': '执行失败,' + data,
+                                    'layout': 'center',
+                                    'type': 'error',
+                                    "timeout": "4000"
+                                });
+
+                            } else {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        }
+                    }
+                })
+            })
+        })
+
+
+        $("#manualBatchDeduction").click(function () {
+            $('#confirmModal').modal();
+            $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/mortgageDeductionController/manualBatchDeduction.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout("location.reload();", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            if (data.length > 5) {
+                                noty({
+                                    'text': '执行失败,' + data,
+                                    'layout': 'center',
+                                    'type': 'error',
+                                    "timeout": "4000"
+                                });
+
+                            } else {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        }
+                    }
+                })
+            })
+        })
 
     })
 </script>
