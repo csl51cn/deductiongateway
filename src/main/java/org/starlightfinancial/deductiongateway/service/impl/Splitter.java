@@ -42,7 +42,7 @@ public class Splitter extends Decorator {
         BigDecimal bxAmount = autoBatchDeduction.getBxAmount();
         BigDecimal fwfAmount = autoBatchDeduction.getFwfAmount();
 
-        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1.0) {
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1.0 || singleLimit.doubleValue() == 0) {
             deductionList.add(autoBatchDeduction);
         } else {
             deductionList = recurLimit(singleLimit);

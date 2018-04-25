@@ -147,7 +147,7 @@
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>卡号管理</h2>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>限额管理</h2>
                     </div>
                     <div class="box-content">
                         <div>
@@ -240,7 +240,7 @@
         title: '单日单卡限额',
         editable: {
             type: 'text',
-            title: '单日单卡限额',
+            title: '单日单卡限额(-1为无限额)',
             validate: function (v) {
                 if (!v) return '单日单卡限额不能为空';
             }
