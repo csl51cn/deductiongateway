@@ -31,7 +31,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Override
     @Transactional
-    public void unionPayDataImport(MultipartFile file) throws IOException {
+    public void unionPayDataImport(MultipartFile file) {
         try {
             ExcelReader excelReader = new ExcelReader();
             Map<Integer, String> map = excelReader.readExcelContent(file.getInputStream());
@@ -57,7 +57,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
         if (mortgageDeduction != null) {
-            if (StringUtils.isBlank(mortgageDeduction.getErrorResult())) {//应对扣款失败无返回页面的情况
+            // 应对扣款失败无返回页面的情况
+            if (StringUtils.isBlank(mortgageDeduction.getErrorResult()) || StringUtils.isBlank(mortgageDeduction.getResult())) {
                 mortgageDeduction.setResult(ordState);
                 mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(ordState));
                 if ("1001".equals(ordState)) {
@@ -67,7 +68,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 }
                 mortgageDeduction.setCheckState("1");
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
-            } else {//应对正常返回扣款后页面的情况
+            } else {
+                // 应对正常返回扣款后页面的情况
                 if (mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2()).doubleValue() == Double.valueOf(ordAmt)
                         && mortgageDeduction.getResult().equals(ordState)) {
                     mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_SUCESS, ordId);
