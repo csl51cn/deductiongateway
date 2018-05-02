@@ -119,7 +119,7 @@ public class EncryptHelper {
 
     public static void main(String[] args) {
         EncryptHelper encryptHelper = new EncryptHelper();
-        String encString = encryptHelper.getEncString("20103213249");
+        String encString = encryptHelper.getEncString("qc852963");
         System.out.println(encString);
         System.out.println(encryptHelper.getDesString("8EE1509302691176"));
 
