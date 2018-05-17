@@ -12,13 +12,11 @@ import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
-import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.local.SysDict;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.service.Assembler;
-import org.starlightfinancial.deductiongateway.utility.DictionaryType;
-import org.starlightfinancial.deductiongateway.utility.UnionPayUtil;
+import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -41,8 +39,11 @@ public class AutoBatchAssembler extends Assembler {
     @Autowired
     UnionPayConfig unionPayConfig;
 
-    @Override
 
+    @Autowired
+    BeanConverter beanConverter;
+
+    @Override
     public void assembleMessage() throws Exception {
         List<AutoBatchDeduction> list = ((Filter) this.route).getDeductionList();
         if ("UNIONPAY".equals(router)) {
@@ -53,25 +54,11 @@ public class AutoBatchAssembler extends Assembler {
     }
 
     private void assembleUNIONPAY(List<AutoBatchDeduction> list) throws Exception {
-        for (AutoBatchDeduction autoBatchDeduction : list) {
-            GoPayBean goPayBean = autoBatchDeduction.transToGoPayBean();
-            goPayBean.setMerId(unionPayConfig.getMerId());
-            goPayBean.setCuryId(unionPayConfig.getCuryId());
-            goPayBean.setVersion(unionPayConfig.getVersion());
-            goPayBean.setBgRetUrl(unionPayConfig.getBgRetUrl());
-            goPayBean.setPageRetUrl(unionPayConfig.getPageRetUrl());
-            goPayBean.setGateId(unionPayConfig.getGateId());
-            goPayBean.setShareType(unionPayConfig.getType());
-            goPayBean.setParam1(handleBankName(goPayBean.getParam1()));
-            goPayBean.setParam5(handleCertificateType(goPayBean.getParam5()));
-            goPayBean.setParam6(goPayBean.getParam6().toUpperCase());//将身份证号中的X转换为大写
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
-            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-                throw new Exception("银联报文签名异常");
-            }
-            goPayBean.setChkValue(chkValue);
-            getResult().add(goPayBean);
+        for (AutoBatchDeduction autoBatchDeduction : list ) {
+            MortgageDeduction mortgageDeduction =beanConverter.transToMortgageDeduction(autoBatchDeduction);
+            getResult().add(mortgageDeduction);
         }
+
     }
 
     private void assembleBAOFU(List<AutoBatchDeduction> list) throws UnsupportedEncodingException {
@@ -126,25 +113,4 @@ public class AutoBatchAssembler extends Assembler {
         }
     }
 
-    private String handleBankName(String bankName) {
-        List<SysDict> openBankList = sysDictRepository.findByDicType(DictionaryType.MERID_SOURCE);
-        for (SysDict sysDict : openBankList) {
-            if (StringUtils.equals(bankName, sysDict.getDicValue())) {
-                return sysDict.getDicKey();
-            }
-        }
-
-        return "";
-    }
-
-    private String handleCertificateType(String certificateType) {
-        List<SysDict> cTypeLst = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
-        for (SysDict sysDict : cTypeLst) {
-            if (StringUtils.equals(certificateType, sysDict.getDicValue())) {
-                return sysDict.getDicKey();
-            }
-        }
-
-        return "";
-    }
 }

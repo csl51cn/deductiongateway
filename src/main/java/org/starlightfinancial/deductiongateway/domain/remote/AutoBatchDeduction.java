@@ -1,10 +1,8 @@
 
 package org.starlightfinancial.deductiongateway.domain.remote;
 
-import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
-import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 
 import javax.persistence.*;
@@ -75,53 +73,8 @@ public class AutoBatchDeduction {
     @NotEmpty(message = "合同编号不能为空")
     private String contractNo;
 
-    public GoPayBean transToGoPayBean() {
-        GoPayBean goPayBean = new GoPayBean();
-        goPayBean.setContractId(contractNo);//设置合同编号
-        goPayBean.setCustomerName(customerName);//设置客户名称
-        goPayBean.setContractNo(contractNo);//设置合同编号
-        goPayBean.setOrgManagerId(this.transFwfCode());//设置服务费的管理公司
-        goPayBean.setRePlanId("");//设置还款计划的id
-        goPayBean.setSplitData1(bxAmount);
-        goPayBean.setSplitData2(fwfAmount);
-        goPayBean.setBusiId("");
-        String amount1 = bxAmount.toString();
-        String amount2 = fwfAmount.toString();
-        int m1 = 0;
-        if (StringUtils.isNotBlank(amount1)) {
-            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
-        }
-        int m2 = 0;
-        if (StringUtils.isNotBlank(amount2)) {
-            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
-        }
-        goPayBean.setOrdAmt(m1 + m2 + "");
-        goPayBean.setOrdId(MerSeq.tickOrder());
-        //  goPayBean.setOrdAmt("2");
-//        goPayBean.setParam1("0410");//开户行号
-//        goPayBean.setParam2("0");//卡折标志
-//        goPayBean.setParam3("6216261000000000018");//卡号/折号
-//        goPayBean.setParam4("全渠道");//持卡人姓名
-//        goPayBean.setParam5("01");//证件类型
-//        goPayBean.setParam6("341126197709218366"); //证件号
-        goPayBean.setParam1(bankName);//开户行号
-        goPayBean.setParam2("0");//卡折标志
-        goPayBean.setParam3(accout);//卡号/折号
-        goPayBean.setParam4(customerName);//持卡人姓名
-        goPayBean.setParam5(certificateType);//证件类型
-        goPayBean.setParam6(certificateNo); //证件号
-        goPayBean.setParam7("");
-        goPayBean.setParam8("");
-        goPayBean.setParam9("");
-        goPayBean.setParam10("");
-        goPayBean.setOrdDesc("银联");
-        goPayBean.setShareData(this.getShareData(m1, m2));
-        goPayBean.setPriv1("");
-        goPayBean.setCustomIp("");
-        goPayBean.setPayStat("");
-        goPayBean.setPayTime("");
-        return goPayBean;
-    }
+
+
 
     public DataContent transToDataContent() {
         DataContent dataContent = new DataContent();
@@ -143,23 +96,6 @@ public class AutoBatchDeduction {
         return dataContent;
     }
 
-    private String transFwfCode() {
-        //处理服务费管理公司
-        if (StringUtils.isNotBlank(fwfCompamny) && "铠岳".equals(fwfCompamny)) {
-            return "00145112";
-        } else {
-            return "00160808";
-        }
-    }
-
-    private String getShareData(int m1, int m2) {
-        String shareData = "00145111^" + m1;
-        if (StringUtils.isNotBlank(fwfCompamny) && m2 != 0) {
-            shareData += ";" + this.transFwfCode() + "^" + m2 + ";";
-        }
-//        shareData = "00010001^1;00010002^1";
-        return shareData;
-    }
 
     public Integer getId() {
         return id;

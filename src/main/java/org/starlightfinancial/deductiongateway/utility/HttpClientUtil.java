@@ -37,7 +37,13 @@ public class HttpClientUtil {
             httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
             httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             httpclient.start();
-            System.out.println("开始调用代扣分账接口：" + url);
+
+//            HttpEntity entity = httpPost.getEntity();
+//            InputStream inputStream = entity.getContent();
+//            StringWriter writer = new StringWriter();
+//            IOUtils.copy(inputStream, writer, entity.getContentEncoding());
+//            String str = writer.toString();
+            System.out.println("开始调用接口：" + url);
             // 执行postMethod
             httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
 

@@ -1,7 +1,6 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.apache.commons.lang.StringUtils;
 import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
 import org.starlightfinancial.deductiongateway.utility.MerSeq;
 
@@ -16,7 +15,7 @@ import java.util.Date;
  *
  * @author sili.chen
  */
-@Entity(name = "BU_MORTGAGEDEUCTION")
+@Entity(name = "BU_MORTGAGEDEUCTION_Test")
 public class MortgageDeduction {
 
     @Id
@@ -84,6 +83,9 @@ public class MortgageDeduction {
     @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss", timezone = "GMT+8")
     private Date payTime;
 
+    /**
+     * 支付状态:0:失败,1:成功,其他展示为暂无结果
+     */
     @Column(name = "issuccess")
     private String issuccess;
 
@@ -93,8 +95,11 @@ public class MortgageDeduction {
     @Column(name = "isoffs")
     private String isoffs;
 
+    /**
+     * 最初建表时使用的规则:type为0表示已发起过代扣，type为1时未发起过代扣
+     */
     @Column(name = "type")
-    private String type;//type为0表示已发起过代扣，type为1时未发起过代扣
+    private String type;
 
     @Column(name = "target")
     private String target;
@@ -115,74 +120,9 @@ public class MortgageDeduction {
     private String checkState;
 
 
-
     @Column(name = "ledgerstate")
     private String ledgerState;
 
-    public GoPayBean transToGoPayBean() {
-        GoPayBean goPayBean = new GoPayBean();
-        goPayBean.setContractId(contractNo);//设置合同编号
-        goPayBean.setCustomerName(customerName);//设置客户名称
-        goPayBean.setContractNo(contractNo);//设置合同编号
-        goPayBean.setOrgManagerId(target);//设置服务费的管理公司
-        goPayBean.setRePlanId("");//设置还款计划的id
-        goPayBean.setSplitData1(splitData1);
-        goPayBean.setSplitData2(splitData2);
-        goPayBean.setBusiId("");
-        goPayBean.setOrdId(MerSeq.tickOrder());
-        String amount1 = splitData1.toString();
-        String amount2 = splitData2.toString();
-        int m1 = 0;
-        if (StringUtils.isNotBlank(amount1)) {
-            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
-        }
-        int m2 = 0;
-        if (StringUtils.isNotBlank(amount2)) {
-            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
-        }
-        goPayBean.setOrdAmt(m1 + m2 + "");
-
-//        goPayBean.setOrdAmt("2");
-//        goPayBean.setParam1("0410");//开户行号
-//        goPayBean.setParam2("0");//卡折标志
-//        goPayBean.setParam3("6216261000000000018");//卡号/折号
-//        goPayBean.setParam4("全渠道");//持卡人姓名
-//        goPayBean.setParam5("01");//证件类型
-//        goPayBean.setParam6("341126197709218366"); //证件号
-        goPayBean.setParam1(param1);//开户行号
-        goPayBean.setParam2(param2);//卡折标志
-        goPayBean.setParam3(param3);//卡号/折号
-        goPayBean.setParam4(param4);//持卡人姓名
-        goPayBean.setParam5(param5);//证件类型
-        goPayBean.setParam6(param6); //证件号
-        goPayBean.setParam7("");
-        goPayBean.setParam8("");
-        goPayBean.setParam9("");
-        goPayBean.setParam10("");
-        goPayBean.setOrdDesc("银联");
-        goPayBean.setShareData(this.getShareData(m1, m2));
-        goPayBean.setPriv1("");
-        goPayBean.setCustomIp("");
-        return goPayBean;
-    }
-
-//    private String transFwfCode() {
-//        //处理服务费管理公司
-//        if (StringUtils.isNotBlank(target) && "铠岳".equals(target)) {
-//            return "00145112";
-//        } else {
-//            return "00160808";
-//        }
-//    }
-
-    private String getShareData(int m1, int m2) {
-        String shareData = "00145111^" + m1;
-        if (StringUtils.isNotBlank(target) && m2 != 0) {
-            shareData += ";" + target + "^" + m2 + ";";
-        }
-        // shareData = "00010001^1;00010002^1";
-        return shareData;
-    }
 
     public DataContent transToDataContent() {
         DataContent dataContent = new DataContent();
@@ -466,4 +406,6 @@ public class MortgageDeduction {
     public void setLedgerState(String ledgerState) {
         this.ledgerState = ledgerState;
     }
+
+
 }

@@ -13,7 +13,7 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if ("/login.do".equals(request.getRequestURI()) || "/".equals(request.getRequestURI()) || "/login".equals(request.getRequestURI())
                 || "/BaoFuPayGetBgAsyn".equals(request.getRequestURI()) || "/PayGetBgAsyn".equals(request.getRequestURI())
-                || "/PayGetPgAsyn".equals(request.getRequestURI())) {
+                || "/PayGetPgAsyn".equals(request.getRequestURI()) || "/unionPayController/bgNotification".equals(request.getRequestURI())) {
             return true;
         }
 

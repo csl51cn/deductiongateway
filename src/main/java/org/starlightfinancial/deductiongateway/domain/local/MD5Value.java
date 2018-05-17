@@ -5,7 +5,7 @@ import javax.persistence.*;
 /**
  * MD5值
  */
-@Entity(name = "BU_MD5")
+@Entity(name = "BU_MD5_Test")
 public class MD5Value {
 
     @Id

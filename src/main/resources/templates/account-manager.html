@@ -107,6 +107,44 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
+
+            <div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="signModalLabel">快捷支付签约</h4>
+                        </div>
+                        <div class="modal-body" id="signModalBody">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">签约</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="moreInfoModalLabel">代扣信息</h4>
+                        </div>
+                        <div class="modal-body" id="moreInfoBody">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
@@ -125,6 +163,7 @@
                                         <td><input type="text" class="" id="accountName" name="accountName"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
+                                            <input type="button" id="addBtn" value="新增"/>
                                             <input type="button" id="importBtn" value="批量更新代扣卡"/>
                                         </td>
                                     </tr>
@@ -146,6 +185,79 @@
         <span style="text-align:left;float:left" id="footer"></span>
     </p>
 </footer>
+
+<div id="signTableInfo" style="display: none">
+    <div><img src="" id="channelLogo" style="max-width:25%;"></div>
+    <table class="table table-bordered table-hover">
+        <tr>
+            <td style="width: 100px;text-align: right;">账户名:</td>
+            <td style="width: 200px;text-align: left;">
+                <input type="text" id="accountNameInContractTable" name="accountNameInContractTable"/>
+                <input type="hidden" id="channelMarking" name="channelMarking">
+                <input type="hidden" id="id" name="id">
+                <input type="hidden" id="merOrderNo" name="merOrderNo">
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">卡号:</td>
+            <td style="width: 200px;text-align: left;">
+                <input type="text" id="account" name="account"/></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">证件类型:</td>
+            <td style="width: 200px;text-align: left;">
+                <input type="text" id="certificateType" name="certificateType"/>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">证件号:</td>
+            <td style="width: 200px;text-align: left;">
+                <input type="text" id="certificateNo" name="certificateNo"/></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">手机号:</td>
+            <td style="width: 200px;text-align: left;"><input type="text" id="mobile" name="mobile"/></td>
+        </tr>
+
+        <tr>
+            <td style="width: 100px;text-align: right;">短信验证码:</td>
+            <td style="width: 200px;text-align: left;"><input type="text" id="smsCode"
+                                                              name="smsCode"/>
+                <input type="button" class="sendSmsCodeBtn" value="获取短信验证码"/></td>
+        </tr>
+    </table>
+</div>
+
+<div id="tableInfo" style="display: none">
+    <table class="table table-bordered table-hover">
+        <tr>
+            <td style="width: 100px;text-align: right;">合同号:</td>
+            <td id="contractNoInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">账户名:</td>
+            <td id="accountNameInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">开户行:</td>
+            <td id="bankNameInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">卡号:</td>
+            <td id="accountInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">证件类型:</td>
+            <td id="certificateTypeInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">证件号码:</td>
+            <td id="certificateNoInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+    </table>
+</div>
+
+
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
 <script src="/js/bootstrap-table.js"></script>
@@ -156,6 +268,66 @@
 
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
+    window.operateEvents = {
+
+        'click .unionpay-action': function (e, value, row, index) {
+            $.ajax({
+                url: "/accountManagerController/unionPayIsSigned.do",
+                method: "post",
+                data: {"id": row.id},
+                success: function (data) {
+                    if (data.code == "0000") {
+                        setTimeout("$('#queryBtn').click()", 4020);
+                        noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else if(data.data == "0001"){
+                        noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
+                    } else if (data.data == "2000"){
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    }
+                    else {
+                        $("#accountNameInContractTable").attr("value", row.accountName);
+                        $("#accountNameInContractTable").attr("readonly","readonly");
+                        $("#account").attr("value", row.account);
+                        $("#account").attr("readonly", "readonly");
+                        $("#certificateType").attr("value", row.certificateType);
+                        $("#certificateType").attr("readonly","readonly");
+                        $("#certificateNo").attr("value", row.certificateNo);
+                        $("#certificateNo").attr("readonly","readonly");
+                        $("#mobile").attr("value", row.mobile);
+                        $("#mobile").attr("readonly","readonly");
+                        $("#channelMarking").attr("value", "unionPay");
+                        $("#id").attr("value", row.id);
+                        $("#channelLogo").attr("src", "/img/unionpay.png");
+
+                        $("#signModalBody").html($("#signTableInfo").html());
+                        $("#signModal").modal();
+                    }
+                }
+            });
+        },
+
+        'click .baofu-action': function (e, value, row, index) {
+            // todo 宝付签约
+
+        }
+    };
+
+    function operateFormatter(value, row, index) {
+        if ((staffId == 1) || (staffId == 113) || (staffId == 2371) || (staffId == 1281) || (staffId == 6436) || (staffId == 2338) || (staffId == 114) || (staffId == 2359) || (staffId == 3389)) {
+            var operator = [];
+            if (row.unionpayIsSigned != 1) {
+                operator.push('<button type="button" id="unionpayContracteBtn' + index + '" class="unionpay-action btn btn-primary  btn-small" style="margin-right:15px;">银联签约</button>');
+            }
+            if (row.baofuIsSigned != 1) {
+                operator.push('<button type="button" id="baofuContracteBtn' + index + '" class="baofu-action btn btn-primary  btn-small" style="margin-right:15px;">宝付签约</button>');
+            }
+            return operator.join('');
+        }
+
+    }
+    ;
+
+
     var columns = [{
         field: 'number',
         title: '序号',
@@ -176,45 +348,120 @@
         field: 'bizNo',
         title: '业务编号'
     }, {
-        field: 'contractNo',
-        title: '合同编号'
-    }, {
         field: 'accountName',
         title: '账户名'
     }, {
-        field: 'bankName',
-        title: '开户行'
-    }, {
         field: 'account',
-        title: '卡号'
-    }, {
-        field: 'certificateType',
-        title: '证件类型'
-    }, {
-        field: 'certificateNo',
-        title: '证件号码'
-    }, {
-        field: 'sort',
-        title: '扣款顺序',
+        title: '卡号',
         editable: {
             type: 'text',
-            title: '扣款顺序',
+            title: '卡号',
             validate: function (v) {
-                if (!v) return '扣款顺序不能为空';
+                if (!v) return '卡号不能为空';
             }
         }
     }, {
-        field: 'isEnabled',
-        title: '是否自动代扣',
+        field: 'certificateNo',
+        title: '证件号码',
         editable: {
-            type: 'select',
-            title: '是否自动代扣',
-            source: [{value: 1, text: "是"}, {value: 0, text: "否"}],
+            type: 'text',
+            title: '证件号码',
             validate: function (v) {
-                if (!v) return '不能为空';
+                if (!v) return '证件号码不能为空';
             }
         }
-    }];
+    }, {
+        field: 'mobile',
+        title: '手机号',
+        editable: {
+            type: 'text',
+            title: '手机号',
+            validate: function (v) {
+                if (!v) return '手机号不能为空';
+            }
+        }
+    }, {
+        field: 'unionpayIsSigned',
+        title: '银联签约',
+        formatter: function (value, row, index) {
+            if (value == 1) {
+                return "已签约";
+            } else {
+                return "未签约";
+            }
+        },
+        cellStyle:function(value,row,index){
+            var cssObject  = {};
+
+            if (value==1){
+                cssObject.color = "green";
+            }else{
+                cssObject.color = "red";
+            }
+            if (index % 2 == 0){
+                cssObject.background = "#fff"
+            }else{
+                cssObject.background ="#aaa"
+            }
+
+            return {css:{"color":cssObject.color,"background":cssObject.background}};
+        }
+    },
+        {
+            field: 'baofuIsSigned',
+            title: '宝付签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+
+            },
+            cellStyle:function(value,row,index){
+                var cssObject  = {};
+
+                if (value==1){
+                    cssObject.color = "green";
+                }else{
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0){
+                    cssObject.background = "#fff"
+                }else{
+                    cssObject.background ="#aaa"
+                }
+
+                return {css:{"color":cssObject.color,"background":cssObject.background}};
+            }
+        }, {
+            field: 'sort',
+            title: '扣款顺序',
+            editable: {
+                type: 'text',
+                title: '扣款顺序',
+                validate: function (v) {
+                    if (!v) return '扣款顺序不能为空';
+                }
+            }
+        }, {
+            field: 'isEnabled',
+            title: '是否自动代扣',
+            editable: {
+                type: 'select',
+                title: '是否自动代扣',
+                source: [{value: 1, text: "是"}, {value: 0, text: "否"}],
+                validate: function (v) {
+                    if (!v) return '不能为空';
+                }
+            }
+        }, {
+            field: 'operate',
+            title: '操作',
+            events: operateEvents,
+            formatter: operateFormatter
+        }];
+
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
@@ -245,7 +492,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 113 || staffId == 2371 || staffId == 1281 || staffId == 6436 || staffId == 2338 || staffId == 3387 || staffId == 1 ) {
+                    if (staffId == 113 || staffId == 2371 || staffId == 1281 || staffId == 6436 || staffId == 2338 || staffId == 3387 || staffId == 1) {
                         $.ajax({
                             type: "post",
                             url: "/accountManagerController/updateAccount.do",
@@ -269,10 +516,23 @@
                             }
 
                         })
-                    }else {
+                    } else {
                         noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     }
                     ;
+                },
+                onClickCell: function (field, value, row, $element) {
+                    if (field == "bizNo") {
+                        $("#contractNoInTableInfo").html(row.contractNo);
+                        $("#accountNameInTableInfo").html(row.accountName);
+                        $("#bankNameInTableInfo").html(row.bankName);
+                        $("#accountInTableInfo").html(row.account);
+                        $("#certificateTypeInTableInfo").html(row.certificateType);
+                        $("#certificateNoInTableInfo").html(row.certificateNo);
+                        $("#moreInfoBody").html($("#tableInfo").html());
+                        $("#moreInfoModal").modal();
+                    }
+                    return false;
                 }
             });
         };
@@ -280,6 +540,7 @@
         $('#table').bootstrapTable('hideColumn', 'id');
         $('#table').bootstrapTable('hideColumn', 'dateId');
         $('#table').bootstrapTable('hideColumn', 'loandate');
+
         function queryParams() {
             return {
                 pageNumber: this.pageNumber,
@@ -290,19 +551,127 @@
             }
         };
 
-
-        <!--查询按钮功能-->
-        $("#queryBtn").click(function () {
-            $('#table').bootstrapTable('removeAll');
+        <!--带参数刷新页面-->
+        function refreshPage() {
             $('#table').bootstrapTable('refresh', {
                 url: '/accountManagerController/queryAccount.do',
                 query: queryParams()
             })
+        }
+        <!--签约窗口显示时,所做的操作-->
+        $('#signModal').on('show.bs.modal', function () {
+            var sendSmsCodeBtn = $(this).find(".modal-body .sendSmsCodeBtn");
+            sendSmsCodeBtn.click(function () {
+                var channelMarking = $("#channelMarking").val();
+                if (channelMarking == "unionPay") {
+                    $.ajax({
+                        url: "/accountManagerController/unionPaySendSignSmsCode.do",
+                        method: "POST",
+                        data: {
+                            "id": $(".modal-body input[name='id']").val(),
+                            "account": $(".modal-body input[name='account']").val(),
+                            "certificateType": $(".modal-body input[name='certificateType']").val(),
+                            "certificateNo": $(".modal-body input[name='certificateNo']").val(),
+                            "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
+                            "mobile": $(".modal-body input[name='mobile']").val()
+                        },
+                        success: function (message) {
+                            if (message.code == "0000") {
+                                $(".modal-body input[name='merOrderNo']").attr("value", message.data);
+                                time(sendSmsCodeBtn);
+                            } else {
+                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        }
+                    })
+                } else {
+                    //todo 宝付签约查询
+                }
+
+            });
+
+            var signBtn = $(this).find(".btn-success");
+            signBtn.click(function () {
+                if(!$(".modal-body input[name='smsCode']").val()){
+                    noty({'text': '请填写短信验证码', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    return false;
+                }
+
+                //进度条
+                value=0;
+                increment();
+                $('#myModal').modal('show');
+
+                //发起签约请求
+                $.ajax({
+                    url: "/accountManagerController/unionPaySign.do",
+                    method: "post",
+                    data: { "id": $(".modal-body input[name='id']").val(),
+                        "account": $(".modal-body input[name='account']").val(),
+                        "certificateType": $(".modal-body input[name='certificateType']").val(),
+                        "certificateNo": $(".modal-body input[name='certificateNo']").val(),
+                        "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
+                        "mobile": $(".modal-body input[name='mobile']").val(),
+                        "smsCode":$(".modal-body input[name='smsCode']").val(),
+                        "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
+                    },
+                    success:function (message) {
+                        $('#myModal').modal('hide');
+                        if(message.code = "0000"){
+                            setTimeout("$('#queryBtn').click()", 4020);
+                            noty({'text': '签约成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        }else{
+                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                });
+            });
+
+
         });
+
+
+        <!--签约窗口隐藏时,清空modal-body数据-->
+        $('#signModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
+
+        <!--查询按钮功能-->
+        $("#queryBtn").click(function () {
+            $('#table').bootstrapTable('removeAll');
+            refreshPage();
+        });
+        <!--新增按钮功能-->
+        $("#addBtn").click(function () {
+            if (!$("#bizNo").val()) {
+                noty({'text': '请输入业务编号', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            value=0;
+            increment();
+            $('#myModal').modal('show');
+
+            $.ajax({
+                url: "/accountManagerController/addAccount.do",
+                method: "POST",
+                data: queryParams(),
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    if ("0000" == data.code) {
+                        setTimeout(refreshPage(), 4020);
+                        noty({'text': data.message, 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                }
+            })
+        });
+
         <!--导入按钮功能-->
         $("#importBtn").click(function () {
             $('#confirmModal').modal();
             $(".btn-success").click(function () {
+                value=0;
                 increment();
                 $('#myModal').modal('show');
 
@@ -331,8 +700,27 @@
             })
         });
 
+        var wait = 60;
+
+        function time(o) {
+            if (wait == 0) {
+                o.removeAttr("disabled");
+                o.val("获取短信验证码");
+                wait = 60;
+                clearTimeout(sst);
+            } else {
+                o.attr("disabled", true);
+                o.val(wait + "秒后可重发");
+                wait--;
+                sst=setTimeout(function () {
+                    time(o)
+                }, 1000)
+            }
+        }
+
 
         var value = 0;
+
         <!--进度条自动增长-->
         function increment() {
             value += 1;

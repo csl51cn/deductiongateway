@@ -11,10 +11,10 @@ import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
-import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
-import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
+import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRepository;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.utility.Constant;
+import org.starlightfinancial.deductiongateway.domain.local.UnionPayRequestParams;
+import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
 import java.util.ArrayList;
@@ -40,6 +40,12 @@ public class Delivery extends Decorator {
     @Autowired
     BaofuConfig baofuConfig;
 
+    @Autowired
+    private AccountManagerRepository accountManagerRepository;
+
+    @Autowired
+    BeanConverter beanConverter;
+
     List<MortgageDeduction> result;
 
     @Override
@@ -59,22 +65,32 @@ public class Delivery extends Decorator {
 
     }
 
-    private void deliveryUnionPay(List<GoPayBean> list) {
-        for (GoPayBean goPayBean : list) {
-            MortgageDeduction mortgageDeduction = goPayBean.transToMortgageDeduction();
+    private void deliveryUnionPay(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            UnionPayRequestParams unionPayRequestParams = beanConverter.transToUnionPayRequestParams(mortgageDeduction);
+
+            mortgageDeduction.setOrdId(unionPayRequestParams.getMerOrderNo());
+            // TODO: 2018/5/15 生产环境润通商户号需要重新配置
+            mortgageDeduction.setMerId(unionPayConfig.getMerId());
+            mortgageDeduction.setCuryId(unionPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc("银联");
+            mortgageDeduction.setPlanNo(0);
+            //type为0表示已发起过代扣，type为1时未发起过代扣
+            mortgageDeduction.setType("0");
             mortgageDeduction.setPayTime(new Date());
+            mortgageDeduction.setSplitType(unionPayRequestParams.getSplitType());
+
             // 应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
             try {
-                Map map = httpClientUtil.send(unionPayConfig.getUrl(), goPayBean.aggregationToList());
+                Map map = httpClientUtil.send(unionPayConfig.getUrl(), unionPayRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
-                String payStat = returnData.substring(returnData.indexOf("PayStat") + 16, returnData.indexOf("PayStat") + 20);
-                mortgageDeduction.setResult(payStat);
-                if (StringUtils.equals(Constant.SUCCESS, payStat)) {
-                    mortgageDeduction.setIssuccess("1");
-                } else {
+                JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                mortgageDeduction.setErrorResult(jsonObject.getString("reason"));
+                mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
+                if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
                     mortgageDeduction.setIssuccess("0");
                 }
-                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
                 result.add(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();

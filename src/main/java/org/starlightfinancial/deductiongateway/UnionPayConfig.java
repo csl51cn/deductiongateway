@@ -17,8 +17,15 @@ public class UnionPayConfig {
     @Value("${unionpay.api.member.id}")
     private String merId;
 
+    @Value("${unionpay.api.kaiyue.service.member.id}")
+    private String KaiyueServiceMemberId;
+
+    @Value("${unionpay.api.runkun.service.member.id}")
+    private String runkunServiceMemberId;
+
     @Value("${unionpay.api.cury.id}")
     private String curyId;
+
 
     @Value("${unionpay.api.bg.ret.url}")
     private String bgRetUrl;
@@ -40,6 +47,15 @@ public class UnionPayConfig {
 
     @Value("${unionpay.api.url}")
     private String url;
+
+    @Value("${unionpay.api.sign-status.url}")
+    private String signStatusUrl;
+
+    @Value("${unionpay.api.sign-sms-code.url}")
+    private String signSmsCodeUrl;
+
+    @Value("${unionpay.api.sign.url}")
+    private String signUrl;
 
     public String getVersion() {
         return version;
@@ -119,5 +135,45 @@ public class UnionPayConfig {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getSignStatusUrl() {
+        return signStatusUrl;
+    }
+
+    public void setSignStatusUrl(String signStatusUrl) {
+        this.signStatusUrl = signStatusUrl;
+    }
+
+    public String getSignSmsCodeUrl() {
+        return signSmsCodeUrl;
+    }
+
+    public void setSignSmsCodeUrl(String signSmsCodeUrl) {
+        this.signSmsCodeUrl = signSmsCodeUrl;
+    }
+
+    public String getSignUrl() {
+        return signUrl;
+    }
+
+    public void setSignUrl(String signUrl) {
+        this.signUrl = signUrl;
+    }
+
+    public String getKaiyueServiceMemberId() {
+        return KaiyueServiceMemberId;
+    }
+
+    public void setKaiyueServiceMemberId(String kaiyueServiceMemberId) {
+        KaiyueServiceMemberId = kaiyueServiceMemberId;
+    }
+
+    public String getRunkunServiceMemberId() {
+        return runkunServiceMemberId;
+    }
+
+    public void setRunkunServiceMemberId(String runkunServiceMemberId) {
+        this.runkunServiceMemberId = runkunServiceMemberId;
     }
 }

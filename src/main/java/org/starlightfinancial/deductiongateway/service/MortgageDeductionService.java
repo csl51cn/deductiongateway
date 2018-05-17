@@ -65,7 +65,7 @@ public interface MortgageDeductionService {
     Workbook exportXLS(Date startDate, Date endDate, String customerName);
 
     /**
-     * 更新代扣数据
+     * 批量更新代扣数据
      *
      * @param list
      */
@@ -81,5 +81,12 @@ public interface MortgageDeductionService {
     /**
      * 根据订单号查询代扣记录
      */
-    MortgageDeduction findByOrdId(String  ordId);
+    MortgageDeduction findByOrdId(String ordId);
+
+    /**
+     * 更新代扣数据
+     *
+     * @param mortgageDeduction
+     */
+    void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
 }
