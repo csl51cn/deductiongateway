@@ -11,7 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.dao.AccountDao;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
@@ -46,6 +48,8 @@ public class AccountManagerServiceImpl implements AccountManagerService {
     private AccountDao accountDao;
     @Autowired
     private UnionPayConfig unionPayConfig;
+    @Autowired
+    private BaofuConfig baofuConfig;
 
     /**
      * 查询卡号
@@ -153,7 +157,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         List<AccountManager> accountManagerList = accountDao.findAccountByDateId(dateId);
         //根据sort升序排序
         accountManagerList.sort(Comparator.comparingInt(AccountManager::getSort));
-        if (accountManagerList.size() ==  0 ){
+        if (accountManagerList.size() == 0) {
             return Message.fail("添加失败,未查询到代扣卡");
         }
 
@@ -205,49 +209,10 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         try {
             map = HttpClientUtil.send(unionPayConfig.getSignStatusUrl(), basicNameValuePairs);
         } catch (Exception e) {
-            logger.error("银联签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(),e);
-            message = Message.fail("银联签约状态查询异常",ConstantsEnum.REQUEST_FAIL.getCode());
+            logger.error("银联签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            message = Message.fail("银联签约状态查询异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
-
-        // TODO: 2018/5/14 生产环境测试的json需要注释掉
-//        map = new HashMap();
-//        map.put("returnData", "{\n" +
-//                "    \"error_code\": \"000000\",\n" +
-//                "    \"reason\": \"请求成功\",\n" +
-//                "    \"result\": [\n" +
-//                "        {\n" +
-//                "            \"respMsg\": \"成功\",\n" +
-//                "            \"respCode\": \"0000\",\n" +
-//                "            \"Version\": \"20150922\",\n" +
-//                "            \"AcqCode\": \"000000000000014\",\n" +
-//                "            \"MerId\": \"000000804122255\",\n" +
-//                "            \"BankInstNo\": \"700000000000003\",\n" +
-//                "            \"TranType\": \"0504\",\n" +
-//                "            \"SignState\": \"00\",\n" +
-//                "            \"Signature\": \"uSMiXYHDOQhkWKecb+TB89Mq00XNOjaHpv5JOzOKj6dIrTN0PlPdUdZQfuOz3zYoyR1riD5hDh2dCgk67u1A9pO4i7MJc0/v5p3432KbkIe3JfCn3+SASog+7sSWKk6opjCOEGlz3m7nAUPtqgeOh6Gy6zvLNOGO+FVudZ3dG/w\"\n" +
-//                "        }\n" +
-//                "    ]\n" +
-//                "}");
-
-//        map.put("returnData", "{\n" +
-//                "    \"error_code\": \"000000\",\n" +
-//                "    \"reason\": \"请求成功\",\n" +
-//                "    \"result\": [\n" +
-//                "        {\n" +
-//                "            \"respMsg\": \"成功\",\n" +
-//                "            \"respCode\": \"0000\",\n" +
-//                "            \"Version\": \"20150922\",\n" +
-//                "            \"AcqCode\": \"000000000000014\",\n" +
-//                "            \"MerId\": \"000000804122255\",\n" +
-//                "            \"BankInstNo\": \"700000000000003\",\n" +
-//                "            \"TranType\": \"0504\",\n" +
-//                "            \"CardTranData\": \"{\\\"ProtocolNo\\\":\\\"6288888888888888\\\"}\",\n" +
-//                "            \"SignState\": \"01\",\n" +
-//                "            \"Signature\": \"JRTc++WPK6STux0m+2aLmSNvL4mp0mWMmPKg5Oa2DV+pCjH1lal8K+ObPzrnb68f63UmZnh4tRaMigjGDMY/lmqlzfN1/lc/W7q15b2pz9+guQiju/qaHwjs0kxgcdFhP9SlL5vTynW9rxlWP56UAZrGDuX0SvL5oCg2gVU1brE\"\n" +
-//                "        }\n" +
-//                "    ]\n" +
-//                "}");
         if (map.containsKey("returnData")) {
             String returnData = (String) map.get("returnData");
             JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
@@ -264,14 +229,12 @@ public class AccountManagerServiceImpl implements AccountManagerService {
                     accountManager.setUnionpayIsSigned(1);
                     accountManagerRepository.saveAndFlush(accountManager);
                     message = Message.success("当前卡号已完成签约");
-
                 } else {
                     //除去已签约的其他状态
                     message = Message.fail("当前卡号需签约");
                 }
             } else {
-                logger.debug("银联签约状态查询,返回数据:{}", returnData);
-                message = Message.fail("查询失败", ConstantsEnum.REQUEST_FAIL.getCode());
+                message = Message.fail("银联签约状态查询失败", ConstantsEnum.NO_DATA_RESPONSE.getCode());
             }
         } else {
             message = Message.fail("未获得银联返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
@@ -307,30 +270,6 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         Map map = null;
         try {
             map = HttpClientUtil.send(unionPayConfig.getSignSmsCodeUrl(), basicNameValuePairs);
-            // TODO: 2018/5/14 生产环境测试的json需要注释掉
-//            map = new HashMap();
-//            map.put("returnData", "{\n" +
-//                    "    \"error_code\": \"000000\",\n" +
-//                    "    \"reason\": \"请求成功\",\n" +
-//                    "    \"result\": [\n" +
-//                    "        {\n" +
-//                    "            \"respMsg\": \"短信发送成功\",\n" +
-//                    "            \"respCode\": \"0000\",\n" +
-//                    "            \"BusiType\": \"0001\",\n" +
-//                    "            \"DCMark\": \"02\",\n" +
-//                    "            \"OrderAmt\": \"00000000000000000000\",\n" +
-//                    "            \"Version\": \"20150922\",\n" +
-//                    "            \"AcqCode\": \"000000000000014\",\n" +
-//                    "            \"MerId\": \"000000804122255\",\n" +
-//                    "            \"TranType\": \"0608\",\n" +
-//                    "            \"MerOrderNo\": \"20180511155513000000000000000001\",\n" +
-//                    "            \"TranDate\": \"20180511\",\n" +
-//                    "            \"TranTime\": \"155513\",\n" +
-//                    "            \"Signature\": \"arGntDxBLRMKen/sQDHKtgeIBhoGyyxP32kBmBfMZTxy51xw83tgnorMur0rs/SeKw+iXALtdWwojlHWv9djEadVriWM/0icMITBkQVPFbme8ewodtepXFRsJ5Ew3t4hjSy8VGZvZze3WDBkIx0rWDnLGtjOSrG6h3sls+YMXac\"\n" +
-//                    "        }\n" +
-//                    "    ]\n" +
-//                    "}");
-
             if (map.containsKey("returnData")) {
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
@@ -341,14 +280,14 @@ public class AccountManagerServiceImpl implements AccountManagerService {
                     message = Message.success();
                     message.setData(result.getString("MerOrderNo"));
                 } else {
-                    message = Message.fail("签约短信发送失败");
+                    message = Message.fail("银联签约短信发送失败");
                 }
             } else {
                 message = Message.fail("未获得银联返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
             }
         } catch (Exception e) {
             logger.error("发送银联签约短信异常,记录id:" + id + ",账户名:" + accountName + ",账户:" + account, e);
-            message = Message.fail("签约短信发送异常",ConstantsEnum.REQUEST_FAIL.getCode());
+            message = Message.fail("银联签约短信发送异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
 
@@ -384,37 +323,9 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         Map map = null;
         try {
             map = HttpClientUtil.send(unionPayConfig.getSignUrl(), basicNameValuePairs);
-
-            // TODO: 2018/5/14 生产环境测试的json需要注释掉
-//            map = new HashMap();
-//            map.put("returnData", "{\n" +
-//                    "    \"error_code\":\"000000\",\n" +
-//                    "    \"reason\":\"请求成功\",\n" +
-//                    "    \"result\":[\n" +
-//                    "        {\n" +
-//                    "            \"respMsg\":\"签约成功\",\n" +
-//                    "            \"respCode\":\"0000\",\n" +
-//                    "            \"Version\":\"20150922\",\n" +
-//                    "            \"AcqCode\":\"000000000000014\",\n" +
-//                    "            \"MerId\":\"000000804122255\",\n" +
-//                    "            \"TranType\":\"9904\",\n" +
-//                    "            \"MerOrderNo\":\"20180514160434000000000000000006\",\n" +
-//                    "            \"TranDate\":\"20180514\",\n" +
-//                    "            \"TranTime\":\"160458\",\n" +
-//                    "            \"AcqDate\":\"20180514\",\n" +
-//                    "            \"AcqSeqId\":\"0000000031208034\",\n" +
-//                    "            \"BankInstNo\":\"700000000000003\",\n" +
-//                    "            \"Signature\":\"b88/ckx/gtqeRRUwnviiKxWPOlR4ooipgrT9MavsDXkTi7CqTYn0s/1tnKiNY8gkWfM1u3MQCvGAdQ6WuNWRb++1F70WfjDsHwB+L8Gx9xrADCvjtgqx1ntR8SeE7J2HBk6AChV9AiI1bFKit2GsLR3gAAy/7CstYrqj7ftbUaU\",\n" +
-//                    "            \"ChannelId\":\"00010114\",\n" +
-//                    "            \"CardTranData\":\"{\"ProtocolNo\":\"6288888888888888\"}\",\n" +
-//                    "            \"SignState\":\"01\"\n" +
-//                    "        }\n" +
-//                    "    ]\n" +
-//                    "}");
-
         } catch (Exception e) {
             logger.error("银联签约异常,记录id:" + id + ",账户名:" + accountName + ",账户:" + account, e);
-            message = Message.fail("银联签约异常",ConstantsEnum.REQUEST_FAIL.getCode());
+            message = Message.fail("银联签约异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
 
@@ -444,6 +355,166 @@ public class AccountManagerServiceImpl implements AccountManagerService {
             message = Message.fail("未获得银联返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
         }
 
+
+        return message;
+    }
+
+    /**
+     * 宝付-查询是否签约
+     *
+     * @param id 记录的id
+     * @return
+     */
+    @Override
+    public Message baoFuIsSigned(Integer id) {
+        AccountManager accountManager = accountManagerRepository.findById(id);
+        ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
+        basicNameValuePairs.add(new BasicNameValuePair("accNo", accountManager.getAccount()));
+
+        Message message;
+        Map map = null;
+        try {
+            map = HttpClientUtil.send(baofuConfig.getSignStatusUrl(), basicNameValuePairs);
+        } catch (Exception e) {
+            logger.error("宝付签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            message = Message.fail("宝付签约状态查询异常", ConstantsEnum.REQUEST_FAIL.getCode());
+            return message;
+        }
+        if (map.containsKey("returnData")) {
+            String returnData = (String) map.get("returnData");
+            JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+            if (StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_01.getCode())) {
+                //绑定成功
+                JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                String protocols = result.getString("protocols");
+                //签约协议号|用户ID|银行卡号|银行编码|银行名称
+                String[] accInfo = protocols.split("\\|");
+                accountManager.setBaofuProtocolNo(accInfo[0]);
+                accountManager.setBaofuIsSigned(1);
+                accountManagerRepository.saveAndFlush(accountManager);
+//                message = Message.success("当前卡号已完成签约");
+                // TODO: 2018/5/25 删除下一行代码,打开上一行注释
+                message = Message.fail("当前卡号需签约");
+            } else {
+                if (StringUtils.equals(jsonObject.getString("error_code"), BFErrorCodeEnum.BF00134.getCode())) {
+                    message = Message.fail("当前卡号需签约");
+                } else {
+                    message = Message.fail("宝付签约状态查询失败", ConstantsEnum.NO_DATA_RESPONSE.getCode());
+                }
+            }
+        } else {
+            message = Message.fail("未获得宝付返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
+        }
+        return message;
+
+    }
+
+    /**
+     * 宝付--发送签约短信
+     *
+     * @param id              记录的id
+     * @param account         银行卡号
+     * @param certificateType 证件类型
+     * @param certificateNo   证件号码
+     * @param accountName     账户名
+     * @param mobile          手机号
+     * @return
+     */
+    @Override
+    public Message baoFuSendSignSmsCode(Integer id, String account, String certificateType, String certificateNo, String accountName, String mobile) {
+        Message message = null;
+        //账户信息:银行卡号|持卡人姓名|证件号|手机号|银行卡安全码|银行卡有效期   银行卡安全码和银行卡有效期贷记卡才有,借记卡没有,留空
+        StringBuilder accInfo = new StringBuilder();
+        accInfo.append(account).append("|").append(accountName).append("|").append(certificateNo).append("|").append(mobile).append("||");
+        ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
+        //卡类型:101	借记卡，102 信用卡
+        basicNameValuePairs.add(new BasicNameValuePair("cardType", "101"));
+        //证件类型:01 身份证
+        basicNameValuePairs.add(new BasicNameValuePair("idCardType", UnionpayCertTypeEnum.getCodeByDesc(certificateType)));
+        basicNameValuePairs.add(new BasicNameValuePair("accInfo", accInfo.toString()));
+
+        Map map = null;
+        try {
+            map = HttpClientUtil.send(baofuConfig.getSignSmsCodeUrl(), basicNameValuePairs);
+            if (map.containsKey("returnData")) {
+                String returnData = (String) map.get("returnData");
+                JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                if (StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_01.getCode())) {
+                    //发送短信成功
+                    JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                    String bizRespCode = result.getString("biz_resp_code");
+                    if (StringUtils.equals(bizRespCode, "0000")) {
+                        //将商户订单号返回到前端页面
+                        message = Message.success();
+                        message.setData(result.getString("unique_code"));
+                    } else {
+                        message = Message.fail("宝付签约短信发送失败,失败原因:" + BFErrorCodeEnum.getValueByCode(bizRespCode));
+                    }
+
+                } else {
+                    message = Message.fail("宝付签约短信发送失败,宝付返回原因:" + jsonObject.getString("reason"));
+                }
+            } else {
+                message = Message.fail("未获得宝付返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
+            }
+        } catch (Exception e) {
+            logger.error("发送宝付签约短信异常,记录id:" + id + ",账户名:" + accountName + ",账户:" + account, e);
+            message = Message.fail("宝付签约短信发送异常", ConstantsEnum.REQUEST_FAIL.getCode());
+            return message;
+        }
+
+
+        return message;
+    }
+
+    /**
+     * 宝付-签约
+     *
+     * @param id         记录id
+     * @param smsCode    短信验证码
+     * @param uniqueCode 预签约唯一码
+     * @return
+     */
+    @Override
+    public Message baoFuSign(Integer id, String smsCode, String uniqueCode) {
+        Message message = null;
+        AccountManager accountManager = accountManagerRepository.findById(id);
+        //格式：预签约唯一码|短信验证码
+        uniqueCode = uniqueCode + "|" + smsCode;
+        ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
+        basicNameValuePairs.add(new BasicNameValuePair("uniqueCode", uniqueCode));
+        Map map = null;
+        try {
+            map = HttpClientUtil.send(baofuConfig.getSignUrl(), basicNameValuePairs);
+        } catch (Exception e) {
+            logger.error("宝付签约异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            message = Message.fail("宝付签约异常", ConstantsEnum.REQUEST_FAIL.getCode());
+            return message;
+        }
+
+        if (map.containsKey("returnData")) {
+            String returnData = (String) map.get("returnData");
+            JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+            if (StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_01.getCode())) {
+                //请求成功
+                JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                String bizRespCode = result.getString("biz_resp_code");
+                if (StringUtils.equals(bizRespCode, BFErrorCodeEnum.BF00000.getCode())) {
+                    //签约成功
+                    accountManager.setBaofuProtocolNo(result.getString("protocol_no"));
+                    accountManager.setBaofuIsSigned(1);
+                    accountManagerRepository.saveAndFlush(accountManager);
+                    message = Message.success("宝付签约成功");
+                } else {
+                    //签约失败
+                    message = Message.fail("宝付签约失败");
+                }
+            } else {
+                message = Message.fail("宝付签约失败");
+            }
+        } else {
+            message = Message.fail("未获得宝付返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
+        }
 
         return message;
     }

@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
@@ -89,4 +90,12 @@ public interface MortgageDeductionService {
      * @param mortgageDeduction
      */
     void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
+
+    /**
+     * 查询支付结果
+     *
+     * @param id  记录id
+     * @return
+     */
+    Message queryResult(String id);
 }

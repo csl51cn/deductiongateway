@@ -1,12 +1,9 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
-import org.starlightfinancial.deductiongateway.utility.MerSeq;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -15,7 +12,7 @@ import java.util.Date;
  *
  * @author sili.chen
  */
-@Entity(name = "BU_MORTGAGEDEUCTION_Test")
+@Entity(name = "BU_MORTGAGEDEUCTION")
 public class MortgageDeduction {
 
     @Id
@@ -119,29 +116,18 @@ public class MortgageDeduction {
     @Column(name = "checkstate")
     private String checkState;
 
-
+    /**
+     * 分账状态:0 失败, 1成功
+     */
     @Column(name = "ledgerstate")
     private String ledgerState;
 
 
-    public DataContent transToDataContent() {
-        DataContent dataContent = new DataContent();
-        dataContent.setAccNo(param3);
-        dataContent.setIdCardType("01");
-        dataContent.setIdCard(param6);
-        dataContent.setIdHolder(customerName);
-        // TODO: 2018-01-05 手机号码
-        dataContent.setMobile("");
-        dataContent.setValidDate("");
-        dataContent.setValidNo("");
-        dataContent.setTransId(MerSeq.tickOrder());
-        dataContent.setTxnAmt(splitData1.add(splitData2).multiply(BigDecimal.valueOf(100)).setScale(0).toString());
-        dataContent.setTradeDate(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        dataContent.setAdditionalInfo("");
-        dataContent.setReqReserved("");
-        dataContent.setTransSerialNo("TSN" + System.currentTimeMillis());
-        return dataContent;
-    }
+    /**
+     * 扣款渠道
+     */
+    @Column(name = "channel")
+    private String channel;
 
 
     public MortgageDeduction() {
@@ -407,5 +393,11 @@ public class MortgageDeduction {
         this.ledgerState = ledgerState;
     }
 
+    public String getChannel() {
+        return channel;
+    }
 
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
 }

@@ -56,6 +56,19 @@ public class BaofuConfig {
     @Value("${baofu.api.url}")
     private String url;
 
+    @Value("${baofu.api.sign-status.url}")
+    private String signStatusUrl;
+
+    @Value("${baofu.api.sign-sms-code.url}")
+    private String signSmsCodeUrl;
+
+    @Value("${baofu.api.sign.url}")
+    private String signUrl;
+
+    @Value("${baofu.api.query-result.url}")
+    private  String   queryResultUrl;
+
+
     public String getVersion() {
         return version;
     }
@@ -177,4 +190,35 @@ public class BaofuConfig {
         this.runkunServiceMemberId = runkunServiceMemberId;
     }
 
+    public String getSignStatusUrl() {
+        return signStatusUrl;
+    }
+
+    public void setSignStatusUrl(String signStatusUrl) {
+        this.signStatusUrl = signStatusUrl;
+    }
+
+    public String getSignSmsCodeUrl() {
+        return signSmsCodeUrl;
+    }
+
+    public void setSignSmsCodeUrl(String signSmsCodeUrl) {
+        this.signSmsCodeUrl = signSmsCodeUrl;
+    }
+
+    public String getSignUrl() {
+        return signUrl;
+    }
+
+    public void setSignUrl(String signUrl) {
+        this.signUrl = signUrl;
+    }
+
+    public String getQueryResultUrl() {
+        return queryResultUrl;
+    }
+
+    public void setQueryResultUrl(String queryResultUrl) {
+        this.queryResultUrl = queryResultUrl;
+    }
 }

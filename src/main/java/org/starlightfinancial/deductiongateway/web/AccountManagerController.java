@@ -64,14 +64,16 @@ public class AccountManagerController {
 
 
     /**
-     * @param bizNo
+     * 增加代扣卡
+     *
+     * @param bizNo 业务号
      * @return
      */
     @RequestMapping(value = "/addAccount.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public Message addAccount(String bizNo) {
         try {
-            Message message =   accountManagerService.addAccount(bizNo.trim());
+            Message message = accountManagerService.addAccount(bizNo.trim());
             return message;
         } catch (Exception e) {
             log.debug("添加代扣卡信息失败", e);
@@ -112,7 +114,7 @@ public class AccountManagerController {
             AccountManager accountManager = lastAccount.get(0);
             Date loanDate = accountManager.getLoanDate();
             if (loanDate != null) {
-                lastLoanDate = Utility.convertToString(loanDate);
+                lastLoanDate = Utility.convertToString(loanDate,"yyyy-MM-dd");
             } else {
                 lastLoanDate = setLastLoanDate();
             }
@@ -154,12 +156,12 @@ public class AccountManagerController {
     /**
      * 银联--发送签约短信验证码
      *
-     * @param id 记录id
-     * @param account 账户卡号
+     * @param id              记录id
+     * @param account         账户卡号
      * @param certificateType 证件类型
-     * @param certificateNo 证件号码
-     * @param accountName 账户名
-     * @param mobile 手机号
+     * @param certificateNo   证件号码
+     * @param accountName     账户名
+     * @param mobile          手机号
      * @return
      */
     @RequestMapping(value = "/unionPaySendSignSmsCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -172,20 +174,70 @@ public class AccountManagerController {
     /**
      * 银联--签约
      *
-     * @param id 记录id
-     * @param account  账户卡号
+     * @param id              记录id
+     * @param account         账户卡号
      * @param certificateType 证件类型
-     * @param certificateNo 证件号码
-     * @param accountName 账户名
-     * @param mobile 手机号
-     * @param smsCode 短信验证码
-     * @param merOrderNo 短信验证码对应的订单号
+     * @param certificateNo   证件号码
+     * @param accountName     账户名
+     * @param mobile          手机号
+     * @param smsCode         短信验证码
+     * @param merOrderNo      短信验证码对应的订单号
      * @return
      */
     @RequestMapping(value = "/unionPaySign.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public Message unionPaySign(Integer id, String account, String certificateType, String certificateNo, String accountName, String mobile, String smsCode, String merOrderNo) {
-        Message message =accountManagerService.unionPaySign(id,account,certificateType,certificateNo,accountName,mobile,smsCode,merOrderNo);
+        Message message = accountManagerService.unionPaySign(id, account, certificateType, certificateNo, accountName, mobile, smsCode, merOrderNo);
+        return message;
+    }
+
+
+    /**
+     * 宝付-查询是否签约
+     *
+     * @param id 记录id
+     * @return
+     */
+    @RequestMapping(value = "/baoFuIsSigned.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message baoFuIsSigned(Integer id) {
+        Message message = accountManagerService.baoFuIsSigned(id);
+        return message;
+
+    }
+
+
+    /**
+     * 宝付--发送签约短信验证码
+     *
+     * @param id              记录id
+     * @param account         账户卡号
+     * @param certificateType 证件类型
+     * @param certificateNo   证件号码
+     * @param accountName     账户名
+     * @param mobile          手机号
+     * @return
+     */
+    @RequestMapping(value = "/baoFuPaySendSignSmsCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message baoFuSendSignSmsCode(Integer id, String account, String certificateType, String certificateNo, String accountName, String mobile) {
+        Message message = accountManagerService.baoFuSendSignSmsCode(id, account, certificateType, certificateNo, accountName, mobile);
+        return message;
+    }
+
+
+    /**
+     * 宝付--签约
+     *
+     * @param id         记录id
+     * @param smsCode    短信验证码
+     * @param merOrderNo 预签约唯一码
+     * @return
+     */
+    @RequestMapping(value = "/baoFuSign.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message baoFuSign(Integer id, String smsCode, String merOrderNo) {
+        Message message = accountManagerService.baoFuSign(id, smsCode, merOrderNo);
         return message;
     }
 

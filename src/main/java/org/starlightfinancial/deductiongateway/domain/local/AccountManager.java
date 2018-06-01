@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author senlin.deng
  */
-@Entity(name = "BU_ACCOUNT_MANAGER_Test")
+@Entity(name = "BU_ACCOUNT_MANAGER")
 public class AccountManager {
 
 
@@ -133,6 +133,13 @@ public class AccountManager {
     private String customerId;
 
 
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Column(name="createtime")
+    private  Date createTime;
+
     public Integer getId() {
         return id;
     }
@@ -245,9 +252,6 @@ public class AccountManager {
         this.mobile = mobile;
     }
 
-
-
-
     public String getUnionpayProtocolNo() {
         return unionpayProtocolNo;
     }
@@ -288,6 +292,14 @@ public class AccountManager {
         this.baofuIsSigned = baofuIsSigned;
     }
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
     @Override
     public String toString() {
         return "AccountManager{" +
@@ -310,6 +322,7 @@ public class AccountManager {
                 ", unionpayProtocolNo='" + unionpayProtocolNo + '\'' +
                 ", baofuProtocolNo='" + baofuProtocolNo + '\'' +
                 ", customerId='" + customerId + '\'' +
+                ", createTime=" + createTime +
                 '}';
     }
 }

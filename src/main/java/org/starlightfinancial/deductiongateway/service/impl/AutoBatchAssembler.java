@@ -1,17 +1,10 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
-import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
-import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
-import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
-import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
-import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
@@ -19,7 +12,6 @@ import org.starlightfinancial.deductiongateway.service.Assembler;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -38,7 +30,6 @@ public class AutoBatchAssembler extends Assembler {
 
     @Autowired
     UnionPayConfig unionPayConfig;
-
 
     @Autowired
     BeanConverter beanConverter;
@@ -63,53 +54,8 @@ public class AutoBatchAssembler extends Assembler {
 
     private void assembleBAOFU(List<AutoBatchDeduction> list) throws UnsupportedEncodingException {
         for (AutoBatchDeduction autoBatchDeduction : list) {
-            RequestParams requestParams = new RequestParams();
-            requestParams.setVersion(baofuConfig.getVersion());
-            requestParams.setTerminalId(baofuConfig.getTerminalId());
-            requestParams.setTxnType(baofuConfig.getTxnType());
-            requestParams.setTxnSubType(baofuConfig.getTxnSubType());
-            requestParams.setMemberId(baofuConfig.getMemberId());
-            requestParams.setDataType(baofuConfig.getDataType());
-            requestParams.setContractNo(autoBatchDeduction.getContractNo());
-            requestParams.setBxAmount(autoBatchDeduction.getBxAmount());
-            requestParams.setFwfAmount(autoBatchDeduction.getFwfAmount());
-
-            DataContent dataContent = autoBatchDeduction.transToDataContent();
-
-            // 有服务费时才分账
-            if (autoBatchDeduction.getFwfAmount().doubleValue() > 0 ) {
-                if (StringUtils.equals("铠岳", autoBatchDeduction.getFwfCompamny())){
-                    dataContent.setShareInfo(baofuConfig.getMemberId() + "," + autoBatchDeduction.getBxAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
-                            + ";" + baofuConfig.getKaiyueServiceMemberId() + "," + autoBatchDeduction.getFwfAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
-                }else if ( StringUtils.equals("润坤", autoBatchDeduction.getFwfCompamny())){
-                    dataContent.setShareInfo(baofuConfig.getMemberId() + "," + autoBatchDeduction.getBxAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString()
-                            + ";" + baofuConfig.getRunkunServiceMemberId() + "," + autoBatchDeduction.getFwfAmount().multiply(BigDecimal.valueOf(100)).setScale(0).toString());
-                }
-
-            } else {
-                //无服务费的情况
-                dataContent.setShareInfo(baofuConfig.getMemberId() + "," + dataContent.getTxnAmt());
-            }
-
-            // 分账手续费从本息账户扣除
-            dataContent.setFeeMemberId(baofuConfig.getMemberId());
-            dataContent.setTxnSubType(baofuConfig.getTxnSubType());
-            dataContent.setBizType(baofuConfig.getBizType());
-            dataContent.setTerminalId(baofuConfig.getTerminalId());
-            dataContent.setMemberId(baofuConfig.getMemberId());
-            dataContent.setPayCode(BankCodeEnum.getCodeByBankName(autoBatchDeduction.getBankName()));
-            dataContent.setPayCm(baofuConfig.getPayCm());
-            dataContent.setNotifyUrl(baofuConfig.getNotifyUrl());
-
-            JSONObject jsonObject = (JSONObject) JSONObject.toJSON(dataContent);
-            String contentData = jsonObject.toString();
-            System.out.println("contentData" + contentData);
-
-            String base64str = SecurityUtil.Base64Encode(contentData);
-            String data_content = RsaCodingUtil.encryptByPriPfxFile(base64str, baofuConfig.getPfxFile(), baofuConfig.getPriKey());
-            requestParams.setDataContent(data_content);
-            requestParams.setContent(dataContent);
-            getResult().add(requestParams);
+            MortgageDeduction mortgageDeduction = beanConverter.transToMortgageDeduction(autoBatchDeduction);
+            getResult().add(mortgageDeduction);
         }
     }
 

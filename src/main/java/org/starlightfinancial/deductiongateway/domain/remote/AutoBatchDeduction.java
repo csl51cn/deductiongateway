@@ -2,13 +2,10 @@
 package org.starlightfinancial.deductiongateway.domain.remote;
 
 import org.hibernate.validator.constraints.NotEmpty;
-import org.starlightfinancial.deductiongateway.baofu.domain.DataContent;
-import org.starlightfinancial.deductiongateway.utility.MerSeq;
 
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -72,29 +69,6 @@ public class AutoBatchDeduction {
     @Column(name = "合同编号")
     @NotEmpty(message = "合同编号不能为空")
     private String contractNo;
-
-
-
-
-    public DataContent transToDataContent() {
-        DataContent dataContent = new DataContent();
-        dataContent.setAccNo(accout);
-        dataContent.setIdCardType("01");
-        dataContent.setIdCard(certificateNo);
-        dataContent.setIdHolder(customerName);
-        // TODO: 2018/1/5 电话号码不能为空，否则会报交易要素缺失，但是测试环境送错误的号码也可以通过交易
-        dataContent.setMobile("");//13999999999
-        dataContent.setValidDate("");
-        dataContent.setValidNo("");
-        dataContent.setTransId(MerSeq.tickOrder());
-        dataContent.setTxnAmt(bxAmount.add(fwfAmount).multiply(BigDecimal.valueOf(100)).setScale(0).toString());
-        dataContent.setTradeDate(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        dataContent.setAdditionalInfo("");
-        dataContent.setReqReserved("");
-        dataContent.setTransSerialNo("TSN" + System.currentTimeMillis());
-
-        return dataContent;
-    }
 
 
     public Integer getId() {

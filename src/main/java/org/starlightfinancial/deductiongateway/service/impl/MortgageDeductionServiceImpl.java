@@ -1,7 +1,9 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -16,9 +18,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.UnionPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.service.AssemblerFactory;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.*;
@@ -47,9 +55,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     SysDictRepository sysDictRepository;
 
     @Autowired
-    HttpClientUtil httpClientUtil;
-
-    @Autowired
     private LimitManagerRepository limitManagerRepository;
 
     @Autowired
@@ -57,6 +62,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     @Autowired
     private UnionPayConfig unionPayConfig;
+
+    @Autowired
+    private BaofuConfig baofuConfig;
 
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
@@ -217,7 +225,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Override
     public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception {
 
-         ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
+        ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
         if (StringUtils.equals("UNIONPAY", deductionMethod)) {
             assembler.saveUNIONPAY(list);
         } else if (StringUtils.equals("BAOFU", deductionMethod)) {
@@ -389,7 +397,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         //表头
         String[] headers = new String[]
                 {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果","代扣渠道","银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "代扣渠道", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
         sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
@@ -438,7 +446,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(2);
             cell.setCellValue(mortgageDeduction.getContractNo());
             cell = row.createCell(3);
-            cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate()));
+            cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate(), "yyyy-MM-dd"));
             cell = row.createCell(4);
             cell.setCellValue(mortgageDeduction.getParam1());
             cell = row.createCell(5);
@@ -538,6 +546,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     /**
      * 根据订单号查询
+     *
      * @param ordId
      * @return
      */
@@ -556,6 +565,113 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Override
     public void updateMortgageDeduction(MortgageDeduction mortgageDeduction) {
         mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+    }
+
+    /**
+     * 查询支付结果
+     *
+     * @param id 记录id
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Message queryResult(String id) {
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findById(Integer.parseInt(id));
+        Message message = null;
+        if (StringUtils.equals(mortgageDeduction.getType(), "1")) {
+            message = Message.fail("请先进行代扣操作,再查询代扣结果");
+        } else {
+            String channel = mortgageDeduction.getChannel();
+
+            if (StringUtils.equals(channel, DeductionChannelEnum.UNION_PAY.getCode())) {
+                //银联代扣
+                List<BasicNameValuePair> list = new ArrayList<>();
+                list.add(new BasicNameValuePair("MerOrderNo", mortgageDeduction.getOrdId()));
+                list.add(new BasicNameValuePair("TranDate", Utility.convertToString(mortgageDeduction.getPayTime(), "yyyyMMdd")));
+                Map send = null;
+                try {
+                    send = HttpClientUtil.send(unionPayConfig.getQueryResultUrl(), list);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Message.fail("代扣状态查询失败");
+                }
+                //有返回结果
+                if (send.containsKey("returnData")) {
+                    String returnData = (String) send.get("returnData");
+                    JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                    if (StringUtils.equals(RsbCodeEnum.ERROR_CODE_01.getCode(), jsonObject.getString("error_code"))) {
+                        //查询成功
+                        JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                        if (StringUtils.equals(UnionPayReturnCodeEnum.UNIONPAY_CODE_001.getCode(), result.getString("OrderStatus"))) {
+                            //支付成功
+                            mortgageDeduction.setIssuccess("1");
+                            mortgageDeduction.setResult(UnionPayReturnCodeEnum.UNIONPAY_CODE_001.getCode());
+                            mortgageDeduction.setErrorResult("支付成功");
+                            updateMortgageDeduction(mortgageDeduction);
+                        } else if (!StringUtils.equals(UnionPayReturnCodeEnum.UNIONPAY_CODE_008.getCode(), result.getString("OrderStatus"))) {
+                            //订单状态不为"0014,数据接收成功"为失败
+                            mortgageDeduction.setIssuccess("0");
+                            mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                            mortgageDeduction.setErrorResult(UnionPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                            updateMortgageDeduction(mortgageDeduction);
+                        }
+                        message = Message.success();
+
+                    } else {
+                        //查询失败
+                        message = Message.fail("代扣状态查询失败");
+                    }
+                } else {
+                    //无返回结果
+                    message = Message.fail("代扣状态查询失败");
+                }
+            } else {
+                //宝付代扣
+                List<BasicNameValuePair> list = new ArrayList<>();
+                list.add(new BasicNameValuePair("origTransId", mortgageDeduction.getOrdId()));
+                list.add(new BasicNameValuePair("origTradeDate", Utility.convertToString(mortgageDeduction.getPayTime(), "yyyy-MM-dd HH:mm:ss")));
+                Map send = null;
+                try {
+                    send = HttpClientUtil.send(baofuConfig.getQueryResultUrl(), list);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Message.fail("代扣状态查询失败");
+                }
+                if (send.containsKey("returnData")) {
+                    //有返回结果
+                    String returnData = (String) send.get("returnData");
+                    JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                    if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), jsonObject.getString("error_code"))) {
+                        //查询成功
+                        JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                        if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), result.getString("biz_resp_code"))) {
+                            //支付成功
+                            mortgageDeduction.setIssuccess("1");
+                            mortgageDeduction.setResult(BFErrorCodeEnum.BF00000.getCode());
+                            mortgageDeduction.setErrorResult("支付成功");
+                            updateMortgageDeduction(mortgageDeduction);
+                        } else if (!StringUtils.equals(BFErrorCodeEnum.BF00113.getCode(), result.getString("biz_resp_code"))) {
+                            //订单状态不为"BF00113,交易处理中，请稍后查询"为失败,状态为BF00113不处理
+                            mortgageDeduction.setIssuccess("0");
+                            mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                            mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                            updateMortgageDeduction(mortgageDeduction);
+                        }
+                        message = Message.success();
+
+                    } else {
+                        //查询失败
+                        message = Message.fail("代扣状态查询失败");
+                    }
+                } else {
+                    //无返回结果
+                    message = Message.fail("代扣状态查询失败");
+                }
+
+            }
+        }
+
+        return message;
     }
 
     /**

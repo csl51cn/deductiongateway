@@ -45,6 +45,7 @@ public class AccountManagerRowMapper implements RowMapper {
         accountManager.setLoanDate(resultSet.getDate(LOANDATE_COLUMN));
         accountManager.setMobile(resultSet.getString(MOBILE_COLUMN));
         accountManager.setCustomerId(resultSet.getString(CUSTOMERID_COLUMN));
+        accountManager.setCreateTime(new Date());
         return accountManager;
     }
 }

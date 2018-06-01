@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 
@@ -128,6 +129,55 @@ public class BeanConverter {
         mortgageDeduction.setParam1(handleBankName(mortgageDeduction.getParam1()));
         mortgageDeduction.setParam5(handleCertificateType(mortgageDeduction.getParam5()));
         return mortgageDeduction;
+    }
+
+
+    /**
+     * 将MortgageDeduction转换为BaoFuRequestParams
+     * @param mortgageDeduction
+     * @return
+     */
+    public BaoFuRequestParams transToBaoFuRequestParams(MortgageDeduction mortgageDeduction) {
+        BaoFuRequestParams baoFuRequestParams = new BaoFuRequestParams();
+        //设置订单号
+        baoFuRequestParams.setTransId(MerSeq.tickOrder());
+        //设置订单金额
+
+        //设置订单金额
+        String amount1 = mortgageDeduction.getSplitData1().toString();
+        String amount2 = mortgageDeduction.getSplitData2().toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        baoFuRequestParams.setTxnAmt(String.valueOf(m1 + m2));
+
+        //设置分账信息 有服务费时才分账
+        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
+            if (StringUtils.equals(unionPayConfig.getKaiyueServiceMemberId(), mortgageDeduction.getTarget())) {
+                baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + m1
+                        + ";" + baofuConfig.getKaiyueServiceMemberId() + "," + m2);
+            } else if (StringUtils.equals(unionPayConfig.getRunkunServiceMemberId(), mortgageDeduction.getTarget())) {
+                baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + m1
+                        + ";" + baofuConfig.getRunkunServiceMemberId() + "," + m2);
+            }
+        } else {
+            //无服务费的情况
+            baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + baoFuRequestParams.getTxnAmt());
+        }
+
+        //设置协议号
+        AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
+        baoFuRequestParams.setProtocolNo(accountManager.getBaofuProtocolNo());
+
+        //设置报文发送时间
+        baoFuRequestParams.setSendTime(Utility.convertToString(new Date(),"yyyy-MM-dd HH:mm:ss"));
+
+        return baoFuRequestParams;
     }
 
 

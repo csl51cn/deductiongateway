@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.common.SameUrlData;
 import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
@@ -223,6 +224,26 @@ public class MortgageDeductionController {
     }
 
     /**
+     * 查询扣款结果
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/mortgageDeductionController/queryResult.do")
+    @ResponseBody
+    public Message queryResult(String id) {
+        Message message = null;
+        try {
+             message = mortgageDeductionService.queryResult(id);
+            return message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            message = Message.fail();
+            return message;
+        }
+    }
+
+    /**
      * 手动触发批量代扣
      *
      * @return
@@ -240,7 +261,6 @@ public class MortgageDeductionController {
         }
 
     }
-
 
 
     /**

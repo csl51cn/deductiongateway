@@ -81,4 +81,36 @@ public interface AccountManagerService {
      * @return
      */
     Message unionPaySign(Integer id, String account, String certificateType, String certificateNo, String accountName, String mobile, String smsCode, String merOrderNo);
+
+
+    /**
+     * 宝付-查询是否签约
+     *
+     * @param id 记录的id
+     * @return
+     */
+    Message baoFuIsSigned(Integer id);
+
+    /**
+     * 宝付--发送签约短信
+     *
+     * @param id              记录的id
+     * @param account         银行卡号
+     * @param certificateType 证件类型
+     * @param certificateNo   证件号码
+     * @param accountName     账户名
+     * @param mobile          手机号
+     * @return
+     */
+    Message baoFuSendSignSmsCode(Integer id, String account, String certificateType, String certificateNo, String accountName, String mobile);
+
+    /**
+     * 宝付-签约
+     *
+     * @param id         记录id
+     * @param smsCode    短信验证码
+     * @param uniqueCode 预签约唯一码
+     * @return
+     */
+    Message baoFuSign(Integer id, String smsCode, String uniqueCode);
 }

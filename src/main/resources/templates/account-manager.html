@@ -164,7 +164,7 @@
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
                                             <input type="button" id="addBtn" value="新增"/>
-                                            <input type="button" id="importBtn" value="批量更新代扣卡"/>
+                                            <!--<input type="button" id="importBtn" value="批量更新代扣卡"/>-->
                                         </td>
                                     </tr>
                                 </table>
@@ -254,6 +254,14 @@
             <td style="width: 100px;text-align: right;">证件号码:</td>
             <td id="certificateNoInTableInfo" style="width: 200px;text-align: left;"></td>
         </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">银联协议号:</td>
+            <td id="unionPayProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">宝付协议号:</td>
+            <td id="baoFuProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
+        </tr>
     </table>
 </div>
 
@@ -279,8 +287,6 @@
                     if (data.code == "0000") {
                         setTimeout("$('#queryBtn').click()", 4020);
                         noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    } else if(data.data == "0001"){
-                        noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
                     } else if (data.data == "2000"){
                         noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
                     }
@@ -307,8 +313,41 @@
         },
 
         'click .baofu-action': function (e, value, row, index) {
-            // todo 宝付签约
 
+
+            $.ajax({
+                url: "/accountManagerController/baoFuIsSigned.do",
+                method: "post",
+                data: {"id": row.id},
+                success: function (data) {
+                    if (data.code == "0000") {
+                        setTimeout("$('#queryBtn').click()", 4020);
+                        noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else if(data.data == "0001"){//失败
+                        noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
+                    } else if (data.data == "2000"){//无数据返回
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    }
+                    else {
+                        $("#accountNameInContractTable").attr("value", row.accountName);
+                        $("#accountNameInContractTable").attr("readonly","readonly");
+                        $("#account").attr("value", row.account);
+                        $("#account").attr("readonly", "readonly");
+                        $("#certificateType").attr("value", row.certificateType);
+                        $("#certificateType").attr("readonly","readonly");
+                        $("#certificateNo").attr("value", row.certificateNo);
+                        $("#certificateNo").attr("readonly","readonly");
+                        $("#mobile").attr("value", row.mobile);
+                        $("#mobile").attr("readonly","readonly");
+                        $("#channelMarking").attr("value", "baofu");
+                        $("#id").attr("value", row.id);
+                        $("#channelLogo").attr("src", "/img/baofu.png");
+
+                        $("#signModalBody").html($("#signTableInfo").html());
+                        $("#signModal").modal();
+                    }
+                }
+            });
         }
     };
 
@@ -529,6 +568,8 @@
                         $("#accountInTableInfo").html(row.account);
                         $("#certificateTypeInTableInfo").html(row.certificateType);
                         $("#certificateNoInTableInfo").html(row.certificateNo);
+                        $("#unionPayProtocolInTableInfo").html(row.unionpayProtocolNo);
+                        $("#baoFuProtocolInTableInfo").html(row.baofuProtocolNo);
                         $("#moreInfoBody").html($("#tableInfo").html());
                         $("#moreInfoModal").modal();
                     }
@@ -564,6 +605,7 @@
             sendSmsCodeBtn.click(function () {
                 var channelMarking = $("#channelMarking").val();
                 if (channelMarking == "unionPay") {
+                    time(sendSmsCodeBtn);
                     $.ajax({
                         url: "/accountManagerController/unionPaySendSignSmsCode.do",
                         method: "POST",
@@ -578,14 +620,35 @@
                         success: function (message) {
                             if (message.code == "0000") {
                                 $(".modal-body input[name='merOrderNo']").attr("value", message.data);
-                                time(sendSmsCodeBtn);
                             } else {
                                 noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             }
                         }
                     })
                 } else {
-                    //todo 宝付签约查询
+                    time(sendSmsCodeBtn);
+                    $.ajax({
+                        url: "/accountManagerController/baoFuPaySendSignSmsCode.do",
+                        method: "POST",
+                        data: {
+                            "id": $(".modal-body input[name='id']").val(),
+                            "account": $(".modal-body input[name='account']").val(),
+                            "certificateType": $(".modal-body input[name='certificateType']").val(),
+                            "certificateNo": $(".modal-body input[name='certificateNo']").val(),
+                            "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
+                            "mobile": $(".modal-body input[name='mobile']").val()
+                        },
+                        success: function (message) {
+                            if (message.code == "0000") {
+                                $(".modal-body input[name='merOrderNo']").attr("value", message.data);
+                            } else {
+                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        }
+                    })
+
+
+
                 }
 
             });
@@ -603,28 +666,48 @@
                 $('#myModal').modal('show');
 
                 //发起签约请求
-                $.ajax({
-                    url: "/accountManagerController/unionPaySign.do",
-                    method: "post",
-                    data: { "id": $(".modal-body input[name='id']").val(),
-                        "account": $(".modal-body input[name='account']").val(),
-                        "certificateType": $(".modal-body input[name='certificateType']").val(),
-                        "certificateNo": $(".modal-body input[name='certificateNo']").val(),
-                        "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
-                        "mobile": $(".modal-body input[name='mobile']").val(),
-                        "smsCode":$(".modal-body input[name='smsCode']").val(),
-                        "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
-                    },
-                    success:function (message) {
-                        $('#myModal').modal('hide');
-                        if(message.code = "0000"){
-                            setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '签约成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        }else{
-                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                if ($("#channelMarking").val()== "unionPay") {
+                    $.ajax({
+                        url: "/accountManagerController/unionPaySign.do",
+                        method: "post",
+                        data: { "id": $(".modal-body input[name='id']").val(),
+                            "account": $(".modal-body input[name='account']").val(),
+                            "certificateType": $(".modal-body input[name='certificateType']").val(),
+                            "certificateNo": $(".modal-body input[name='certificateNo']").val(),
+                            "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
+                            "mobile": $(".modal-body input[name='mobile']").val(),
+                            "smsCode":$(".modal-body input[name='smsCode']").val(),
+                            "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
+                        },
+                        success:function (message) {
+                            $('#myModal').modal('hide');
+                            if(message.code == "0000"){
+                                setTimeout("$('#queryBtn').click()", 4020);
+                                noty({'text': '签约成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            }else{
+                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
                         }
-                    }
-                });
+                    });
+                }else{ //宝付
+                    $.ajax({
+                        url: "/accountManagerController/baoFuSign.do",
+                        method: "post",
+                        data: { "id": $(".modal-body input[name='id']").val(),
+                            "smsCode":$(".modal-body input[name='smsCode']").val(),
+                            "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
+                        },
+                        success:function (message) {
+                            $('#myModal').modal('hide');
+                            if(message.code == "0000"){
+                                setTimeout("$('#queryBtn').click()", 4020);
+                                noty({'text': '签约成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            }else{
+                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        }
+                    });
+                }
             });
 
 
@@ -633,6 +716,11 @@
 
         <!--签约窗口隐藏时,清空modal-body数据-->
         $('#signModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
+
+        <!--更多信息窗口隐藏时,清空modal-body数据-->
+        $('#moreInfoModal').on('hidden.bs.modal', function () {
             $(this).find(".modal-body").empty();
         });
 

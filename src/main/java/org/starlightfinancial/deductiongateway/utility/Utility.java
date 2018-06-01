@@ -52,10 +52,10 @@ public class Utility {
      * @param date
      * @return
      */
-    public static String convertToString(Date date) {
+    public static String convertToString(Date date,String pattern) {
         try {
             if (date != null) {
-                return new SimpleDateFormat("yyyy-MM-dd").format(date);
+                return new SimpleDateFormat(pattern).format(date);
             } else {
                 return "";
             }
@@ -63,6 +63,28 @@ public class Utility {
             return "";
         }
     }
+
+
+    /**
+     * 将字符串转为日期
+     *
+     * @param date
+     * @return
+     */
+    public static Date convertToDate(String date,String pattern) {
+        try {
+            if (date != null) {
+                return new SimpleDateFormat(pattern).parse(date);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+
 
     /**
      * @param checkValue
