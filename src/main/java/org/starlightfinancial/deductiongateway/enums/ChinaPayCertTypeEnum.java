@@ -6,7 +6,7 @@ package org.starlightfinancial.deductiongateway.enums;
  * @date: Created in 2018/5/9 15:24
  * @Modified By:
  */
-public enum UnionpayCertTypeEnum {
+public enum ChinaPayCertTypeEnum {
 
     /**
      * 身份证
@@ -52,7 +52,7 @@ public enum UnionpayCertTypeEnum {
     private String certTyeDesc;
 
 
-    UnionpayCertTypeEnum(String code, String certTyeDesc) {
+    ChinaPayCertTypeEnum(String code, String certTyeDesc) {
         this.code = code;
         this.certTyeDesc = certTyeDesc;
     }
@@ -75,9 +75,9 @@ public enum UnionpayCertTypeEnum {
 
 
     public static String getCodeByDesc(String certTyeDesc) {
-        for (UnionpayCertTypeEnum unionpayCertTypeEnum : UnionpayCertTypeEnum.values()) {
-            if (certTyeDesc.equals(unionpayCertTypeEnum.getCertTyeDesc())) {
-                return unionpayCertTypeEnum.getCode();
+        for (ChinaPayCertTypeEnum chinaPayCertTypeEnum : ChinaPayCertTypeEnum.values()) {
+            if (certTyeDesc.equals(chinaPayCertTypeEnum.getCertTyeDesc())) {
+                return chinaPayCertTypeEnum.getCode();
             }
         }
         return null;

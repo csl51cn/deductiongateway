@@ -45,7 +45,7 @@ public class BaoFuPayGetBgController {
         String dataContent = null;
         try {
             System.out.println("返回的加密数据:" + req.getParameter("data_content"));
-            dataContent = RsaCodingUtil.decryptByPubCerFile(req.getParameter("data_content"), baofuConfig.getCerFile());
+            dataContent = RsaCodingUtil.decryptByPubCerFile(req.getParameter("data_content"), baofuConfig.getClassicCerFile());
             String returnData = SecurityUtil.Base64Decode(dataContent);
             JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
             log.info("宝付返回的数据:" + jsonObject.toJSONString()+"\n");

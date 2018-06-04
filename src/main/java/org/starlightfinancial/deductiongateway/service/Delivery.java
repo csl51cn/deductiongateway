@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
-import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRepository;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.UnionPayRequestParams;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
-import org.starlightfinancial.deductiongateway.enums.UnionPayReturnCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -36,7 +36,7 @@ public class Delivery extends Decorator {
     HttpClientUtil httpClientUtil;
 
     @Autowired
-    UnionPayConfig unionPayConfig;
+    ChinaPayConfig chinaPayConfig;
 
     @Autowired
     BaofuConfig baofuConfig;
@@ -72,22 +72,22 @@ public class Delivery extends Decorator {
 
             mortgageDeduction.setOrdId(unionPayRequestParams.getMerOrderNo());
             // TODO: 2018/5/15 生产环境润通商户号需要重新配置
-            mortgageDeduction.setMerId(unionPayConfig.getMerId());
-            mortgageDeduction.setCuryId(unionPayConfig.getCuryId());
-            mortgageDeduction.setOrderDesc(DeductionChannelEnum.UNION_PAY.getDeductionChannelDesc());
+            mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_QUICK_PAY.getOrderDesc());
             mortgageDeduction.setPlanNo(0);
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
             mortgageDeduction.setPayTime(new Date());
             mortgageDeduction.setSplitType(unionPayRequestParams.getSplitType());
-            mortgageDeduction.setChannel(DeductionChannelEnum.UNION_PAY.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_QUICK_PAY.getCode());
 
             // 应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
             try {
-                Map map = httpClientUtil.send(unionPayConfig.getUrl(), unionPayRequestParams.transToNvpList());
+                Map map = httpClientUtil.send(chinaPayConfig.getExpressRealTimeUrl(), unionPayRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                mortgageDeduction.setErrorResult(UnionPayReturnCodeEnum.getValueByCode(jsonObject.getString("reason")));
+                mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("reason")));
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
                 //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
                 if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
@@ -105,17 +105,17 @@ public class Delivery extends Decorator {
         for (MortgageDeduction mortgageDeduction : list) {
             BaoFuRequestParams baoFuRequestParams = beanConverter.transToBaoFuRequestParams(mortgageDeduction);
 
-            mortgageDeduction.setMerId(baofuConfig.getMemberId());
-            mortgageDeduction.setCuryId(unionPayConfig.getCuryId());
-            mortgageDeduction.setOrderDesc(DeductionChannelEnum.BAO_FU.getDeductionChannelDesc());
+            mortgageDeduction.setMerId(baofuConfig.getProtocolMemberId());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.BAO_FU_AGREEMENT_PAY.getOrderDesc());
             mortgageDeduction.setPlanNo(0);
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
             mortgageDeduction.setPayTime(Utility.convertToDate(baoFuRequestParams.getSendTime(),"yyyy-MM-dd HH:mm:ss"));
             mortgageDeduction.setSplitType("");
-            mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_AGREEMENT_PAY.getCode());
             try {
-                Map map = httpClientUtil.send(baofuConfig.getUrl(), baoFuRequestParams.transToNvpList());
+                Map map = httpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
                 mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code")));

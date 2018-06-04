@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
-import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.dao.AccountDao;
@@ -20,7 +20,7 @@ import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRepository;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
-import org.starlightfinancial.deductiongateway.enums.UnionpayCertTypeEnum;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayCertTypeEnum;
 import org.starlightfinancial.deductiongateway.service.AccountManagerService;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -47,7 +47,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
     @Autowired
     private AccountDao accountDao;
     @Autowired
-    private UnionPayConfig unionPayConfig;
+    private ChinaPayConfig chinaPayConfig;
     @Autowired
     private BaofuConfig baofuConfig;
 
@@ -200,14 +200,14 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         AccountManager accountManager = accountManagerRepository.findById(id);
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("CardNo", accountManager.getAccount()));
-        basicNameValuePairs.add(new BasicNameValuePair("CertType", UnionpayCertTypeEnum.getCodeByDesc(accountManager.getCertificateType())));
+        basicNameValuePairs.add(new BasicNameValuePair("CertType", ChinaPayCertTypeEnum.getCodeByDesc(accountManager.getCertificateType())));
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", accountManager.getCertificateNo()));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", accountManager.getAccountName()));
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", accountManager.getMobile()));
         Message message;
         Map map = null;
         try {
-            map = HttpClientUtil.send(unionPayConfig.getSignStatusUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(chinaPayConfig.getExpressRealtimeSignStatusUrl(), basicNameValuePairs);
         } catch (Exception e) {
             logger.error("银联签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("银联签约状态查询异常", ConstantsEnum.REQUEST_FAIL.getCode());
@@ -262,14 +262,14 @@ public class AccountManagerServiceImpl implements AccountManagerService {
 
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("CardNo", account));
-        basicNameValuePairs.add(new BasicNameValuePair("CertType", UnionpayCertTypeEnum.getCodeByDesc(certificateType)));
+        basicNameValuePairs.add(new BasicNameValuePair("CertType", ChinaPayCertTypeEnum.getCodeByDesc(certificateType)));
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", certificateNo));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", accountName));
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", mobile));
 
         Map map = null;
         try {
-            map = HttpClientUtil.send(unionPayConfig.getSignSmsCodeUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeSignSmsCodeUrl(), basicNameValuePairs);
             if (map.containsKey("returnData")) {
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
@@ -314,7 +314,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         AccountManager accountManager = accountManagerRepository.findById(id);
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("CardNo", account));
-        basicNameValuePairs.add(new BasicNameValuePair("CertType", UnionpayCertTypeEnum.getCodeByDesc(certificateType)));
+        basicNameValuePairs.add(new BasicNameValuePair("CertType", ChinaPayCertTypeEnum.getCodeByDesc(certificateType)));
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", certificateNo));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", accountName));
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", mobile));
@@ -322,7 +322,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         basicNameValuePairs.add(new BasicNameValuePair("MobileAuthCode", smsCode));
         Map map = null;
         try {
-            map = HttpClientUtil.send(unionPayConfig.getSignUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeSignUrl(), basicNameValuePairs);
         } catch (Exception e) {
             logger.error("银联签约异常,记录id:" + id + ",账户名:" + accountName + ",账户:" + account, e);
             message = Message.fail("银联签约异常", ConstantsEnum.REQUEST_FAIL.getCode());
@@ -374,7 +374,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         Message message;
         Map map = null;
         try {
-            map = HttpClientUtil.send(baofuConfig.getSignStatusUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(baofuConfig.getProtocolSignStatusUrl(), basicNameValuePairs);
         } catch (Exception e) {
             logger.error("宝付签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("宝付签约状态查询异常", ConstantsEnum.REQUEST_FAIL.getCode());
@@ -430,12 +430,12 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         //卡类型:101	借记卡，102 信用卡
         basicNameValuePairs.add(new BasicNameValuePair("cardType", "101"));
         //证件类型:01 身份证
-        basicNameValuePairs.add(new BasicNameValuePair("idCardType", UnionpayCertTypeEnum.getCodeByDesc(certificateType)));
+        basicNameValuePairs.add(new BasicNameValuePair("idCardType", ChinaPayCertTypeEnum.getCodeByDesc(certificateType)));
         basicNameValuePairs.add(new BasicNameValuePair("accInfo", accInfo.toString()));
 
         Map map = null;
         try {
-            map = HttpClientUtil.send(baofuConfig.getSignSmsCodeUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(baofuConfig.getProtocolSignSmsCodeUrl(), basicNameValuePairs);
             if (map.containsKey("returnData")) {
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
@@ -485,7 +485,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         basicNameValuePairs.add(new BasicNameValuePair("uniqueCode", uniqueCode));
         Map map = null;
         try {
-            map = HttpClientUtil.send(baofuConfig.getSignUrl(), basicNameValuePairs);
+            map = HttpClientUtil.send(baofuConfig.getProtocolSignUrl(), basicNameValuePairs);
         } catch (Exception e) {
             logger.error("宝付签约异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("宝付签约异常", ConstantsEnum.REQUEST_FAIL.getCode());

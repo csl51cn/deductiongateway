@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
-import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
@@ -29,7 +29,7 @@ public class AutoBatchAssembler extends Assembler {
     BaofuConfig baofuConfig;
 
     @Autowired
-    UnionPayConfig unionPayConfig;
+    ChinaPayConfig chinaPayConfig;
 
     @Autowired
     BeanConverter beanConverter;

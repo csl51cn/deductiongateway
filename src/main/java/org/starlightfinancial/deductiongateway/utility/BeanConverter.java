@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
-import org.starlightfinancial.deductiongateway.UnionPayConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
@@ -23,7 +23,7 @@ import java.util.List;
 public class BeanConverter {
 
     @Autowired
-    private UnionPayConfig unionPayConfig;
+    private ChinaPayConfig chinaPayConfig;
 
     @Autowired
     private BaofuConfig baofuConfig;
@@ -62,7 +62,7 @@ public class BeanConverter {
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
 
             //设置分账信息
-            StringBuilder merSplitMsg = new StringBuilder(unionPayConfig.getMerId());
+            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeMemberId());
             merSplitMsg.append("^").append(m1);
             merSplitMsg.append(";").append(mortgageDeduction.getTarget()).append("^").append(m2).append(";");
             unionPayRequestParams.setMerSplitMsg(merSplitMsg.toString());
@@ -107,9 +107,9 @@ public class BeanConverter {
 
         //处理服务费管理公司
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
-            mortgageDeduction.setTarget(unionPayConfig.getKaiyueServiceMemberId());
+            mortgageDeduction.setTarget(chinaPayConfig.getClassicKaiYueMemberId());
         } else {
-            mortgageDeduction.setTarget(unionPayConfig.getRunkunServiceMemberId());
+            mortgageDeduction.setTarget(chinaPayConfig.getClassicRunKunMemberId());
         }
         //证件类型
         mortgageDeduction.setParam5(autoBatchDeduction.getCertificateType());
@@ -134,6 +134,7 @@ public class BeanConverter {
 
     /**
      * 将MortgageDeduction转换为BaoFuRequestParams
+     *
      * @param mortgageDeduction
      * @return
      */
@@ -158,16 +159,16 @@ public class BeanConverter {
 
         //设置分账信息 有服务费时才分账
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
-            if (StringUtils.equals(unionPayConfig.getKaiyueServiceMemberId(), mortgageDeduction.getTarget())) {
-                baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + m1
-                        + ";" + baofuConfig.getKaiyueServiceMemberId() + "," + m2);
-            } else if (StringUtils.equals(unionPayConfig.getRunkunServiceMemberId(), mortgageDeduction.getTarget())) {
-                baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + m1
-                        + ";" + baofuConfig.getRunkunServiceMemberId() + "," + m2);
+            if (StringUtils.equals(chinaPayConfig.getClassicKaiYueMemberId(), mortgageDeduction.getTarget())) {
+                baoFuRequestParams.setShareInfo(baofuConfig.getProtocolMemberId() + "," + m1
+                        + ";" + baofuConfig.getProtocolKaiYueMemberId() + "," + m2);
+            } else if (StringUtils.equals(chinaPayConfig.getClassicRunKunMemberId(), mortgageDeduction.getTarget())) {
+                baoFuRequestParams.setShareInfo(baofuConfig.getProtocolMemberId() + "," + m1
+                        + ";" + baofuConfig.getProtocolRunKunMemberId() + "," + m2);
             }
         } else {
             //无服务费的情况
-            baoFuRequestParams.setShareInfo(baofuConfig.getMemberId() + "," + baoFuRequestParams.getTxnAmt());
+            baoFuRequestParams.setShareInfo(baofuConfig.getProtocolMemberId() + "," + baoFuRequestParams.getTxnAmt());
         }
 
         //设置协议号
@@ -175,9 +176,70 @@ public class BeanConverter {
         baoFuRequestParams.setProtocolNo(accountManager.getBaofuProtocolNo());
 
         //设置报文发送时间
-        baoFuRequestParams.setSendTime(Utility.convertToString(new Date(),"yyyy-MM-dd HH:mm:ss"));
+        baoFuRequestParams.setSendTime(Utility.convertToString(new Date(), "yyyy-MM-dd HH:mm:ss"));
 
         return baoFuRequestParams;
+    }
+
+    /**
+     * 将MortgageDeduction转换为GoPayBean
+     *
+     * @return GoPayBean
+     */
+    public GoPayBean transToGoPayBean(MortgageDeduction mortgageDeduction) {
+        GoPayBean goPayBean = new GoPayBean();
+        //设置合同编号
+        goPayBean.setContractId(mortgageDeduction.getContractNo());
+        //设置客户名称
+        goPayBean.setCustomerName(mortgageDeduction.getCustomerName());
+        //设置合同编号
+        goPayBean.setContractNo(mortgageDeduction.getContractNo());
+        //设置服务费的管理公司
+        goPayBean.setOrgManagerId(mortgageDeduction.getOrdId());
+        //设置还款计划的id
+        goPayBean.setRePlanId("");
+        goPayBean.setSplitData1(mortgageDeduction.getSplitData1());
+        goPayBean.setSplitData2(mortgageDeduction.getSplitData2());
+        goPayBean.setBusiId("");
+        goPayBean.setOrdId(MerSeq.tickOrder());
+        String amount1 = mortgageDeduction.getSplitData1().toString();
+        String amount2 = mortgageDeduction.getSplitData2().toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        goPayBean.setOrdAmt(m1 + m2 + "");
+        //开户行号
+        goPayBean.setParam1(mortgageDeduction.getParam1());
+        //卡折标志
+        goPayBean.setParam2(mortgageDeduction.getParam2());
+        //卡号/折号
+        goPayBean.setParam3(mortgageDeduction.getParam3());
+        //持卡人姓名
+        goPayBean.setParam4(mortgageDeduction.getParam4());
+        //证件类型
+        goPayBean.setParam5(mortgageDeduction.getParam5());
+        //证件号
+        goPayBean.setParam6(mortgageDeduction.getParam6());
+        goPayBean.setParam7("");
+        goPayBean.setParam8("");
+        goPayBean.setParam9("");
+        goPayBean.setParam10("");
+        goPayBean.setOrdDesc("银联");
+        //设置分账信息
+        String shareData = chinaPayConfig.getClassicRunTongMemberId() + m1;
+        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
+            shareData += ";" + mortgageDeduction.getTarget() + "^" + m2 + ";";
+        }
+        goPayBean.setShareData(shareData);
+        goPayBean.setPriv1("");
+        goPayBean.setCustomIp("");
+        return goPayBean;
+
     }
 
 

@@ -9,7 +9,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.enums.UnionPayReturnCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import javax.jms.JMSException;
@@ -54,17 +54,17 @@ public class BackgroundNotificationConsumer {
             MortgageDeduction mortgageDeduction = mortgageDeductionService.findByOrdId(merOrderNo);
             if (mortgageDeduction != null) {
                 //0000表示支付成功,0001表示未支付,其余为失败
-                if (StringUtils.equals(UnionPayReturnCodeEnum.UNIONPAY_CODE_001.getCode(), jsonObject.getString("OrderStatus"))) {
+                if (StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode(), jsonObject.getString("OrderStatus"))) {
                     //设置支付状态:1表示成功
                     mortgageDeduction.setIssuccess("1");
                     mortgageDeduction.setResult(jsonObject.getString("OrderStatus"));
                     mortgageDeduction.setErrorResult("支付成功");
                 } else {
-                    if (!StringUtils.equals(UnionPayReturnCodeEnum.UNIONPAY_CODE_002.getCode(), jsonObject.getString("OrderStatus"))) {
+                    if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_002.getCode(), jsonObject.getString("OrderStatus"))) {
                         mortgageDeduction.setIssuccess("0");
                     }
                     mortgageDeduction.setResult(jsonObject.getString("OrderStatus"));
-                    mortgageDeduction.setErrorResult(UnionPayReturnCodeEnum.getValueByCode(jsonObject.getString("OrderStatus")));
+                    mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("OrderStatus")));
                 }
                 mortgageDeductionService.updateMortgageDeduction(mortgageDeduction);
                 textMessage.acknowledge();

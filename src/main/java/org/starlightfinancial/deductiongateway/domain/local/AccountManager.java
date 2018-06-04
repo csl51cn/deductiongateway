@@ -137,8 +137,17 @@ public class AccountManager {
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    @Column(name="createtime")
-    private  Date createTime;
+    @Column(name = "createtime")
+    private Date createTime;
+
+    /**
+     * 签约短信验证码
+     */
+    private String smsCode;
+    /**
+     * 短信验证码对应的订单号
+     */
+    private String merOrderNo;
 
     public Integer getId() {
         return id;
@@ -298,6 +307,22 @@ public class AccountManager {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getSmsCode() {
+        return smsCode;
+    }
+
+    public void setSmsCode(String smsCode) {
+        this.smsCode = smsCode;
+    }
+
+    public String getMerOrderNo() {
+        return merOrderNo;
+    }
+
+    public void setMerOrderNo(String merOrderNo) {
+        this.merOrderNo = merOrderNo;
     }
 
     @Override
