@@ -37,7 +37,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "chinaPayQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "chinaPayQueueDev", containerFactory = "jmsQueueListener")
     public void receiveChinaPayQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -86,7 +86,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "baofuQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "baofuQueueDev", containerFactory = "jmsQueueListener")
     public void receiveBaoFuQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();

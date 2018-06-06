@@ -229,9 +229,8 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
                 String returnData = (String) map.get("returnData");
 
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                String errorCode = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
-                errorCode = StringUtils.isEmpty(errorCode) ? jsonObject.getString("reason") : errorCode;
-                mortgageDeduction.setErrorResult(errorCode);
+                String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
                 //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
                 if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {

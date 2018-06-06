@@ -1,13 +1,25 @@
 package org.starlightfinancial.deductiongateway.strategy.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
+import org.starlightfinancial.deductiongateway.domain.local.ChinaPayDelayRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
+import org.starlightfinancial.deductiongateway.utility.BeanConverter;
+import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -21,6 +33,15 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
     @Resource(name = "0001")
     private OperationStrategy operationStrategy;
 
+    @Autowired
+    BeanConverter beanConverter;
+
+    @Autowired
+    ChinaPayConfig chinaPayConfig;
+
+
+    @Autowired
+    private MortgageDeductionRepository mortgageDeductionRepository;
 
     /**
      * 查询是否签约
@@ -63,7 +84,39 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
      */
     @Override
     public void pay(List<MortgageDeduction> mortgageDeductions) throws Exception {
+        for (MortgageDeduction mortgageDeduction : mortgageDeductions) {
 
+            ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
+            mortgageDeduction.setOrdId(chinaPayDelayRequestParams.getMerOrderNo());
+            mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getOrderDesc());
+            mortgageDeduction.setPlanNo(0);
+            //type为0表示已发起过代扣，type为1时未发起过代扣
+            mortgageDeduction.setType("0");
+            mortgageDeduction.setIsoffs("0");
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
+            mortgageDeduction.setPayTime(new Date());
+
+            try {
+                Map map = HttpClientUtil.send(chinaPayConfig.getExpressDelayUrl(), chinaPayDelayRequestParams.transToNvpList());
+                String returnData = (String) map.get("returnData");
+
+                JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
+                mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
+                if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
+                    mortgageDeduction.setIssuccess("0");
+                }
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //保存订单号
+                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+            }
+        }
     }
 
     /**

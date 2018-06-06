@@ -195,7 +195,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         }
 
                         //处理服务费管理公司
-                        if(StringUtils.isBlank(mortgageDeduction.getTarget())){
+                        if (StringUtils.isBlank(mortgageDeduction.getTarget())) {
                             mortgageDeduction.setTarget("润坤");
                         }
 //                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
@@ -348,12 +348,15 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     }
                 }
 
-                //处理服务费管理公司
-//                if (mortgageDeduction.getTarget() != null && chinaPayConfig.getExpressRealTimeKaiYueServiceMemberId().equals(mortgageDeduction.getTarget().trim())) {
-//                    mortgageDeduction.setTarget("铠岳");
-//                } else {
-//                    mortgageDeduction.setTarget("润坤");
-//                }
+                //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 后面保存的是公司名称(汉字)
+                if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+                    if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                        mortgageDeduction.setTarget("铠岳");
+                    } else if(chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())){
+                        mortgageDeduction.setTarget("润坤");
+                    }
+                }
+
 
                 //处理代扣卡银行名
                 String bankName = BankCodeEnum.getBankNameById(mortgageDeduction.getParam1());
@@ -471,14 +474,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             cell = row.createCell(8);
             String company = mortgageDeduction.getTarget() != null ? mortgageDeduction.getTarget().trim() : "";
-//            if (StringUtils.equals(company, chinaPayConfig.getClassicKaiYueMemberId())) {
-//                cell.setCellValue("铠岳");
-//            }
-//
-//            if (StringUtils.equals(company, chinaPayConfig.getClassicRunKunMemberId())) {
-//                cell.setCellValue("润坤");
-//            }
-            cell.setCellValue(company);
+            //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 后面保存的是公司名称(汉字)
+            if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+                //为数字的时候需要转换
+                if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                    cell.setCellValue("铠岳");
+                } else if(chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())){
+                    cell.setCellValue("润坤");
+                }
+            }else{
+                //为汉字的情况,直接设置
+                cell.setCellValue(company);
+            }
+
             cell = row.createCell(9);
             cell.setCellValue(mortgageDeduction.getParam4());
             cell = row.createCell(10);

@@ -9,7 +9,6 @@ import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
-import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRepository;
 import org.starlightfinancial.deductiongateway.domain.local.ChinaPayDelayRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
@@ -41,8 +40,6 @@ public class Delivery extends Decorator {
     @Autowired
     BaofuConfig baofuConfig;
 
-    @Autowired
-    private AccountManagerRepository accountManagerRepository;
 
     @Autowired
     BeanConverter beanConverter;
@@ -86,7 +83,8 @@ public class Delivery extends Decorator {
                 Map map = httpClientUtil.send(chinaPayConfig.getExpressDelayUrl(), chinaPayDelayRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
                 //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
                 if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
@@ -117,7 +115,8 @@ public class Delivery extends Decorator {
                 Map map = httpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                String errorCodeDesc = BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
                 result.add(mortgageDeduction);
             } catch (Exception e) {

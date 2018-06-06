@@ -285,33 +285,6 @@
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
     window.operateEvents = {
-        <!--查询扣款结果按钮功能-->
-        'click .manualConfirm':function (e, value, row, index) {
-            value = 0;
-            $('#actionModal').modal('hide');
-            $('#confirmModal').modal();
-            $(".btn-success").unbind("click");
-            $(".btn-success").click(function () {
-                increment();
-                $('#myModal').modal('show');
-                $.ajax({
-                    url: "/channelDispatchController/queryPayResult.do",
-                    timeout: 900000,
-                    method: "POST",
-                    data: {"id": row.id},
-                    success: function (message) {
-                        $('#myModal').modal('hide');
-                        if ("0000" == message.code) {
-                            setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else {
-                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
-                    }
-                })
-            })
-
-        },
 
     'click .action': function (e, value, row, index) {
         $('#actionModal').modal();
@@ -565,6 +538,33 @@
         $("#baoFuClassicDeductionBtn").click(function () {
             var url  ="/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0005"},url);
+        });
+        <!--查询扣款结果按钮功能-->
+        $("#manualConfirmBtn").click(function () {
+            value = 0;
+            $('#actionModal').modal('hide');
+            $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
+            $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
+                $.ajax({
+                    url: "/channelDispatchController/queryPayResult.do",
+                    timeout: 900000,
+                    method: "POST",
+                    data: {"id": $("#rowId").val()},
+                    success: function (message) {
+                        $('#myModal').modal('hide');
+                        if ("0000" == message.code) {
+                            setTimeout("$('#queryBtn').click()", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                })
+            })
+
         });
 
 

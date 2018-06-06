@@ -235,7 +235,8 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
                 Map map = HttpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-                mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                String errorCodeDesc = BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult( StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
@@ -270,7 +271,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
             //有返回结果
             String returnData = (String) send.get("returnData");
             JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-            if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), jsonObject.getString("error_code"))) {
+            if (StringUtils.equals(RsbCodeEnum.ERROR_CODE_01.getCode(), jsonObject.getString("error_code"))) {
                 //查询成功
                 JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
                 if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), result.getString("biz_resp_code"))) {
