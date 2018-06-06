@@ -24,11 +24,18 @@ public class ChinaPayConfig {
     @Value("${chinapay.express.realtime.api.member.id}")
     private String expressRealTimeMemberId;
 
+
     /**
      * 快捷支付铠岳商户号
      */
     @Value("${chinapay.express.realtime.api.kaiyue.service.member.id}")
     private String expressRealTimeKaiYueServiceMemberId;
+
+    /**
+     * 快捷支付铠岳商户号
+     */
+    @Value("${chinapay.express.realtime.api.runtong.member.id}")
+    private String expressRealTimeRunTongMemberId;
 
     /**
      * 快捷支付润坤商户号
@@ -321,5 +328,13 @@ public class ChinaPayConfig {
 
     public void setClassicPageRetUrl(String classicPageRetUrl) {
         this.classicPageRetUrl = classicPageRetUrl;
+    }
+
+    public String getExpressRealTimeRunTongMemberId() {
+        return expressRealTimeRunTongMemberId;
+    }
+
+    public void setExpressRealTimeRunTongMemberId(String expressRealTimeRunTongMemberId) {
+        this.expressRealTimeRunTongMemberId = expressRealTimeRunTongMemberId;
     }
 }

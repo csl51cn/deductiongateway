@@ -193,7 +193,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
                     //签约成功
                     accountManagerById.setBaofuProtocolNo(result.getString("protocol_no"));
                     accountManagerById.setBaofuIsSigned(1);
-                    accountManagerRepository.saveAndFlush(accountManager);
+                    accountManagerRepository.saveAndFlush(accountManagerById);
                     message = Message.success("宝付签约成功");
                 } else {
                     //签约失败

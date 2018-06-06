@@ -80,7 +80,7 @@ public class BeanConverter {
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
 
             //设置分账信息
-            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeMemberId());
+            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
             merSplitMsg.append("^").append(m1);
             merSplitMsg.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode())).append("^").append(m2).append(";");
             chinaPayRealTimeRequestParams.setMerSplitMsg(merSplitMsg.toString());
@@ -382,7 +382,7 @@ public class BeanConverter {
         //设置分账三个相关参数
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
             //设置分账信息
-            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeMemberId());
+            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
             merSplitMsg.append("^").append(m1);
             merSplitMsg.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_EXPRESS_DELAY.getCode())).append("^").append(m2).append(";");
             chinaPayDelayRequestParams.setMerSplitMsg(merSplitMsg.toString());
