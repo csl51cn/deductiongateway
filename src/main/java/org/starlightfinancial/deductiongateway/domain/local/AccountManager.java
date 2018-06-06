@@ -78,15 +78,78 @@ public class AccountManager {
      * 修改时间
      */
     @Column(name = "changetime")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS" ,timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "GMT+8")
     private Date changeTime;
 
     /**
      * 放款时间
      */
     @Column(name = "loandate")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date loanDate;
 
+    /**
+     * 标志是否开启自动代扣,0:关闭,1:开启
+     */
+    @Column(name = "isenabled")
+    private Integer isEnabled = 1;
+
+
+    /**
+     * 手机号
+     */
+    @Column(name = "mobile")
+    private String mobile;
+
+    /**
+     * 银联是否签约,0:未签约,1:已签约
+     */
+    @Column(name = "unionpay_is_signed")
+    private Integer unionpayIsSigned = 0;
+
+    /**
+     * 宝付是否签约,0:未签约,1:已签约
+     */
+    @Column(name = "baofu_is_signed")
+    private Integer baofuIsSigned = 0;
+
+    /**
+     * 银联协议号
+     */
+    @Column(name = "unionpay_protocol_no")
+    private String unionpayProtocolNo;
+
+
+    /**
+     * 宝付协议号
+     */
+    @Column(name = "baofu_protocol_no")
+    private String baofuProtocolNo;
+
+    /**
+     * 客户id
+     */
+    @Column(name = "customerid")
+    private String customerId;
+
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Column(name = "createtime")
+    private Date createTime;
+
+    /**
+     * 签约短信验证码
+     */
+    @Transient
+    private String smsCode;
+    /**
+     * 短信验证码对应的订单号
+     */
+    @Transient
+    private String merOrderNo;
 
     public Integer getId() {
         return id;
@@ -184,6 +247,86 @@ public class AccountManager {
         this.loanDate = loanDate;
     }
 
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getUnionpayProtocolNo() {
+        return unionpayProtocolNo;
+    }
+
+    public void setUnionpayProtocolNo(String unionpayProtocolNo) {
+        this.unionpayProtocolNo = unionpayProtocolNo;
+    }
+
+    public String getBaofuProtocolNo() {
+        return baofuProtocolNo;
+    }
+
+    public void setBaofuProtocolNo(String baofuProtocolNo) {
+        this.baofuProtocolNo = baofuProtocolNo;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public Integer getUnionpayIsSigned() {
+        return unionpayIsSigned;
+    }
+
+    public void setUnionpayIsSigned(Integer unionpayIsSigned) {
+        this.unionpayIsSigned = unionpayIsSigned;
+    }
+
+    public Integer getBaofuIsSigned() {
+        return baofuIsSigned;
+    }
+
+    public void setBaofuIsSigned(Integer baofuIsSigned) {
+        this.baofuIsSigned = baofuIsSigned;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public String getSmsCode() {
+        return smsCode;
+    }
+
+    public void setSmsCode(String smsCode) {
+        this.smsCode = smsCode;
+    }
+
+    public String getMerOrderNo() {
+        return merOrderNo;
+    }
+
+    public void setMerOrderNo(String merOrderNo) {
+        this.merOrderNo = merOrderNo;
+    }
+
     @Override
     public String toString() {
         return "AccountManager{" +
@@ -199,6 +342,14 @@ public class AccountManager {
                 ", sort=" + sort +
                 ", changeTime=" + changeTime +
                 ", loanDate=" + loanDate +
+                ", isEnabled=" + isEnabled +
+                ", mobile='" + mobile + '\'' +
+                ", unionpayIsSigned=" + unionpayIsSigned +
+                ", baofuIsSigned=" + baofuIsSigned +
+                ", unionpayProtocolNo='" + unionpayProtocolNo + '\'' +
+                ", baofuProtocolNo='" + baofuProtocolNo + '\'' +
+                ", customerId='" + customerId + '\'' +
+                ", createTime=" + createTime +
                 '}';
     }
 }

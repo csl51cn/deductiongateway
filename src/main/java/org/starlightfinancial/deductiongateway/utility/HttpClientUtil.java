@@ -2,6 +2,7 @@ package org.starlightfinancial.deductiongateway.utility;
 
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
@@ -10,54 +11,48 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+
 @Component
 public class HttpClientUtil {
 
-    public static Map send(List<BasicNameValuePair> nvps) throws Exception {
-        //批量发送扣款通信相关的对象
-        Map map = new HashMap();
+    private static final Logger log = LoggerFactory.getLogger(HttpClientUtil.class);
+
+    public static Map send(String url, List<BasicNameValuePair> nvps) throws Exception {
+        Map<String, String> map = new HashMap();
         HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClientBuilder.create();
-        //信任所有证书,跳过证书验证
         configureHttpClient(httpAsyncClientBuilder);
         CloseableHttpAsyncClient httpclient = httpAsyncClientBuilder.build();
-        String url = Utility.SEND_BANK_URL;
-        HttpPost httpPost = new HttpPost(url);
         CountDownLatch latch = new CountDownLatch(1);
         try {
-            //将表单的值放入postMethod中
+            HttpPost httpPost = new HttpPost(url);
+            RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(120000).build();
+            httpPost.setConfig(requestConfig);
             httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
             httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             httpclient.start();
 
-            System.out.println("开始调用银联接口");
-            //执行postMethod
+            log.info("开始调用接口：" + url + " 请求参数:" + URLDecoder.decode(EntityUtils.toString(httpPost.getEntity()), "UTF-8"));
+            // 执行postMethod
             httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
 
                 public void completed(final HttpResponse response) {
                     try {
-                        String content = EntityUtils.toString(response.getEntity(), "UTF-8");
-                        System.out.println(content);
-                        String payStat = null;
-                        try {
-                            payStat = content.substring(content.indexOf("PayStat") + 16, content.indexOf("PayStat") + 20);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println("payStat|" + payStat);
-                        map.put("PayStat", payStat);
+                        String returnData = EntityUtils.toString(response.getEntity(), "UTF-8");
+                        System.out.println("调用返回数据：" + returnData);
+                        map.put("returnData", returnData);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -66,12 +61,10 @@ public class HttpClientUtil {
 
                 public void failed(final Exception ex) {
                     latch.countDown();
-                    close(httpclient);
                 }
 
                 public void cancelled() {
                     latch.countDown();
-                    close(httpclient);
                 }
             });
 
@@ -86,6 +79,7 @@ public class HttpClientUtil {
         } finally {
             close(httpclient);
         }
+
         return map;
     }
 
@@ -105,27 +99,19 @@ public class HttpClientUtil {
 
     /**
      * 配置HttpAsyncClientBuilder,信任所有证书,重定向策略
+     *
      * @param clientBuilder
      */
-    public static void configureHttpClient(HttpAsyncClientBuilder clientBuilder)
-    {
-        try
-        {
-            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy()
-            {
-                // 信任所有
-                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException
-                {
-                    return true;
-                }
-            }).build();
+    public static void configureHttpClient(HttpAsyncClientBuilder clientBuilder) {
+        try {
+            // 信任所有
+            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (chain, authType) -> true).build();
 
             clientBuilder.setSSLContext(sslContext);
+            //设置重定向策略,如果是重定向,继续访问
+            clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
 
-            clientBuilder.setRedirectStrategy(new LaxRedirectStrategy() );//设置重定向策略,如果是重定向,继续访问
-
-        }catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

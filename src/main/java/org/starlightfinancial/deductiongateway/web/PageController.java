@@ -57,5 +57,10 @@ public class PageController {
         return "extra-processing";
     }
 
+    @RequestMapping("/deductiontemplate.do")
+    public String toDeductionTemplatePage() {
+        return "deduction-template";
+    }
+
 }
 

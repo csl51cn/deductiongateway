@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>限额管理</title>
+
     <title th:include="common :: #header" th:remove="tag"></title>
+    <title>限额管理</title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-editable.css" rel="stylesheet">
 </head>
@@ -146,7 +147,7 @@
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>卡号管理</h2>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>限额管理</h2>
                     </div>
                     <div class="box-content">
                         <div>
@@ -184,6 +185,7 @@
 
 
 <script type="text/javascript" th:inline="javascript">
+    var staffId = [[${session.loginUser.staffId}]];
     var columns = [{
         field: 'state',
         checkbox: true
@@ -222,13 +224,13 @@
         title: '单笔单卡限额',
         editable: {
             type: 'text',
-            title: '单笔单卡限额',
+            title: '单笔单卡限额(-1为无限额)',
             validate: function (v) {
                 if (!v) return '单笔单卡限额不能为空';
             }
         },
-        formatter:function (value, row, index) {
-            if(value == "-1"){
+        formatter: function (value, row, index) {
+            if (value == "-1") {
                 return "无限额";
             }
             return value;
@@ -238,13 +240,13 @@
         title: '单日单卡限额',
         editable: {
             type: 'text',
-            title: '单日单卡限额',
+            title: '单日单卡限额(-1为无限额)',
             validate: function (v) {
                 if (!v) return '单日单卡限额不能为空';
             }
         },
-        formatter:function (value, row, index) {
-            if(value == "-1"){
+        formatter: function (value, row, index) {
+            if (value == "-1") {
                 return "无限额";
             }
             return value;
@@ -265,7 +267,7 @@
                 height: $(window).height() - 300,
                 pagination: true,
                 columns: columns,
-                clickEdit:true,
+                clickEdit: true,
                 rowStyle: function rowStyle(row, index) {
                     if (index % 2 == 0) {
                         return {
@@ -281,26 +283,35 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    $.ajax({
-                        type: "post",
-                        url: "/limitManagerController/saveOrUpdateLimit.do",
-                        data: row,
-                        dataType: 'JSON',
-                        success: function (data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                            if (data == "1") {
-                                noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                            } else {
+                    if (staffId == 1 || staffId == 1304 || staffId == 1250) {
+                        $.ajax({
+                            type: "post",
+                            url: "/limitManagerController/saveOrUpdateLimit.do",
+                            data: row,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                if (data == "1") {
+                                    noty({
+                                        'text': '执行完成',
+                                        'layout': 'center',
+                                        'type': 'information',
+                                        "timeout": "4000"
+                                    });
+                                } else {
+                                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                }
+                            },
+                            error: function () {
                                 noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             }
-                        },
-                        error: function () {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        },
-
-                    });
+                        })
+                    } else {
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                    ;
                 },
-                OnClickRow:function (e, row, $element, field){
+                OnClickRow: function (e, row, $element, field) {
 
                 }
             });

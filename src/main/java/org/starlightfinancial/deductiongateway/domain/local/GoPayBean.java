@@ -48,26 +48,42 @@ public class GoPayBean {
 
     public List<BasicNameValuePair> aggregationToList() {
         List<BasicNameValuePair> nvps = new ArrayList<>();
-        nvps.add(new BasicNameValuePair("MerId", MerId));//商户号
-        nvps.add(new BasicNameValuePair("BusiId", BusiId));//业务号，可选
-        nvps.add(new BasicNameValuePair("OrdId", OrdId));//订单号
-        nvps.add(new BasicNameValuePair("OrdAmt", OrdAmt));//金额
-        nvps.add(new BasicNameValuePair("CuryId", CuryId));//币种
-        nvps.add(new BasicNameValuePair("Version", Version));//版本号，由银联提供
-        nvps.add(new BasicNameValuePair("BgRetUrl", BgRetUrl));//后台通知URL
-        nvps.add(new BasicNameValuePair("PageRetUrl", PageRetUrl));//前台返回URL
-        nvps.add(new BasicNameValuePair("GateId", GateId));//网关ID，由银联提供
-        nvps.add(new BasicNameValuePair("Param1", Param1));//开户行
-        nvps.add(new BasicNameValuePair("Param2", Param2));//卡折标志
-        nvps.add(new BasicNameValuePair("Param3", Param3));//卡号/折号
-        nvps.add(new BasicNameValuePair("Param4", Param4));//持卡人姓名
-        nvps.add(new BasicNameValuePair("Param5", Param5));//证件类型
-        nvps.add(new BasicNameValuePair("Param6", Param6));//证件号
+        //商户号
+        nvps.add(new BasicNameValuePair("MerId", MerId));
+        //业务号，可选
+        nvps.add(new BasicNameValuePair("BusiId", BusiId));
+        //订单号
+        nvps.add(new BasicNameValuePair("OrdId", OrdId));
+        //金额
+        nvps.add(new BasicNameValuePair("OrdAmt", OrdAmt));
+        //币种
+        nvps.add(new BasicNameValuePair("CuryId", CuryId));
+        //版本号，由银联提供
+        nvps.add(new BasicNameValuePair("Version", Version));
+        //后台通知URL
+        nvps.add(new BasicNameValuePair("BgRetUrl", BgRetUrl));
+        //前台返回URL
+        nvps.add(new BasicNameValuePair("PageRetUrl", PageRetUrl));
+        //网关ID，由银联提供
+        nvps.add(new BasicNameValuePair("GateId", GateId));
+        //开户行
+        nvps.add(new BasicNameValuePair("Param1", Param1));
+        //卡折标志
+        nvps.add(new BasicNameValuePair("Param2", Param2));
+        //卡号/折号
+        nvps.add(new BasicNameValuePair("Param3", Param3));
+        //持卡人姓名
+        nvps.add(new BasicNameValuePair("Param4", Param4));
+        //证件类型
+        nvps.add(new BasicNameValuePair("Param5", Param5));
+        //证件号
+        nvps.add(new BasicNameValuePair("Param6", Param6));
         nvps.add(new BasicNameValuePair("Param7", Param7));
         nvps.add(new BasicNameValuePair("Param8", Param8));
         nvps.add(new BasicNameValuePair("Param9", Param9));
         nvps.add(new BasicNameValuePair("Param10", Param10));
-        nvps.add(new BasicNameValuePair("OrdDesc", OrdDesc));//订单描述
+        //订单描述
+        nvps.add(new BasicNameValuePair("OrdDesc", OrdDesc));
         nvps.add(new BasicNameValuePair("ShareType", ShareType));
         nvps.add(new BasicNameValuePair("ShareData", ShareData));
         nvps.add(new BasicNameValuePair("Priv1", Priv1));
@@ -76,34 +92,6 @@ public class GoPayBean {
         return nvps;
     }
 
-    public MortgageDeduction transToMortgageDeduction() {
-        MortgageDeduction mortgageDeduction = new MortgageDeduction();
-        mortgageDeduction.setApplyMainId(-1);
-        mortgageDeduction.setOrdId(OrdId);
-        mortgageDeduction.setCustomerNo(customerNo);
-        mortgageDeduction.setCustomerName(customerName);
-        mortgageDeduction.setContractNo(contractNo);
-        mortgageDeduction.setParam1(Param1);
-        mortgageDeduction.setParam2(Param2);
-        mortgageDeduction.setParam3(Param3);
-        mortgageDeduction.setParam4(Param4);
-        mortgageDeduction.setParam5(Param5);
-        mortgageDeduction.setParam6(Param6);
-        mortgageDeduction.setMerId(MerId);
-        mortgageDeduction.setSplitData1(splitData1);
-        mortgageDeduction.setCuryId(CuryId);
-        mortgageDeduction.setOrderDesc(OrdDesc);
-        mortgageDeduction.setSplitType(ShareType);
-        mortgageDeduction.setSplitData2(splitData2);
-        mortgageDeduction.setCreatId(113);
-        mortgageDeduction.setCreateDate(new Date());
-        mortgageDeduction.setIssuccess("");
-        mortgageDeduction.setErrorResult("");
-        mortgageDeduction.setIsoffs("0");
-        mortgageDeduction.setType("0");
-        mortgageDeduction.setTarget(orgManagerId);
-        return mortgageDeduction;
-    }
 
     public String createStringBuffer() {
         StringBuffer sb = new StringBuffer();

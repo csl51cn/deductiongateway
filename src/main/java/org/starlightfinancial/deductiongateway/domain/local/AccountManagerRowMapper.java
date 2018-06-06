@@ -23,6 +23,8 @@ public class AccountManagerRowMapper implements RowMapper {
     public static final String CERTIFICATENO_COLUMN = "certificateno";
     public static final String SORT_COLUMN = "sort";
     public static final String LOANDATE_COLUMN = "loandate";
+    public static final String MOBILE_COLUMN = "mobile";
+    public static final String CUSTOMERID_COLUMN  = "customerid";
 
 
 
@@ -41,6 +43,9 @@ public class AccountManagerRowMapper implements RowMapper {
         accountManager.setSort(resultSet.getInt(SORT_COLUMN));
         accountManager.setChangeTime(new Date());
         accountManager.setLoanDate(resultSet.getDate(LOANDATE_COLUMN));
+        accountManager.setMobile(resultSet.getString(MOBILE_COLUMN));
+        accountManager.setCustomerId(resultSet.getString(CUSTOMERID_COLUMN));
+        accountManager.setCreateTime(new Date());
         return accountManager;
     }
 }

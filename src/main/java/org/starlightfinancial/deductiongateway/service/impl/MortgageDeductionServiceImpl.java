@@ -1,7 +1,9 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -14,8 +16,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.BaofuConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
+import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
+import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
+import org.starlightfinancial.deductiongateway.service.AssemblerFactory;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.*;
 
@@ -26,7 +38,6 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -44,14 +55,21 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     SysDictRepository sysDictRepository;
 
     @Autowired
-    HttpClientUtil httpClientUtil;
+    private LimitManagerRepository limitManagerRepository;
 
     @Autowired
-    private LimitManagerRepository limitManagerRepository;
+    private AssemblerFactory assemblerFactory;
+
+    @Autowired
+    private ChinaPayConfig chinaPayConfig;
+
+    @Autowired
+    private BaofuConfig baofuConfig;
 
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
 
+    @Override
     public void importCustomerData(MultipartFile uploadedFile, int staffId) {
         try {
             if (null == uploadedFile) {
@@ -164,6 +182,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         for (int k = 0; k < openBankList.size(); k++) {
                             if (mortgageDeduction.getParam1().equals(openBankList.get(k).getDicValue())) {
                                 mortgageDeduction.setParam1(openBankList.get(k).getDicKey());
+                                break;
                             }
                         }
 
@@ -171,15 +190,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         for (int k = 0; k < cTypeLst.size(); k++) {
                             if (mortgageDeduction.getParam5().equals(cTypeLst.get(k).getDicValue())) {
                                 mortgageDeduction.setParam5(cTypeLst.get(k).getDicKey());
+                                break;
                             }
                         }
 
                         //处理服务费管理公司
-                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
-                            mortgageDeduction.setTarget("00145112");
-                        } else {
-                            mortgageDeduction.setTarget("00160808");
+                        if (StringUtils.isBlank(mortgageDeduction.getTarget())) {
+                            mortgageDeduction.setTarget("润坤");
                         }
+//                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
+//                            mortgageDeduction.setTarget(chinaPayConfig.getClassicKaiYueMemberId());
+//                        } else {
+//                            mortgageDeduction.setTarget(chinaPayConfig.getClassicRunKunMemberId());
+//                        }
 
                         if (mortgageDeduction.getParam3() != null && !"".equals(mortgageDeduction.getParam3())) {
                             list.add(mortgageDeduction);
@@ -204,32 +227,16 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
     }
 
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception {
-        for (int i = 0; i < list.size(); i++) {
-            MortgageDeduction mortgageDeduction = list.get(i);
-            GoPayBean goPayBean = mortgageDeduction.transToGoPayBean();
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer());
-            if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-                throw new Exception("银联报文签名异常");
-            }
-            goPayBean.setChkValue(chkValue);
-            this.updateMortgageDeduction(mortgageDeduction, goPayBean);
+    @Override
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception {
 
-            try {
-                Map map = httpClientUtil.send(goPayBean.aggregationToList());
-                String payStat = (String) map.get("PayStat");
-                mortgageDeduction.setResult(payStat);
-                if (StringUtils.equals(Constant.SUCCESS, payStat))
-                    mortgageDeduction.setIssuccess("1");
-                else
-                    mortgageDeduction.setIssuccess("0");
-                mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
-            } catch (Exception e) {
-                e.printStackTrace();
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);//保存订单号
-            }
+        ManualBatchAssembler assembler = (ManualBatchAssembler) assemblerFactory.getAssembleImpl("manual");
+        if (StringUtils.equals("UNIONPAY", deductionMethod)) {
+            assembler.saveUNIONPAY(list);
+        } else if (StringUtils.equals("BAOFU", deductionMethod)) {
+            assembler.saveBAOFU(list);
         }
+
 
         return null;
     }
@@ -241,7 +248,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         BigDecimal bxAmount = mortgageDeduction.getSplitData1();
         BigDecimal fwfAmount = mortgageDeduction.getSplitData2();
 
-        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1) {
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1 || singleLimit.doubleValue() == 0) {
             result.add(mortgageDeduction);
         } else {
             result = recurLimit(limitManager, mortgageDeduction);
@@ -312,7 +319,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
                 String[] typeArr = type.split(",");
                 predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
-                if (typeArr.length == 1) {//代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+                //代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+                if (typeArr.length == 1) {
                     predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
@@ -340,11 +348,20 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     }
                 }
 
-                //处理服务费管理公司
-                if (mortgageDeduction.getTarget() != null && "00145112".equals(mortgageDeduction.getTarget().trim())) {
-                    mortgageDeduction.setTarget("铠岳");
-                } else {
-                    mortgageDeduction.setTarget("润坤");
+                //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 后面保存的是公司名称(汉字)
+                if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+                    if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                        mortgageDeduction.setTarget("铠岳");
+                    } else if(chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())){
+                        mortgageDeduction.setTarget("润坤");
+                    }
+                }
+
+
+                //处理代扣卡银行名
+                String bankName = BankCodeEnum.getBankNameById(mortgageDeduction.getParam1());
+                if (bankName != null) {
+                    mortgageDeduction.setParam1(bankName);
                 }
             }
             pageBean.setRows(mortgageDeductionList);
@@ -388,7 +405,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         //表头
         String[] headers = new String[]
                 {"订单号", "客户名称", "合同编号", "还款日期", "开户行", "卡号/折号", "账数据１金额（元）", "分账数据２金额（元）",
-                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
+                        "收分账数据２的公司", "持卡人姓名", "证件号", "扣款结果", "原因", "对账结果", "代扣渠道", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)"};
         sheet.setDefaultColumnWidth(16);
         HSSFRow rowHead1 = sheet.createRow(0);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
@@ -408,7 +425,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
         HSSFCellStyle numericStyle = workbook.createCellStyle();
         numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         int i = 1;
 
         Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
@@ -423,7 +439,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
                 }
                 criteriaQuery.where(predicates.toArray(new Predicate[0]));
-                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("id")));
+                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("payTime")));
                 return criteriaQuery.getRestriction();
             }
         };
@@ -438,7 +454,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(2);
             cell.setCellValue(mortgageDeduction.getContractNo());
             cell = row.createCell(3);
-            cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate()));
+            cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate(), "yyyy-MM-dd"));
             cell = row.createCell(4);
             cell.setCellValue(mortgageDeduction.getParam1());
             cell = row.createCell(5);
@@ -458,12 +474,17 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             cell = row.createCell(8);
             String company = mortgageDeduction.getTarget() != null ? mortgageDeduction.getTarget().trim() : "";
-            if (StringUtils.equals(company, "00145112")) {
-                cell.setCellValue("铠岳");
-            }
-
-            if (StringUtils.equals(company, "00160808")) {
-                cell.setCellValue("润坤");
+            //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 后面保存的是公司名称(汉字)
+            if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+                //为数字的时候需要转换
+                if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                    cell.setCellValue("铠岳");
+                } else if(chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())){
+                    cell.setCellValue("润坤");
+                }
+            }else{
+                //为汉字的情况,直接设置
+                cell.setCellValue(company);
             }
 
             cell = row.createCell(9);
@@ -493,19 +514,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
 
             cell = row.createCell(14);
+            cell.setCellValue(mortgageDeduction.getOrderDesc());
+            cell = row.createCell(15);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
-            cell = row.createCell(15);
+            cell = row.createCell(16);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
             } else {
                 cell.setCellValue("");
             }
-
-
             i = i + 1;
         }
         return workbook;
@@ -516,6 +537,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      *
      * @param list
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMortgageDeductions(List<MortgageDeduction> list) {
         for (MortgageDeduction mortgageDeduction : list) {
@@ -536,12 +558,143 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
     /**
+     * 根据订单号查询
+     *
+     * @param ordId
+     * @return
+     */
+    @Override
+    public MortgageDeduction findByOrdId(String ordId) {
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId(ordId);
+        return mortgageDeduction;
+    }
+
+    /**
+     * 更新代扣数据
+     *
+     * @param mortgageDeduction
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateMortgageDeduction(MortgageDeduction mortgageDeduction) {
+        mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+    }
+
+    /**
+     * 查询支付结果
+     *
+     * @param id 记录id
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Message queryResult(String id) {
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findById(Integer.parseInt(id));
+        Message message = null;
+        if (StringUtils.equals(mortgageDeduction.getType(), "1")) {
+            message = Message.fail("请先进行代扣操作,再查询代扣结果");
+        } else {
+            String channel = mortgageDeduction.getChannel();
+
+            if (StringUtils.equals(channel, DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode())) {
+                //银联代扣
+                List<BasicNameValuePair> list = new ArrayList<>();
+                list.add(new BasicNameValuePair("MerOrderNo", mortgageDeduction.getOrdId()));
+                list.add(new BasicNameValuePair("TranDate", Utility.convertToString(mortgageDeduction.getPayTime(), "yyyyMMdd")));
+                Map send = null;
+                try {
+                    send = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeQueryResultUrl(), list);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Message.fail("代扣状态查询失败");
+                }
+                //有返回结果
+                if (send.containsKey("returnData")) {
+                    String returnData = (String) send.get("returnData");
+                    JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                    if (StringUtils.equals(RsbCodeEnum.ERROR_CODE_01.getCode(), jsonObject.getString("error_code"))) {
+                        //查询成功
+                        JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                        if (StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode(), result.getString("OrderStatus"))) {
+                            //支付成功
+                            mortgageDeduction.setIssuccess("1");
+                            mortgageDeduction.setResult(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode());
+                            mortgageDeduction.setErrorResult("支付成功");
+                            updateMortgageDeduction(mortgageDeduction);
+                        } else if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_008.getCode(), result.getString("OrderStatus"))) {
+                            //订单状态不为"0014,数据接收成功"为失败
+                            mortgageDeduction.setIssuccess("0");
+                            mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                            mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                            updateMortgageDeduction(mortgageDeduction);
+                        }
+                        message = Message.success();
+
+                    } else {
+                        //查询失败
+                        message = Message.fail("代扣状态查询失败");
+                    }
+                } else {
+                    //无返回结果
+                    message = Message.fail("代扣状态查询失败");
+                }
+            } else {
+                //宝付代扣
+                List<BasicNameValuePair> list = new ArrayList<>();
+                list.add(new BasicNameValuePair("origTransId", mortgageDeduction.getOrdId()));
+                list.add(new BasicNameValuePair("origTradeDate", Utility.convertToString(mortgageDeduction.getPayTime(), "yyyy-MM-dd HH:mm:ss")));
+                Map send = null;
+                try {
+                    send = HttpClientUtil.send(baofuConfig.getProtocolQueryResultUrl(), list);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Message.fail("代扣状态查询失败");
+                }
+                if (send.containsKey("returnData")) {
+                    //有返回结果
+                    String returnData = (String) send.get("returnData");
+                    JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                    if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), jsonObject.getString("error_code"))) {
+                        //查询成功
+                        JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                        if (StringUtils.equals(BFErrorCodeEnum.BF00000.getCode(), result.getString("biz_resp_code"))) {
+                            //支付成功
+                            mortgageDeduction.setIssuccess("1");
+                            mortgageDeduction.setResult(BFErrorCodeEnum.BF00000.getCode());
+                            mortgageDeduction.setErrorResult("支付成功");
+                            updateMortgageDeduction(mortgageDeduction);
+                        } else if (!StringUtils.equals(BFErrorCodeEnum.BF00113.getCode(), result.getString("biz_resp_code"))) {
+                            //订单状态不为"BF00113,交易处理中，请稍后查询"为失败,状态为BF00113不处理
+                            mortgageDeduction.setIssuccess("0");
+                            mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                            mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                            updateMortgageDeduction(mortgageDeduction);
+                        }
+                        message = Message.success();
+
+                    } else {
+                        //查询失败
+                        message = Message.fail("代扣状态查询失败");
+                    }
+                } else {
+                    //无返回结果
+                    message = Message.fail("代扣状态查询失败");
+                }
+
+            }
+        }
+
+        return message;
+    }
+
+    /**
      * 创建分页请求.
      */
     private PageRequest buildPageRequest(PageBean pageBean, String type) {
         String[] typeArr = type.split(",");
         Sort sort = null;
-        if (typeArr.length == 1) {//代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+        //代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+        if (typeArr.length == 1) {
             sort = new Sort(Sort.Direction.ASC, "id");
         } else {
             sort = new Sort(Sort.Direction.DESC, "id");
@@ -552,13 +705,4 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     }
 
 
-    private void updateMortgageDeduction(MortgageDeduction mortgageDeduction, GoPayBean goPayBean) {
-        mortgageDeduction.setOrdId(goPayBean.getOrdId());
-        mortgageDeduction.setMerId(goPayBean.getMerId());
-        mortgageDeduction.setCuryId(goPayBean.getCuryId());
-        mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
-        mortgageDeduction.setPlanNo(0);
-        mortgageDeduction.setType("0");
-        mortgageDeduction.setPayTime(new Date());
-    }
 }

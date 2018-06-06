@@ -1,7 +1,6 @@
 package org.starlightfinancial.deductiongateway.utility;
 
 import chinapay.Base64;
-import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 
 import java.io.File;
 import java.util.HashMap;
@@ -19,7 +18,7 @@ public class UnionPayUtil {
      * @return
      * @throws Exception
      */
-    public static String sign(String merId, String data) {
+    public static String sign(String merId, String data, String priKey) {
         chinapay.PrivateKey key = new chinapay.PrivateKey();
         chinapay.SecureLink t;
         boolean flag;
@@ -27,9 +26,9 @@ public class UnionPayUtil {
         String paths = null;
         String line = File.separator;
         if ("\\".equals(line)) {
-            paths = "D://" + Utility.SEND_BANK_KEY_FILE;
+            paths = "D://" + priKey;
         } else if ("/".equals(line)) {
-            paths = "/root/" + Utility.SEND_BANK_KEY_FILE;
+            paths = "/root/" + priKey;
         }
         System.out.println("paths" + paths);
         if (paths == null || "".equals(paths)) {
@@ -41,7 +40,8 @@ public class UnionPayUtil {
         }
         t = new chinapay.SecureLink(key);
         String data0 = new String(Base64.encode(data.getBytes()));
-        ChkValue2 = t.Sign(data0); // Value2为签名后的字符串
+        // Value2为签名后的字符串
+        ChkValue2 = t.Sign(data0);
         return ChkValue2;
     }
 
@@ -52,11 +52,11 @@ public class UnionPayUtil {
      * @param chkValue
      * @return
      */
-    private boolean check(String data, String chkValue, String pubPath, String merId) {
+    private boolean check(String data, String chkValue, String pubPath, String merId ,String pubKey) {
         chinapay.PrivateKey key = new chinapay.PrivateKey();
         chinapay.SecureLink t;
         boolean flag;
-        String path = pubPath + "\\" + Utility.SEND_BANK_KEY_PUB_FILE;
+        String path = pubPath + "\\" + pubKey;
         ;
         if (path == null || "".equals(path)) {
             System.out.println("找不到CP公钥存放路径!");
@@ -72,75 +72,6 @@ public class UnionPayUtil {
         return t.verifyAuthToken(data0, chkValue);
     }
 
-    /**
-     * 读取map中的数据
-     *
-     * @param map
-     * @return
-     */
-    private GoPayBean getGoPayBean(Map map) {
-        GoPayBean goPayBean = new GoPayBean();
-        goPayBean.setMerId(map.get("MerId").toString());
-        goPayBean.setBusiId(map.get("BusiId").toString());
-        goPayBean.setOrdId(map.get("OrdId").toString());
-        goPayBean.setOrdAmt(map.get("OrdAmt").toString());
-        goPayBean.setCuryId(map.get("CuryId").toString());
-        goPayBean.setVersion(map.get("Version").toString());
-        goPayBean.setGateId(map.get("GateId").toString());
-        goPayBean.setParam1(map.get("Param1").toString());
-        goPayBean.setParam2(map.get("Param2").toString());
-        goPayBean.setParam3(map.get("Param3").toString());
-        goPayBean.setParam4(map.get("Param4").toString());
-        goPayBean.setParam5(map.get("Param5").toString());
-        goPayBean.setParam6(map.get("Param6").toString());
-        goPayBean.setParam7(map.get("Param7").toString());
-        goPayBean.setParam8(map.get("Param8").toString());
-        goPayBean.setParam9(map.get("Param9").toString());
-        goPayBean.setParam10(map.get("Param10").toString());
-        goPayBean.setOrdDesc(map.get("OrdDesc").toString());
-        goPayBean.setShareType(map.get("ShareType").toString());
-        goPayBean.setShareData(map.get("ShareData").toString());
-        goPayBean.setPriv1(map.get("Priv1").toString());
-        goPayBean.setCustomIp(map.get("CustomIp").toString());
-        goPayBean.setPayStat(map.get("PayStat").toString());
-        goPayBean.setPayTime(map.get("PayTime").toString());
-        goPayBean.setChkValue(map.get("ChkValue").toString());
-        return goPayBean;
-    }
-
-    /**
-     * 得到待签名数据
-     *
-     * @param bean
-     * @return
-     */
-    private String getSignData(GoPayBean bean) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(bean.getMerId() == null ? "" : bean.getMerId());
-        sb.append(bean.getBusiId() == null ? "" : bean.getBusiId());
-        sb.append(bean.getOrdId() == null ? "" : bean.getOrdId());
-        sb.append(bean.getOrdAmt() == null ? "" : bean.getOrdAmt());
-        sb.append(bean.getCuryId() == null ? "" : bean.getCuryId());
-        sb.append(bean.getVersion() == null ? "" : bean.getVersion());
-        sb.append(bean.getGateId() == null ? "" : bean.getGateId());
-        sb.append(bean.getParam1() == null ? "" : bean.getParam1());
-        sb.append(bean.getParam2() == null ? "" : bean.getParam2());
-        sb.append(bean.getParam3() == null ? "" : bean.getParam3());
-        sb.append(bean.getParam4() == null ? "" : bean.getParam4());
-        sb.append(bean.getParam5() == null ? "" : bean.getParam5());
-        sb.append(bean.getParam6() == null ? "" : bean.getParam6());
-        sb.append(bean.getParam7() == null ? "" : bean.getParam7());
-        sb.append(bean.getParam8() == null ? "" : bean.getParam8());
-        sb.append(bean.getParam9() == null ? "" : bean.getParam9());
-        sb.append(bean.getParam10() == null ? "" : bean.getParam10());
-        sb.append(bean.getShareType() == null ? "" : bean.getShareType());
-        sb.append(bean.getShareData() == null ? "" : bean.getShareData());
-        sb.append(bean.getPriv1() == null ? "" : bean.getPriv1());
-        sb.append(bean.getCustomIp() == null ? "" : bean.getCustomIp());
-        sb.append(bean.getPayStat() == null ? "" : bean.getPayStat());
-        sb.append(bean.getPayTime() == null ? "" : bean.getPayTime());
-        return sb.toString();
-    }
 
     /**
      * 解析银联返回的数据

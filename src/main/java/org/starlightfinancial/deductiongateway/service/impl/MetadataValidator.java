@@ -22,10 +22,6 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
 
     private javax.validation.Validator validator;
 
-    public AutoBatchDeduction getAutoBatchDeduction() {
-        return autoBatchDeduction;
-    }
-
     public void setAutoBatchDeduction(AutoBatchDeduction autoBatchDeduction) {
         this.autoBatchDeduction = autoBatchDeduction;
     }
@@ -56,7 +52,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.usingContext().getValidator();
     }

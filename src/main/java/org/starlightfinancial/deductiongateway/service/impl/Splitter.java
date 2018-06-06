@@ -2,6 +2,7 @@ package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.domain.local.LimitManager;
 import org.starlightfinancial.deductiongateway.domain.local.LimitManagerRepository;
@@ -18,27 +19,34 @@ import java.util.List;
 @Component
 public class Splitter extends Decorator {
 
-    private AutoBatchDeduction autoBatchDeduction = new AutoBatchDeduction();
+    private AutoBatchDeduction autoBatchDeduction;
 
-    private List deductionList = new ArrayList();
+    private List<AutoBatchDeduction> deductionList = new ArrayList<>();
 
     @Autowired
     private LimitManagerRepository limitManagerRepository;
 
-    public List<?> doSplitAccount() {
-        List<AutoBatchDeduction> result = new ArrayList<>();
+    @Value("${batch.route.use}")
+    private String router;
+
+    public void splitter() {
+        deductionList.clear();
+        // 宝付不分账
+        if (router.equals("BAOFU")) {
+            deductionList.add(autoBatchDeduction);
+            return;
+        }
+        // 银联分账
         LimitManager limitManager = limitManagerRepository.findByBankName(autoBatchDeduction.getBankName());
         BigDecimal singleLimit = limitManager.getSingleLimit();
         BigDecimal bxAmount = autoBatchDeduction.getBxAmount();
         BigDecimal fwfAmount = autoBatchDeduction.getFwfAmount();
 
-        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() ||  singleLimit.doubleValue() == -1.0 ) {
-            result.add(autoBatchDeduction);
+        if (bxAmount.add(fwfAmount).doubleValue() <= singleLimit.doubleValue() || singleLimit.doubleValue() == -1.0 || singleLimit.doubleValue() == 0) {
+            deductionList.add(autoBatchDeduction);
         } else {
-            result = recurLimit(singleLimit);
+            deductionList = recurLimit(singleLimit);
         }
-
-        return result;
     }
 
     private List recurLimit(BigDecimal singleLimit) {
@@ -75,18 +83,14 @@ public class Splitter extends Decorator {
     @Override
     public void doRoute() throws Exception {
         super.doRoute();
-        setDeductionList(doSplitAccount());
-    }
-
-    public void setAutoBatchDeduction(AutoBatchDeduction autoBatchDeduction) {
-        this.autoBatchDeduction = autoBatchDeduction;
+        splitter();
     }
 
     public List getDeductionList() {
         return deductionList;
     }
 
-    public void setDeductionList(List deductionList) {
-        this.deductionList = deductionList;
+    public void setAutoBatchDeduction(AutoBatchDeduction autoBatchDeduction) {
+        this.autoBatchDeduction = autoBatchDeduction;
     }
 }

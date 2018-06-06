@@ -2,23 +2,19 @@ package org.starlightfinancial.deductiongateway.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
-import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 
 /**
  * Created by Administrator on 2017-7-22.
+ * 银联后台接收页面
  */
 public class PayGetBgController {
     private static final Logger log = LoggerFactory.getLogger(PayGetBgController.class);
-
-    @Autowired
-    private MortgageDeductionRepository mortgageDeductionRepository;
 
     @RequestMapping("/PayGetBgAsyn")
     public void UpdateDeduction(HttpServletRequest req) {
@@ -58,7 +54,7 @@ public class PayGetBgController {
         log.info(bean.getPayTime());
         log.info(bean.getChkValue());
         log.info("=========== 打印商户收到的后台响应信息  end =================");
-        
+
     }
 
     public GoPayBean getGoPayBean(HttpServletRequest req) {

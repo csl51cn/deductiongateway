@@ -1,10 +1,12 @@
 package org.starlightfinancial.deductiongateway;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -24,5 +26,16 @@ public class DataSourceConfig {
     @ConfigurationProperties(prefix = "spring.datasource.remote")
     public DataSource remoteDataSource() {
         return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "localJdbcTemplate")
+    public JdbcTemplate primaryJdbcTemplate(@Qualifier("localDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name = "remoteJdbcTemplate")
+    public JdbcTemplate secondaryJdbcTemplate(@Qualifier("remoteDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.support.DatabaseType;
@@ -28,6 +30,7 @@ import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManagerRowMapper;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeductionRowMapper;
+import org.starlightfinancial.deductiongateway.service.impl.AccountManagerItemProcessor;
 import org.starlightfinancial.deductiongateway.service.impl.AutoBatchItemWriter;
 import org.starlightfinancial.deductiongateway.service.impl.ConcreteHandler;
 
@@ -83,14 +86,36 @@ public class BatchConfig {
                 .build();
     }
 
+    @Bean(name = "deductionTemplatBatchImport")
+    public Job deductionTemplateBatchImport(JobBuilderFactory jobs, @Qualifier("s2") Step s2) {
+        return jobs.get("deductionTemplatBatchImport")
+                .incrementer(new RunIdIncrementer())
+                .flow(s2)
+                .end()
+                .build();
+    }
+
+
+    @Bean(name = "s2")
+    public Step step2(StepBuilderFactory stepBuilderFactory, ItemReader<AutoBatchDeduction> reader, ItemWriter<AutoBatchDeduction> writer
+            , @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
+        return stepBuilderFactory.get("step2")
+                .transactionManager(tx)
+                .<AutoBatchDeduction, AutoBatchDeduction>chunk(65000)
+                .reader(reader)
+                .writer(writer)
+                .build();
+    }
+
 
     @Bean(name = "s0")
-    public Step step0(StepBuilderFactory stepBuilderFactory, ItemReader<AccountManager> reader, ItemWriter<AccountManager> writer
+    public Step step0(StepBuilderFactory stepBuilderFactory, ItemReader<AccountManager> reader, ItemProcessor<AccountManager, AccountManager> processor, ItemWriter<AccountManager> writer
             , @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
         return stepBuilderFactory.get("step0")
                 .transactionManager(tx)
                 .<AccountManager, AccountManager>chunk(65000)
                 .reader(reader)
+                .processor(processor)
                 .writer(writer)
                 .build();
     }
@@ -101,119 +126,95 @@ public class BatchConfig {
         JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AccountManagerRowMapper());
-        String yesterday = LocalDate.now().minusDays(1).toString();
-        jdbcCursorItemReader.setSql("SELECT " +
-                " a.date_id  AS dateid , " +
-                " d.合同编号 AS contractno, " +
-                " d.业务编号 AS bizno, " +
-                " f.Word AS certificatetype, " +
-                " b.客户名称 AS accountName, " +
-                " b.身份证号码 AS certificateno, " +
-                " d.放款日期 AS loandate, " +
-                " g.content AS account, " +
-                " i.Word AS bankname, " +
-                " ( " +
-                "  CASE a.form_arrno " +
-                "  WHEN 8 THEN " +
-                "   1 " +
-                "  WHEN 34 THEN " +
-                "   2 " +
-                "  WHEN 45 THEN " +
-                "   3 " +
-                "  WHEN 56 THEN " +
-                "   4 " +
-                "  WHEN 67 THEN " +
-                "   5 " +
-                "  ELSE " +
-                "   5 " +
-                "  END " +
-                " ) AS sort " +
-                "FROM " +
-                " WorkData_Member a " +
-                "LEFT JOIN Data_MemberInfo b ON b.id = a.member " +
-                "LEFT JOIN Data_WorkInfo d ON d.Date_Id = a.date_id " +
-                "LEFT JOIN WorkData_Dictionary e ON e.date_id = a.date_id  " +
-                "LEFT JOIN Dictionary f ON f.id = e.content " +
-                "LEFT JOIN WorkData_Text g ON g.date_id = a.date_id " +
-                "LEFT JOIN WorkData_Dictionary h ON h.date_id = a.date_id  " +
-                "LEFT JOIN Dictionary i ON i.id = h.content " +
-                "WHERE " +
-                " d.是否放款 = 485 AND " +
-                " a.Flow_No IN ( " +
-                "  SELECT " +
-                "   Flow_No " +
-                "  FROM " +
-                "   WorkFlowConstruction " +
-                "  WHERE " +
-                "   Flow_Title = '现场签约' " +
-                " ) " +
-                "AND e.Flow_NO IN ( " +
-                " SELECT " +
-                "  Flow_No " +
-                " FROM " +
-                "  WorkFlowConstruction " +
-                " WHERE " +
-                "  Flow_Title = '现场签约' " +
-                ") " +
-                "AND g.Flow_NO IN ( " +
-                " SELECT " +
-                "  Flow_No " +
-                " FROM " +
-                "  WorkFlowConstruction " +
-                " WHERE " +
-                "  Flow_Title = '现场签约' " +
-                ") " +
-                "AND h.Flow_NO IN ( " +
-                " SELECT " +
-                "  Flow_No " +
-                " FROM " +
-                "  WorkFlowConstruction " +
-                " WHERE " +
-                "  Flow_Title = '现场签约' " +
-                ") " +
-                "AND ( " +
-                " ( " +
-                "  a.form_arrno = 8 " +
-                "  AND e.form_arrno = 19 " +
-                "  AND g.Form_Arrno = 11 " +
-                "  AND h.form_arrno = 9 " +
-                " ) " +
-                " OR ( " +
-                "  a.form_arrno = 34 " +
-                "  AND e.form_arrno = 36 " +
-                "  AND g.Form_Arrno = 40 " +
-                "  AND h.form_arrno = 42 " +
-                " ) " +
-                " OR ( " +
-                "  a.form_arrno = 45 " +
-                "  AND e.form_arrno = 47 " +
-                "  AND g.Form_Arrno = 51 " +
-                "  AND h.form_arrno = 53 " +
-                " ) " +
-                " OR ( " +
-                "  a.form_arrno = 56 " +
-                "  AND e.form_arrno = 58 " +
-                "  AND g.Form_Arrno = 62 " +
-                "  AND h.form_arrno = 64 " +
-                " ) " +
-                " OR ( " +
-                "  a.form_arrno = 67 " +
-                "  AND e.form_arrno = 69 " +
-                "  AND g.Form_Arrno = 73 " +
-                "  AND h.form_arrno = 75 " +
-                " ) " +
-                ") " +
-                "AND a.GoBackId = 0 " +
-                "AND e.GoBackId = 0 " +
-                "AND g.GoBackId = 0 " +
-                "AND h.GoBackId = 0 " +
-                "AND (d.代扣卡号 IS NOT NUll OR d.代扣卡号 <>  '') " +
-//                "AND d.放款日期 <= '2017-10-10' " +
-//                "AND d.放款日期 >= '2012-01-01'  ORDER BY d.放款日期");
-                "AND d.放款日期 <= '"+ yesterday+" 23:59:59'" +
-                "AND d.放款日期 > '" + lastLoanDate + "' ORDER BY d.放款日期");
+        jdbcCursorItemReader.setSql(
+                "SELECT " +
+                        " a.member AS customerid, " +
+                        " a.date_id AS dateid, " +
+                        " d.合同编号 AS contractno, " +
+                        " d.业务编号 AS bizno, " +
+                        " '身份证' AS certificatetype, " +
+                        " b.客户名称 AS accountName, " +
+                        " b.身份证号码 AS certificateno, " +
+                        " d.放款日期 AS loandate, " +
+                        " g.content AS account, " +
+                        " i.Word AS bankname," +
+                        " f.Content AS mobile, " +
+                        " ( " +
+                        "  CASE a.form_arrno " +
+                        "  WHEN 8 THEN " +
+                        "   1 " +
+                        "  WHEN 34 THEN " +
+                        "   2 " +
+                        "  WHEN 45 THEN " +
+                        "   3 " +
+                        "  WHEN 56 THEN " +
+                        "   4 " +
+                        "  WHEN 67 THEN " +
+                        "   5 " +
+                        "  ELSE " +
+                        "   5 " +
+                        "  END " +
+                        " ) AS sort " +
+                        "FROM " +
+                        " WorkData_Member a  " +
+                        "LEFT JOIN Data_MemberInfo b ON b.id = a.member  " +
+                        "LEFT JOIN Data_WorkInfo d ON d.Date_Id = a.date_id " +
+                        "LEFT JOIN WorkData_Text f ON f.Date_Id = a.date_id AND f.GoBackId = 0 AND f.Form_Id = 1091 " +
+                        "LEFT JOIN WorkData_Text g ON g.date_id = a.date_id and g.GoBackId = 0 and g.Form_Id = 1091 " +
+                        "LEFT JOIN WorkData_Dictionary h ON h.date_id = a.date_id AND h.GoBackId = 0 and h.form_id = 1091 " +
+                        "LEFT JOIN Dictionary i ON i.id = h.content " +
+                        "WHERE " +
+                        " d.是否放款 = 485 " +
+                        "AND a.form_id =1091 " +
+                        "AND ( " +
+                        " ( " +
+                        "  a.form_arrno = 8 " +
+                        "  AND g.Form_Arrno = 11 " +
+                        "  AND h.form_arrno = 9 " +
+                        " AND f.Form_Arrno = 31" +
+                        " ) " +
+                        " OR ( " +
+                        "  a.form_arrno = 34 " +
+                        "  AND g.Form_Arrno = 40 " +
+                        "  AND h.form_arrno = 42 " +
+                        "  AND f.Form_Arrno = 44" +
+                        " ) " +
+                        " OR ( " +
+                        "  a.form_arrno = 45 " +
+                        "  AND g.Form_Arrno = 51 " +
+                        "  AND h.form_arrno = 53" +
+                        "  AND f.Form_Arrno = 55 " +
+                        " ) " +
+                        " OR ( " +
+                        "  a.form_arrno = 56 " +
+                        "  AND g.Form_Arrno = 62 " +
+                        "  AND h.form_arrno = 64 " +
+                        "  AND f.Form_Arrno = 66 " +
+                        " ) " +
+                        " OR ( " +
+                        "  a.form_arrno = 67 " +
+                        "  AND g.Form_Arrno = 73 " +
+                        "  AND h.form_arrno = 75 " +
+                        "  AND f.Form_Arrno = 77" +
+                        " ) " +
+                        ") " +
+                        "AND a.GoBackId = 0 " +
+                        "AND ( " +
+                        " d.代扣卡号 IS NOT NUll " +
+                        " OR d.代扣卡号 <> '' " +
+                        ") " +
+                        " AND d.放款日期 >='" + lastLoanDate + "' " +
+                        "ORDER BY " +
+                        " d.放款日期");
         return jdbcCursorItemReader;
     }
+
+    @Bean(name = "p0")
+    public ItemProcessor<AccountManager, AccountManager> accountAutoProcessor() {
+        AccountManagerItemProcessor accountManagerItemProcessor = new AccountManagerItemProcessor();
+        return accountManagerItemProcessor;
+    }
+
 
     @Bean(name = "w0")
     public ItemWriter<AccountManager> accountAutoImportWriter(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
@@ -243,11 +244,11 @@ public class BatchConfig {
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
 
         String sql = null;
-        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表开启自动代扣,0代表关闭自动代扣
+        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表付易贷日扣开启自动代扣,0代表关闭自动代扣
             sql = "SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
         } else {
             sql = "SELECT a.* FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +
-                    " WHERE a.LoginId = 14  AND b.授信期限单位 <> 2081  AND (b.产品类别 <> 2082) AND " +
+                    " WHERE a.LoginId = 14  AND b.授信期限单位 <> 2081  AND  " +
                     "CONVERT (VARCHAR,a.计划还款日,1) = CONVERT (VARCHAR, GETDATE(), 1)";
         }
         jdbcCursorItemReader.setSql(sql);
@@ -272,4 +273,20 @@ public class BatchConfig {
     public MyJobListener myJobListener() {
         return new MyJobListener();
     }
+
+    @Bean(name = "w2")
+    @StepScope
+    public JdbcBatchItemWriter<AutoBatchDeduction> deductionTemplateWriter(@Qualifier("localDataSource") DataSource dataSource) {
+        JdbcBatchItemWriter<AutoBatchDeduction> jdbcBatchItemWriter = new JdbcBatchItemWriter<>();
+        jdbcBatchItemWriter.setDataSource(dataSource);
+        jdbcBatchItemWriter.setSql("INSERT INTO BU_DEDUCTION_TEMPLATE ([dateid],[业务编号],[合同编号],[计划期数],[计划还款日]," +
+                "[还款账号银行],[代扣卡折类型],[还款账号], [还款账户名],[代扣人证件类型], [代扣人证件号码],[当期应还本息],[当期应还服务费], " +
+                "[服务费管理司],[是否代扣成功],[当期未扣本息],[当期未扣服务费]  ) VALUES ( :dateId, :busiNo, :contractNo,:planVolume, :planDate, :bankName, :cardAndPassbook, :accout, :customerName," +
+                " :certificateType, :certificateNo,:bxAmount,:fwfAmount, :fwfCompamny,'0',:bxAmount,:fwfAmount)");
+        jdbcBatchItemWriter.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<AutoBatchDeduction>() {
+        });
+        return jdbcBatchItemWriter;
+    }
+
+
 }

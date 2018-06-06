@@ -20,4 +20,12 @@ public interface MortgageDeductionRepository extends JpaRepository<MortgageDeduc
     @Modifying
     @Query("update BU_MORTGAGEDEUCTION t set t.checkState = ?1 where OrdId = ?2")
     int setCheckStateFor(String checkState, String ordId);
+
+
+    @Modifying
+    @Query("update BU_MORTGAGEDEUCTION t set t.ledgerState = ?1 where OrdId = ?2")
+    int setLedgerStateFor(String ledgerState, String ordId);
+
+    MortgageDeduction findById(Integer id);
+
 }

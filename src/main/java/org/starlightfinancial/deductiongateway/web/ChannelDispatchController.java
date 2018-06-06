@@ -1,0 +1,134 @@
+package org.starlightfinancial.deductiongateway.web;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.starlightfinancial.deductiongateway.common.Message;
+import org.starlightfinancial.deductiongateway.common.SameUrlData;
+import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
+import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * @author: Senlin.Deng
+ * @Description: 各渠道签约状态查询, 签约短信发送, 签约, 支付, 支付状态查询等操作管理Controller
+ * @date: Created in 2018/6/4 16:04
+ * @Modified By:
+ */
+@Controller
+@RequestMapping("/channelDispatchController")
+public class ChannelDispatchController {
+    @Autowired
+    private ChannelDispatchService channelDispatchService;
+    @Autowired
+    private MortgageDeductionService mortgageDeductionService;
+
+    /**
+     * 查询是否签约
+     *
+     * @param id      记录id
+     * @param channel 渠道
+     * @return 返回包含查询结果的Message对象
+     */
+    @RequestMapping(value = "/queryIsSigned.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message queryIsSigned(Integer id, String channel) {
+        Message message = channelDispatchService.queryIsSigned(id, channel);
+        return message;
+    }
+
+
+    /**
+     * 发送签约短信
+     *
+     * @param accountManager 代扣卡相关信息
+     * @param channel        渠道
+     * @return 返回包含短信发送结果的Message对象
+     */
+    @RequestMapping(value = "/sendSignSmsCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message sendSignSmsCode(AccountManager accountManager, String channel) {
+        Message message = channelDispatchService.sendSignSmsCode(accountManager, channel);
+        return message;
+    }
+
+
+    /**
+     * 签约
+     *
+     * @param accountManager 代扣卡相关信息
+     * @param channel        渠道
+     * @return 返回签约结果的Message对象
+     */
+    @RequestMapping(value = "/sign.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message Sign(AccountManager accountManager, String channel) {
+        Message message = channelDispatchService.Sign(accountManager, channel);
+        return message;
+    }
+
+    /**
+     * 执行代扣
+     *
+     * @param ids        代扣记录id
+     * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
+     * @param channel    渠道
+     * @return 返回代扣执行情况
+     */
+    @RequestMapping(value = "/doPay.do")
+    @SameUrlData
+    @ResponseBody
+    public String doPay(String ids, String reGenerate, String channel) {
+        try {
+            if (StringUtils.isEmpty(ids)) {
+                return "请选择一条记录进行代扣";
+            }
+            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
+            ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
+            if ("1".equals(reGenerate)) {
+                for (int i = 0; i < list.size(); i++) {
+                    MortgageDeduction oldMortgageDeduction = list.get(i);
+                    MortgageDeduction newMortgageDeduction = new MortgageDeduction();
+                    BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
+                    newMortgageDeduction.setId(null);
+                    newMortgageDeduction.setIssuccess("2");
+                    newMortgageDeduction.setErrorResult(null);
+                    newMortgageDeduction.setType("1");
+                    newMortgageDeduction.setCreateDate(new Date());
+                    newMortgageDeduction.setCheckState(null);
+                    mortgageDeductionList.add(newMortgageDeduction);
+                }
+                list = mortgageDeductionList;
+            }
+            channelDispatchService.doPay(list, channel);
+            return "1";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+
+    /**
+     * 查询代扣结果
+     *
+     * @param id      要查询结果的记录id
+     * @return 返回包含查询结果的Message对象
+     */
+    @RequestMapping(value = "/queryPayResult.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message queryPayResult(Integer id) {
+        Message message = channelDispatchService.queryPayResult(id);
+        return message;
+    }
+
+
+}

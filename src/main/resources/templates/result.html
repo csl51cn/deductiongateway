@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>代扣结果统计</title>
     <title th:include="common :: #header" th:remove="tag"></title>
+    <title>代扣结果统计</title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
 </head>
@@ -71,42 +71,8 @@
                 </li>
                 <li><a href="/result.do">扣款结果统计</a></li>
             </ul>
-            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">×</span>
-                            </button>
-                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
-                        </div>
-                        <div class="modal-body">
-                            <div class="progress progress-striped progress-success active">
-                                <div id="prog" class="bar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="modal fade" id="confirmModal">
-                <div class="modal-dialog">
-                    <div class="modal-content message_align">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">×</span></button>
-                            <h4 class="modal-title">提示信息</h4>
-                        </div>
-                        <div class="modal-body">
-                            <p>您确认要执行吗？</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
-                        </div>
-                    </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
+
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
@@ -138,9 +104,6 @@
                                             <input type="button" id="exportBtn" value="导出结果"/>
                                         </td>
                                     </tr>
-                                    <tr>
-
-                                    </tr>
                                 </table>
                             </form>
                         </div>
@@ -149,11 +112,163 @@
                 </div><!--/span-->
 
             </div><!--/row-->
+
+
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="moreInfoModalLabel">代扣信息</h4>
+                        </div>
+                        <div class="modal-body" id="moreInfoBody">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="confirmModal" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
+            <div class="modal fade" id="actionModal" role="dialog" aria-labelledby="actionModalLabel">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title"  id="actionModalLabel">操作</h4>
+                        </div>
+                        <div class="modal-body">
+                            <input  type="text"  style="display:none;" id="rowId" >
+                            <table>
+                                <tr>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>
+                                    </td>
+                                    <td>
+                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联旧代扣</button>
+                                    </td>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联新代扣</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付旧代扣</button>
+                                    </td>
+                                    <td>
+                                        <button type="button" id="manualConfirmBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--<img src="/img/unionpay.png" style="max-width:20%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>-->
+                            <!--<img src="/img/unionpay.png" style="max-width:20%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联新代扣</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联旧代扣</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付旧代扣</button>-->
+
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
+
+
+
         </div><!--/.fluid-container-->
 
         <!-- end: Content -->
     </div><!--/#content.span10-->
 </div><!--/fluid-row-->
+<div id="tableInfo" style="display: none">
+    <table class="table table-bordered table-hover" >
+        <tr>
+            <td style="width: 100px;text-align: right;">订单号:</td>
+            <td id="orderId" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣人:</td>
+            <td id="accountName" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣人身份证:</td>
+            <td id="identityNo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣银行:</td>
+            <td id="bankName" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣卡号:</td>
+            <td id="accountNo" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">本息(元):</td>
+            <td id="principalAndInterest" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">服务费(元):</td>
+            <td id="serviceCharge" style="width: 200px;text-align: left;"></td>
+        </tr>
+
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣渠道:</td>
+            <td id="deductionMethod" style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣时间:</td>
+            <td id="payTime"  style="width: 200px;text-align: left;"></td>
+        </tr>
+        <tr>
+            <td style="width: 100px;text-align: right;">代扣结果:</td>
+            <td id="status"  style="width: 200px;text-align: left;"></td>
+        </tr>
+    </table>
+</div>
+
+
 <footer>
     <p>
         <span style="text-align:left;float:left" id="footer"></span>
@@ -170,77 +285,18 @@
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
     window.operateEvents = {
-        'click .deduction': function (e, value, row, index) {
-            $('#confirmModal').modal();
-            $(".btn-success").unbind("click");
-            $(".btn-success").click(function () {
-                increment();
-                $('#myModal').modal('show');
-                $.ajax({
-                    url: "/mortgageDeductionController/saveMortgageDeductions.do",
-                    timeout: 900000,
-                    method: "POST",
-                    data: {"ids": row.id, "reGenerate": "1"},
-                    success: function (data) {
-                        $('#myModal').modal('hide');
-                        if ("1" == data) {
-                            setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else if (data.length > 5) {
-                            noty({
-                                'text': '执行失败,' + data,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "4000"
-                            });
 
-                        } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
-                    }
-                })
-            })
-        },
-        'click .manualConfirm': function (e, value, row, index) {
-            $('#confirmModal').modal();
-            $(".btn-success").unbind("click");
-            $(".btn-success").click(function () {
-                $.ajax({
-                    url: "/mortgageDeductionController/updateMortgageDeductions.do",
-                    method: "POST",
-                    data: {"ids": row.id},
-                    success: function (data) {
-                        if ("1" == data) {
-                            setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else if (data.length > 5) {
-                            noty({
-                                'text': '执行失败,' + data,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "4000"
-                            });
+    'click .action': function (e, value, row, index) {
+        $('#actionModal').modal();
+        $(".btn-success").unbind("click");
+        $("#rowId").val(row.id) ;
 
-                        } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
-                    }
-                });
-            })
-        }
+    }
     };
     function operateFormatter(value, row, index) {
-//        if (row.creatId == staffId && "1" != row.issuccess) {
-//            return [
-//                '<button type="button" id="deductionBtn' + index + '" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>',
-//                '<button type="button" id="manualConfirmBtn' + index + '" class="manualConfirm btn btn-default  btn-sm" style="margin-right:15px;">人工确认</button>'
-//            ].join('');
-//
-//        }
-        if (((row.creatId == staffId ) || (row.creatId == 113 && ((staffId == 113) || (staffId == 2371) || (staffId == 1281) || (staffId == 6436) || (staffId == 2338)))) && "1" != row.issuccess) {
+        if (((row.creatId == staffId ) || (row.creatId == 113 && ((staffId == 113) || (staffId == 2371) || (staffId == 1281) || (staffId == 6436) || (staffId == 2338) || (staffId == 114) || (staffId == 2359) || (staffId == 3389)))) && "1" != row.issuccess) {
             return [
-                '<button type="button" id="deductionBtn' + index + '" class="deduction btn btn-default  btn-sm" style="margin-right:15px;">代扣</button>',
-                '<button type="button" id="manualConfirmBtn' + index + '" class="manualConfirm btn btn-default  btn-sm" style="margin-right:15px;">人工确认</button>'
+                '<button type="button" id="actionBtn' + index + '" class="action btn btn-default  btn-small" style="margin-right:15px;">操作</button>'
             ].join('');
         }
 
@@ -272,19 +328,16 @@
         field: 'contractNo',
         title: '合同编号'
     }, {
-        field: 'param3',
-        title: '银行卡号'
-    }, {
         field: 'customerName',
         title: '客户名称',
         width: 65
     }, {
         field: 'splitData1',
-        title: '分账数据1(元)',
+        title: '本息金额(元)',
         width: 65
     }, {
         field: 'splitData2',
-        title: '分账数据2(元)',
+        title: '服务费金额(元)',
         width: 65
     }, {
         field: 'target',
@@ -315,10 +368,6 @@
             }
         }
     }, {
-        field: 'payTime',
-        title: '代扣时间',
-        width: 120
-    }, {
         field: 'errorResult',
         title: '原因'
     }, {
@@ -337,7 +386,7 @@
                 queryParams: queryParams,
                 sidePagination: "server",
                 pageSize: 10,
-                pageList: [10, 20, 100, 200, 500],
+                pageList: [10, 20, 100, 200, 500 ,1000],
                 clickToSelect: true, //单击选中行
                 smartDisplay: true,
                 cache: false,
@@ -357,6 +406,39 @@
                         };
                     }
 
+                },
+                onClickCell: function (field, value, row, $element) {
+                    if (field == "ordId" ){
+                        $("#orderId").html(row.ordId);
+                        $("#accountName").html(row.customerName);
+                        $("#identityNo").html(row.param6);
+                        $("#bankName").html(row.param1);
+                        $("#accountNo").html(row.param3);
+                        $("#principalAndInterest").html(row.splitData1);
+                        $("#serviceCharge").html(row.splitData2);
+                        var status  = null;
+                        if (row.issuccess == '1') {
+                            status =  '交易成功';
+                        } else if (row.issuccess == '0') {
+                            status =  '交易失败';
+                        } else {
+                            status =  '暂无结果'
+                        }
+                        $("#status").html(status);
+                        var deductionMethodContent = null;
+                        if(row.orderDesc == '银联' || row.orderDesc == '批量代扣款' ){
+                            deductionMethodContent = '<img src="/img/unionpay.png" style="max-width:25%;">';
+                        }else if(row.orderDesc == '宝付'){
+                            deductionMethodContent = '<img src="/img/baofu.png" style="max-width:25%;">';
+                        }else {
+                            deductionMethodContent =  '未知';
+                        }
+                        $("#deductionMethod").html(deductionMethodContent);
+                        $("#payTime").html(row.payTime);
+                        $("#moreInfoBody").html($("#tableInfo").html());
+                        $("#moreInfoModal").modal();
+                    }
+                    return false;
                 }
             });
         };
@@ -365,6 +447,11 @@
             var date = new Date(strTime);
             return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
         }
+
+        $('#moreInfoModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
+
 
         function queryParams() {
             var date = FormatDate(new Date())
@@ -386,7 +473,7 @@
                 type: "0,1"
             }
         };
-
+        
         $("#startDate").datetimepicker({
             format: 'yyyy-mm-dd',
             minView: 'month',
@@ -420,13 +507,102 @@
         });
         <!--导出结果按钮功能-->
         $("#exportBtn").click(function () {
-            var startDate = $("#startDate").val();
+                      var startDate = $("#startDate").val();
             var endDate = $("#endDate").val();
             var customerName = $("#customerName").val()
             location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;
 
         });
+        <!--银联快捷支付按钮功能-->
+        $("#deductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0001"},url);
+        });
+        <!--宝付协议支付按钮功能-->
+        $("#baoFuDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0002"},url);
+        });
 
+        <!--银联白名单-->
+        $("#chinaPayClassicDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0003"},url);
+        });
+        <!--银联新无卡-->
+        $("#chinaPayNewDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0004"},url);
+        });
+        <!--宝付代扣-->
+        $("#baoFuClassicDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0005"},url);
+        });
+        <!--查询扣款结果按钮功能-->
+        $("#manualConfirmBtn").click(function () {
+            value = 0;
+            $('#actionModal').modal('hide');
+            $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
+            $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
+                $.ajax({
+                    url: "/channelDispatchController/queryPayResult.do",
+                    timeout: 900000,
+                    method: "POST",
+                    data: {"id": $("#rowId").val()},
+                    success: function (message) {
+                        $('#myModal').modal('hide');
+                        if ("0000" == message.code) {
+                            setTimeout("$('#queryBtn').click()", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                })
+            })
+
+        });
+
+
+
+        <!--具体执行操作的函数-->
+        function executeAction(data,url) {
+            value = 0;
+            $('#actionModal').modal('hide');
+            $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
+            $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
+                $.ajax({
+                    url: url,
+                    timeout: 900000,
+                    method: "POST",
+                    data: data,
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout("$('#queryBtn').click()", 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                })
+            })
+        }
     })
 </script>
 <!-- end: JavaScript-->

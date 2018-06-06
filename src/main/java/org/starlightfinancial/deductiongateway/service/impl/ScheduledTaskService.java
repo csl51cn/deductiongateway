@@ -28,6 +28,10 @@ public class ScheduledTaskService {
     Job autoDeduction;
 
     @Autowired
+    @Qualifier("deductionTemplatBatchImport")
+    Job deductionTemplatBatchImport;
+
+    @Autowired
     private HolidayRepository holidayRepository;
 
     public JobParameters jobParameters;
@@ -35,15 +39,27 @@ public class ScheduledTaskService {
     @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
         System.out.println("执行了吗");
-        Holiday holiday = holidayRepository.findByNonOverTime(LocalDate.now().toString());
-        String autoSwitch = null;
-        if (holiday == null) { //holiday为空表示非节假日,开启付易贷自动代扣
-            autoSwitch = "1";
-        } else {
-            autoSwitch = "0";
-        }
+        String autoSwitch = isHoliday();
         jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
         jobLauncher.run(autoDeduction, jobParameters);
+    }
+
+
+    @Scheduled(cron = "00 30 08 * * ? ")
+    public void deductionTemplateImport() throws Exception {
+        System.out.println("自动导入当天代扣模板");
+        String autoSwitch = isHoliday();
+        jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
+        jobLauncher.run(deductionTemplatBatchImport, jobParameters);
+    }
+
+    private String isHoliday() {
+        Holiday holiday = holidayRepository.findByNonOverTime(LocalDate.now().toString());
+        String autoSwitch = "0";
+        if (holiday == null) { //holiday为空表示非节假日,开启付易贷自动代扣
+            autoSwitch = "1";
+        }
+        return autoSwitch;
     }
 
 

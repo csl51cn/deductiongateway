@@ -26,6 +26,8 @@ hs_err_pid*
 Maven*.xml
 .idea
 target
-wechat.properties
+*.properties
 *.xls
 *.key
+*.cer
+*.pfx

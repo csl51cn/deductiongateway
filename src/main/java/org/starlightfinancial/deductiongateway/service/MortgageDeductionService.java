@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
@@ -26,10 +27,11 @@ public interface MortgageDeductionService {
     /**
      * 执行代扣.
      *
-     * @param list the list
+     * @param list            the list
+     * @param deductionMethod 代扣方式:UNIONPAY 使用银联代扣,BAOFU使用宝付代扣
      * @return the list
      */
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list) throws Exception;
+    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception;
 
     /**
      * 查询代扣数据
@@ -64,7 +66,7 @@ public interface MortgageDeductionService {
     Workbook exportXLS(Date startDate, Date endDate, String customerName);
 
     /**
-     * 更新代扣数据
+     * 批量更新代扣数据
      *
      * @param list
      */
@@ -76,4 +78,24 @@ public interface MortgageDeductionService {
      * @param list
      */
     void deleteMortgageDeductions(List<MortgageDeduction> list);
+
+    /**
+     * 根据订单号查询代扣记录
+     */
+    MortgageDeduction findByOrdId(String ordId);
+
+    /**
+     * 更新代扣数据
+     *
+     * @param mortgageDeduction
+     */
+    void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
+
+    /**
+     * 查询支付结果
+     *
+     * @param id  记录id
+     * @return
+     */
+    Message queryResult(String id);
 }
