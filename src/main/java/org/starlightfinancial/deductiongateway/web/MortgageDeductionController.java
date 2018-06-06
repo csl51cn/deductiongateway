@@ -5,15 +5,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.common.Message;
-import org.starlightfinancial.deductiongateway.common.SameUrlData;
 import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
@@ -112,47 +109,6 @@ public class MortgageDeductionController {
 
 
     /**
-     * 执行代扣
-     *
-     * @param ids
-     * @param reGenerate      扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
-     * @param deductionMethod 代扣方式:UNIONPAY 使用银联代扣,BAOFU 使用宝付代扣
-     * @return
-     */
-    @RequestMapping(value = "/mortgageDeductionController/saveMortgageDeductions.do")
-    @SameUrlData
-    @ResponseBody
-    public String saveMortgageDeductions(String ids, String reGenerate, String deductionMethod) {
-        try {
-            if (StringUtils.isEmpty(ids)) {
-                return "请选择一条记录进行代扣";
-            }
-            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
-            if ("1".equals(reGenerate)) {
-                for (int i = 0; i < list.size(); i++) {
-                    MortgageDeduction oldMortgageDeduction = list.get(i);
-                    MortgageDeduction newMortgageDeduction = new MortgageDeduction();
-                    BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
-                    newMortgageDeduction.setId(null);
-                    newMortgageDeduction.setIssuccess("2");
-                    newMortgageDeduction.setErrorResult(null);
-                    newMortgageDeduction.setType("1");
-                    newMortgageDeduction.setCreateDate(new Date());
-                    newMortgageDeduction.setCheckState(null);
-                    mortgageDeductionList.add(newMortgageDeduction);
-                }
-                list = mortgageDeductionList;
-            }
-            mortgageDeductionService.saveMortgageDeductions(list, deductionMethod);
-            return "1";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
-    }
-
-    /**
      * 导出代扣结果Excel
      *
      * @param startDate
@@ -174,31 +130,6 @@ public class MortgageDeductionController {
         workbook.write(outputStream);
         IOUtils.closeQuietly(outputStream);
 
-    }
-
-    /**
-     * 人工确认扣款成功
-     *
-     * @param ids
-     * @return
-     */
-    @RequestMapping(value = "/mortgageDeductionController/updateMortgageDeductions.do")
-    @ResponseBody
-    public String updateMortgageDeductions(String ids) {
-        try {
-            List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            if (list != null) {
-                list.get(0).setIssuccess("1");
-                list.get(0).setErrorResult("成功");
-                mortgageDeductionService.updateMortgageDeductions(list);
-                return "1";
-            } else {
-                return "0";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "0";
-        }
     }
 
 
@@ -223,25 +154,7 @@ public class MortgageDeductionController {
         }
     }
 
-    /**
-     * 查询扣款结果
-     *
-     * @param id
-     * @return
-     */
-    @RequestMapping(value = "/mortgageDeductionController/queryResult.do")
-    @ResponseBody
-    public Message queryResult(String id) {
-        Message message = null;
-        try {
-             message = mortgageDeductionService.queryResult(id);
-            return message;
-        } catch (Exception e) {
-            e.printStackTrace();
-            message = Message.fail();
-            return message;
-        }
-    }
+
 
     /**
      * 手动触发批量代扣

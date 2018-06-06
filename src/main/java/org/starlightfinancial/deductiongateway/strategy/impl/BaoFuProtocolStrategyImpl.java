@@ -89,9 +89,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
                 accountManager.setBaofuProtocolNo(accInfo[0]);
                 accountManager.setBaofuIsSigned(1);
                 accountManagerRepository.saveAndFlush(accountManager);
-//                message = Message.success("当前卡号已完成签约");
-                // TODO: 2018/5/25 删除下一行代码,打开上一行注释
-                message = Message.fail("当前卡号需签约");
+                message = Message.success("当前卡号已完成签约");
             } else {
                 if (StringUtils.equals(jsonObject.getString("error_code"), BFErrorCodeEnum.BF00134.getCode())) {
                     message = Message.fail("当前卡号需签约");
