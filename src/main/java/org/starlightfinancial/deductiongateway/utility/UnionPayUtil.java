@@ -18,7 +18,7 @@ public class UnionPayUtil {
      * @return
      * @throws Exception
      */
-    public static String sign(String merId, String data) {
+    public static String sign(String merId, String data, String priKey) {
         chinapay.PrivateKey key = new chinapay.PrivateKey();
         chinapay.SecureLink t;
         boolean flag;
@@ -26,9 +26,9 @@ public class UnionPayUtil {
         String paths = null;
         String line = File.separator;
         if ("\\".equals(line)) {
-            paths = "D://" + Utility.SEND_BANK_KEY_FILE;
+            paths = "D://" + priKey;
         } else if ("/".equals(line)) {
-            paths = "/root/" + Utility.SEND_BANK_KEY_FILE;
+            paths = "/root/" + priKey;
         }
         System.out.println("paths" + paths);
         if (paths == null || "".equals(paths)) {
@@ -52,11 +52,11 @@ public class UnionPayUtil {
      * @param chkValue
      * @return
      */
-    private boolean check(String data, String chkValue, String pubPath, String merId) {
+    private boolean check(String data, String chkValue, String pubPath, String merId ,String pubKey) {
         chinapay.PrivateKey key = new chinapay.PrivateKey();
         chinapay.SecureLink t;
         boolean flag;
-        String path = pubPath + "\\" + Utility.SEND_BANK_KEY_PUB_FILE;
+        String path = pubPath + "\\" + pubKey;
         ;
         if (path == null || "".equals(path)) {
             System.out.println("找不到CP公钥存放路径!");

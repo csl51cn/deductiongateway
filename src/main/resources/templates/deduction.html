@@ -133,8 +133,11 @@
                                             <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="deductionBtn" value="银联代扣"/>
-                                            <input type="button" id="baoFuDeductionBtn" value="宝付代扣"/>
+                                            <input type="button" id="deductionBtn" value="银联快捷支付"/>
+                                            <input type="button" id="baoFuDeductionBtn" value="宝付协议支付"/>
+                                            <input type="button" id="chinaPayClassicDeductionBtn" value="银联旧代扣"/>
+                                            <input type="button" id="chinaPayNewDeductionBtn" value="银联新代扣"/>
+                                            <input type="button" id="baoFuClassicDeductionBtn" value="宝付旧代扣"/>
                                             <input type="button" id="deleteBtn" value="删除"/>
                                         </td>
                                     </tr>
@@ -320,10 +323,10 @@
                 $('#myModal').modal('show');
 
                 $.ajax({
-                    url: "/mortgageDeductionController/saveMortgageDeductions.do",
+                    url: "/channelDispatchController/doPay.do",
                     timeout: 1800000,
                     method: "POST",
-                    data: {"ids": ids.toString(), "reGenerate": "0", "deductionMethod": deductionMethod},
+                    data: {"ids": ids.toString(), "reGenerate": "0", "channel": deductionMethod},
                     success: function (data) {
                         value=0;
                         $('#myModal').modal('hide');
@@ -348,15 +351,30 @@
             })
         }
 
-        <!--银联代扣按钮功能-->
+        <!--银联快捷支付-->
         $("#deductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-            executeDeduct("UNIONPAY");
+            executeDeduct("0001");
         });
-        <!--宝付代扣按钮功能-->
+        <!--宝付协议支付代扣-->
         $("#baoFuDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
-            executeDeduct("BAOFU");
+            executeDeduct("0002");
+        });
+        <!--银联旧代扣-->
+        $("#chinaPayClassicDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+            executeDeduct("0003");
+        });
+        <!--银联新代扣-->
+        $("#chinaPayNewDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+            executeDeduct("0004");
+        });
+        <!--宝付旧代扣-->
+        $("#baoFuClassicDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
+            executeDeduct("0005");
         });
 
 

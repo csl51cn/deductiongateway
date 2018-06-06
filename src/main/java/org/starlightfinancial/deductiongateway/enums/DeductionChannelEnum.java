@@ -11,11 +11,11 @@ public enum DeductionChannelEnum {
     /**
      * 银联快捷支付
      */
-    CHINA_PAY_QUICK_PAY("0001", "银联", "银联快捷支付"),
+    CHINA_PAY_EXPRESS_REALTIME("0001", "银联", "银联快捷支付"),
     /**
      * 宝付协议支付
      */
-    BAO_FU_AGREEMENT_PAY("0002", "宝付", "宝付协议支付"),
+    BAO_FU_PROTOCOL_PAY("0002", "宝付", "宝付协议支付"),
 
     /**
      * 银联白名单代扣
@@ -25,7 +25,7 @@ public enum DeductionChannelEnum {
     /**
      * 银联新无卡代扣
      */
-    CHINA_PAY_NEW_DEDUCTION("0004", "银联", "银联新无卡代扣"),
+    CHINA_PAY_EXPRESS_DELAY("0004", "银联", "银联新无卡代扣"),
 
     /**
      * 宝付代扣

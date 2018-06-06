@@ -1,10 +1,12 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
@@ -21,6 +23,9 @@ import java.util.List;
 public class ChannelDispatchServiceImpl implements ChannelDispatchService {
     @Autowired
     private OperationStrategyContext operationStrategyContext;
+
+    @Autowired
+    private MortgageDeductionRepository mortgageDeductionRepository;
 
 
     /**
@@ -88,32 +93,32 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
      * @return 返回包含代扣执行情况的Message对象
      */
     @Override
-    public Message doPay(List<MortgageDeduction> list, String channel) {
+    public void doPay(List<MortgageDeduction> list, String channel) throws Exception {
         OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
-        Message message;
-        if (operationStrategy != null) {
-            message = operationStrategy.pay(list);
-        } else {
-            message = Message.fail("渠道信息未配置");
-        }
-        return message;
+        operationStrategy.pay(list);
     }
 
     /**
      * 查询代扣结果
      *
-     * @param id      代扣记录id
-     * @param channel 渠道
+     * @param id 代扣记录id
      * @return 返回包含代扣查询结果Message对象
      */
     @Override
-    public Message queryPayResult(Integer id, String channel) {
-        OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
+    public Message queryPayResult(Integer id) {
         Message message;
-        if (operationStrategy != null) {
-            message = operationStrategy.queryPayResult(id);
-        } else {
-            message = Message.fail("渠道信息未配置");
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findById(id);
+        if (StringUtils.equals(mortgageDeduction.getType(), "1")) {
+            message = Message.fail("请先进行代扣操作,再查询代扣结果");
+            return message;
+        }else{
+            String channel = mortgageDeduction.getChannel();
+            OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
+            if (operationStrategy != null) {
+                message = operationStrategy.queryPayResult(mortgageDeduction);
+            } else {
+                message = Message.fail("渠道信息未配置");
+            }
         }
         return message;
     }

@@ -280,9 +280,9 @@
 
         'click .unionpay-action': function (e, value, row, index) {
             $.ajax({
-                url: "/accountManagerController/unionPayIsSigned.do",
+                url: "/channelDispatchController/queryIsSigned.do",
                 method: "post",
-                data: {"id": row.id},
+                data: {"id": row.id,"channel":"0001"},
                 success: function (data) {
                     if (data.code == "0000") {
                         setTimeout("$('#queryBtn').click()", 4020);
@@ -301,7 +301,7 @@
                         $("#certificateNo").attr("readonly","readonly");
                         $("#mobile").attr("value", row.mobile);
                         $("#mobile").attr("readonly","readonly");
-                        $("#channelMarking").attr("value", "unionPay");
+                        $("#channelMarking").attr("value", "0001");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/unionpay.png");
 
@@ -316,9 +316,9 @@
 
 
             $.ajax({
-                url: "/accountManagerController/baoFuIsSigned.do",
+                url: "/channelDispatchController/queryIsSigned.do",
                 method: "post",
-                data: {"id": row.id},
+                data: {"id": row.id,"channel":"0002"},
                 success: function (data) {
                     if (data.code == "0000") {
                         setTimeout("$('#queryBtn').click()", 4020);
@@ -339,7 +339,7 @@
                         $("#certificateNo").attr("readonly","readonly");
                         $("#mobile").attr("value", row.mobile);
                         $("#mobile").attr("readonly","readonly");
-                        $("#channelMarking").attr("value", "baofu");
+                        $("#channelMarking").attr("value", "0002");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/baofu.png");
 
@@ -603,11 +603,9 @@
         $('#signModal').on('show.bs.modal', function () {
             var sendSmsCodeBtn = $(this).find(".modal-body .sendSmsCodeBtn");
             sendSmsCodeBtn.click(function () {
-                var channelMarking = $("#channelMarking").val();
-                if (channelMarking == "unionPay") {
                     time(sendSmsCodeBtn);
                     $.ajax({
-                        url: "/accountManagerController/unionPaySendSignSmsCode.do",
+                        url: "/channelDispatchController/sendSignSmsCode.do",
                         method: "POST",
                         data: {
                             "id": $(".modal-body input[name='id']").val(),
@@ -615,7 +613,8 @@
                             "certificateType": $(".modal-body input[name='certificateType']").val(),
                             "certificateNo": $(".modal-body input[name='certificateNo']").val(),
                             "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
-                            "mobile": $(".modal-body input[name='mobile']").val()
+                            "mobile": $(".modal-body input[name='mobile']").val(),
+                            "channel":$("#channelMarking").val()
                         },
                         success: function (message) {
                             if (message.code == "0000") {
@@ -625,32 +624,6 @@
                             }
                         }
                     })
-                } else {
-                    time(sendSmsCodeBtn);
-                    $.ajax({
-                        url: "/accountManagerController/baoFuPaySendSignSmsCode.do",
-                        method: "POST",
-                        data: {
-                            "id": $(".modal-body input[name='id']").val(),
-                            "account": $(".modal-body input[name='account']").val(),
-                            "certificateType": $(".modal-body input[name='certificateType']").val(),
-                            "certificateNo": $(".modal-body input[name='certificateNo']").val(),
-                            "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
-                            "mobile": $(".modal-body input[name='mobile']").val()
-                        },
-                        success: function (message) {
-                            if (message.code == "0000") {
-                                $(".modal-body input[name='merOrderNo']").attr("value", message.data);
-                            } else {
-                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                            }
-                        }
-                    })
-
-
-
-                }
-
             });
 
             var signBtn = $(this).find(".btn-success");
@@ -666,9 +639,8 @@
                 $('#myModal').modal('show');
 
                 //发起签约请求
-                if ($("#channelMarking").val()== "unionPay") {
                     $.ajax({
-                        url: "/accountManagerController/unionPaySign.do",
+                        url: "/channelDispatchController/sign.do",
                         method: "post",
                         data: { "id": $(".modal-body input[name='id']").val(),
                             "account": $(".modal-body input[name='account']").val(),
@@ -677,7 +649,8 @@
                             "accountName": $(".modal-body input[name='accountNameInContractTable']").val(),
                             "mobile": $(".modal-body input[name='mobile']").val(),
                             "smsCode":$(".modal-body input[name='smsCode']").val(),
-                            "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
+                            "merOrderNo":$(".modal-body input[name='merOrderNo']").val(),
+                            "channel":$("#channelMarking").val()
                         },
                         success:function (message) {
                             $('#myModal').modal('hide');
@@ -689,25 +662,6 @@
                             }
                         }
                     });
-                }else{ //宝付
-                    $.ajax({
-                        url: "/accountManagerController/baoFuSign.do",
-                        method: "post",
-                        data: { "id": $(".modal-body input[name='id']").val(),
-                            "smsCode":$(".modal-body input[name='smsCode']").val(),
-                            "merOrderNo":$(".modal-body input[name='merOrderNo']").val()
-                        },
-                        success:function (message) {
-                            $('#myModal').modal('hide');
-                            if(message.code == "0000"){
-                                setTimeout("$('#queryBtn').click()", 4020);
-                                noty({'text': '签约成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                            }else{
-                                noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                            }
-                        }
-                    });
-                }
             });
 
 

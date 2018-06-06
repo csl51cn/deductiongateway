@@ -18,10 +18,10 @@ public interface OperationStrategy {
     /**
      * 查询是否签约
      *
-     * @param Id 记录id
+     * @param id 记录id
      * @return 返回包含查询结果的Message对象
      */
-    Message queryIsSigned(Integer Id);
+    Message queryIsSigned(Integer id);
 
 
     /**
@@ -44,19 +44,18 @@ public interface OperationStrategy {
 
     /**
      * 代扣
-     *
-     * @param mortgageDeductions mortgageDeduction列表
-     * @return 返回包含代扣执行情况的Message对象
+     * @param mortgageDeductions  mortgageDeduction列表
+     * @throws Exception 执行代扣异常
      */
-    Message pay(List<MortgageDeduction> mortgageDeductions);
+    void pay(List<MortgageDeduction> mortgageDeductions) throws Exception;
 
 
     /**
      * 查询代扣结果
      *
-     * @param id 代扣记录id
+     * @param mortgageDeduction 代扣记录
      * @return 返回包含代扣查询结果Message对象
      */
-    Message queryPayResult(Integer id);
+    Message queryPayResult(MortgageDeduction mortgageDeduction);
 
 }

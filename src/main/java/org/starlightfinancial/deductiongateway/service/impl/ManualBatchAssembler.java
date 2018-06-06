@@ -10,7 +10,7 @@ import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
-import org.starlightfinancial.deductiongateway.domain.local.UnionPayRequestParams;
+import org.starlightfinancial.deductiongateway.domain.local.ChinaPayRealTimeRequestParams;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.service.Assembler;
@@ -53,20 +53,20 @@ public class ManualBatchAssembler extends Assembler {
     public void saveUNIONPAY(List<MortgageDeduction> list) throws Exception {
         for (MortgageDeduction mortgageDeduction : list) {
 
-            UnionPayRequestParams unionPayRequestParams = beanConverter.transToUnionPayRequestParams(mortgageDeduction);
-            mortgageDeduction.setOrdId(unionPayRequestParams.getMerOrderNo());
+            ChinaPayRealTimeRequestParams chinaPayRealTimeRequestParams = beanConverter.transToChinaPayRealTimeRequestParams(mortgageDeduction);
+            mortgageDeduction.setOrdId(chinaPayRealTimeRequestParams.getMerOrderNo());
             mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
             mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
-            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_QUICK_PAY.getOrderDesc());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getOrderDesc());
             mortgageDeduction.setPlanNo(0);
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
             mortgageDeduction.setIsoffs("0");
-            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_QUICK_PAY.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
             mortgageDeduction.setPayTime(new Date());
 
             try {
-                Map map = httpClientUtil.send(chinaPayConfig.getExpressRealTimeUrl(), unionPayRequestParams.transToNvpList());
+                Map map = httpClientUtil.send(chinaPayConfig.getExpressRealTimeUrl(), chinaPayRealTimeRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
 
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
@@ -91,10 +91,10 @@ public class ManualBatchAssembler extends Assembler {
             mortgageDeduction.setOrdId(baoFuRequestParams.getTransId());
             mortgageDeduction.setMerId(baofuConfig.getProtocolMemberId());
             mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
-            mortgageDeduction.setOrderDesc(DeductionChannelEnum.BAO_FU_AGREEMENT_PAY.getOrderDesc());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getOrderDesc());
             mortgageDeduction.setPlanNo(0);
             mortgageDeduction.setType("0");
-            mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_AGREEMENT_PAY.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode());
             mortgageDeduction.setPayTime(Utility.convertToDate(baoFuRequestParams.getSendTime(),"yyyy-MM-dd HH:mm:ss"));
 
             try {

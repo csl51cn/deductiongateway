@@ -1,38 +1,35 @@
 package org.starlightfinancial.deductiongateway.strategy.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description:  银联白名单代扣渠道操作策略
- * @date: Created in 2018/6/4 11:17
+ * @Description: 银联新无卡代扣
+ * @date: Created in 2018/6/5 11:37
  * @Modified By:
  */
-@Component("0003")
-public class UnionPayWhiteListPayStrategy implements OperationStrategy {
+@Service("0004")
+public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
 
-
-    @Autowired
-    MortgageDeductionRepository mortgageDeductionRepository;
-
+    @Resource(name = "0001")
+    private OperationStrategy operationStrategy;
 
 
     /**
      * 查询是否签约
      *
-     * @param Id 记录id
+     * @param id 记录id
      * @return 返回包含查询结果的Message对象
      */
     @Override
-    public Message queryIsSigned(Integer Id) {
+    public Message queryIsSigned(Integer id) {
         return null;
     }
 
@@ -62,21 +59,22 @@ public class UnionPayWhiteListPayStrategy implements OperationStrategy {
      * 代扣
      *
      * @param mortgageDeductions mortgageDeduction列表
-     * @return 返回包含代扣执行情况的Message对象
+     * @throws Exception 执行代扣异常
      */
     @Override
-    public Message pay(List<MortgageDeduction> mortgageDeductions) {
-        return null;
+    public void pay(List<MortgageDeduction> mortgageDeductions) throws Exception {
+
     }
 
     /**
      * 查询代扣结果
      *
-     * @param id 代扣记录id
+     * @param mortgageDeduction 代扣记录
      * @return 返回包含代扣查询结果Message对象
      */
     @Override
-    public Message queryPayResult(Integer id) {
-        return null;
+    public Message queryPayResult(MortgageDeduction mortgageDeduction) {
+        return operationStrategy.queryPayResult(mortgageDeduction);
     }
+
 }

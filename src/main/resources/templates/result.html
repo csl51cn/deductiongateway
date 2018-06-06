@@ -175,9 +175,38 @@
                         </div>
                         <div class="modal-body">
                             <input  type="text"  style="display:none;" id="rowId" >
-                            <img src="/img/unionpay.png" style="max-width:20%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联代扣</button>
-                            <img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付代扣</button>
-                            <button type="button" id="manualConfirmBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>
+                                    </td>
+                                    <td>
+                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联旧代扣</button>
+                                    </td>
+                                    <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联新代扣</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付旧代扣</button>
+                                    </td>
+                                    <td>
+                                        <button type="button" id="manualConfirmBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--<img src="/img/unionpay.png" style="max-width:20%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>-->
+                            <!--<img src="/img/unionpay.png" style="max-width:20%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联新代扣</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">银联旧代扣</button>-->
+                            <!--<img src="/img/baofu.png" style="max-width:20%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付旧代扣</button>-->
+
                         </div>
                         <div class="modal-footer">
                         </div>
@@ -256,33 +285,32 @@
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
     window.operateEvents = {
-
-        'click .manualConfirm': function (e, value, row, index) {
+        <!--查询扣款结果按钮功能-->
+        'click .manualConfirm':function (e, value, row, index) {
+            value = 0;
+            $('#actionModal').modal('hide');
             $('#confirmModal').modal();
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
+                increment();
+                $('#myModal').modal('show');
                 $.ajax({
-                    url: "/mortgageDeductionController/updateMortgageDeductions.do",
+                    url: "/channelDispatchController/queryPayResult.do",
+                    timeout: 900000,
                     method: "POST",
-                    data: {"ids": row.id},
-                    success: function (data) {
-                        if ("1" == data) {
+                    data: {"id": row.id},
+                    success: function (message) {
+                        $('#myModal').modal('hide');
+                        if ("0000" == message.code) {
                             setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else if (data.length > 5) {
-                            noty({
-                                'text': '执行失败,' + data,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "4000"
-                            });
-
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
                         }
                     }
-                });
+                })
             })
+
         },
 
     'click .action': function (e, value, row, index) {
@@ -512,44 +540,34 @@
             location.href = "/mortgageDeductionController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate + "&customerName=" + customerName;
 
         });
-        <!--银联代扣按钮功能-->
+        <!--银联快捷支付按钮功能-->
         $("#deductionBtn").click(function () {
-            var url  ="/mortgageDeductionController/saveMortgageDeductions.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","deductionMethod":"UNIONPAY"},url);
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0001"},url);
         });
-        <!--宝付代扣按钮功能-->
+        <!--宝付协议支付按钮功能-->
         $("#baoFuDeductionBtn").click(function () {
-            var url  ="/mortgageDeductionController/saveMortgageDeductions.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","deductionMethod":"BAOFU"},url);
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0002"},url);
         });
 
-        <!--查询扣款结果按钮功能-->
-        $("#manualConfirmBtn").click(function () {
-            value = 0;
-            $('#actionModal').modal('hide');
-            $('#confirmModal').modal();
-            $(".btn-success").unbind("click");
-            $(".btn-success").click(function () {
-                increment();
-                $('#myModal').modal('show');
-                $.ajax({
-                    url: "/mortgageDeductionController/queryResult.do",
-                    timeout: 900000,
-                    method: "POST",
-                    data: {"id": $("#rowId").val()},
-                    success: function (message) {
-                        $('#myModal').modal('hide');
-                        if ("0000" == message.code) {
-                            setTimeout("$('#queryBtn').click()", 4020);
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else {
-                            noty({'text': message.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
-                    }
-                })
-            })
-
+        <!--银联白名单-->
+        $("#chinaPayClassicDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0003"},url);
         });
+        <!--银联新无卡-->
+        $("#chinaPayNewDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0004"},url);
+        });
+        <!--宝付代扣-->
+        $("#baoFuClassicDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0005"},url);
+        });
+
+
 
         <!--具体执行操作的函数-->
         function executeAction(data,url) {

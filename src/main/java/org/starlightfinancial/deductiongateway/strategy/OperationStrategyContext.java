@@ -15,21 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class OperationStrategyContext {
 
-    private final Map<String, OperationStrategy> strategyMap = new ConcurrentHashMap<>();
-
-
     @Autowired
-    public OperationStrategyContext(Map<String, OperationStrategy> strategyMap) {
-        this.strategyMap.clear();
-        strategyMap.forEach((k, v)-> this.strategyMap.put(k, v));
-    }
+    private final Map<String, OperationStrategy> STRATEGYMAP = new ConcurrentHashMap<>();
 
-
-    public OperationStrategy getOperationStrategy (String strategyKey){
-        if (strategyMap.containsKey(strategyKey)){
-            return strategyMap.get(strategyKey);
-        }else{
-            return null;
-        }
+    public OperationStrategy getOperationStrategy(String strategyKey)  {
+        return STRATEGYMAP.getOrDefault(strategyKey, STRATEGYMAP.get("0001"));
     }
 }

@@ -182,6 +182,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         for (int k = 0; k < openBankList.size(); k++) {
                             if (mortgageDeduction.getParam1().equals(openBankList.get(k).getDicValue())) {
                                 mortgageDeduction.setParam1(openBankList.get(k).getDicKey());
+                                break;
                             }
                         }
 
@@ -189,15 +190,19 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         for (int k = 0; k < cTypeLst.size(); k++) {
                             if (mortgageDeduction.getParam5().equals(cTypeLst.get(k).getDicValue())) {
                                 mortgageDeduction.setParam5(cTypeLst.get(k).getDicKey());
+                                break;
                             }
                         }
 
                         //处理服务费管理公司
-                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
-                            mortgageDeduction.setTarget(chinaPayConfig.getClassicKaiYueMemberId());
-                        } else {
-                            mortgageDeduction.setTarget(chinaPayConfig.getClassicRunKunMemberId());
+                        if(StringUtils.isBlank(mortgageDeduction.getTarget())){
+                            mortgageDeduction.setTarget("润坤");
                         }
+//                        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && "铠岳".equals(mortgageDeduction.getTarget().trim())) {
+//                            mortgageDeduction.setTarget(chinaPayConfig.getClassicKaiYueMemberId());
+//                        } else {
+//                            mortgageDeduction.setTarget(chinaPayConfig.getClassicRunKunMemberId());
+//                        }
 
                         if (mortgageDeduction.getParam3() != null && !"".equals(mortgageDeduction.getParam3())) {
                             list.add(mortgageDeduction);
@@ -344,11 +349,11 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
 
                 //处理服务费管理公司
-                if (mortgageDeduction.getTarget() != null && chinaPayConfig.getExpressRealTimeKaiYueServiceMemberId().equals(mortgageDeduction.getTarget().trim())) {
-                    mortgageDeduction.setTarget("铠岳");
-                } else {
-                    mortgageDeduction.setTarget("润坤");
-                }
+//                if (mortgageDeduction.getTarget() != null && chinaPayConfig.getExpressRealTimeKaiYueServiceMemberId().equals(mortgageDeduction.getTarget().trim())) {
+//                    mortgageDeduction.setTarget("铠岳");
+//                } else {
+//                    mortgageDeduction.setTarget("润坤");
+//                }
 
                 //处理代扣卡银行名
                 String bankName = BankCodeEnum.getBankNameById(mortgageDeduction.getParam1());
@@ -466,14 +471,14 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
 
             cell = row.createCell(8);
             String company = mortgageDeduction.getTarget() != null ? mortgageDeduction.getTarget().trim() : "";
-            if (StringUtils.equals(company, chinaPayConfig.getClassicKaiYueMemberId())) {
-                cell.setCellValue("铠岳");
-            }
-
-            if (StringUtils.equals(company, chinaPayConfig.getClassicRunKunMemberId())) {
-                cell.setCellValue("润坤");
-            }
-
+//            if (StringUtils.equals(company, chinaPayConfig.getClassicKaiYueMemberId())) {
+//                cell.setCellValue("铠岳");
+//            }
+//
+//            if (StringUtils.equals(company, chinaPayConfig.getClassicRunKunMemberId())) {
+//                cell.setCellValue("润坤");
+//            }
+            cell.setCellValue(company);
             cell = row.createCell(9);
             cell.setCellValue(mortgageDeduction.getParam4());
             cell = row.createCell(10);
@@ -583,7 +588,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         } else {
             String channel = mortgageDeduction.getChannel();
 
-            if (StringUtils.equals(channel, DeductionChannelEnum.CHINA_PAY_QUICK_PAY.getCode())) {
+            if (StringUtils.equals(channel, DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode())) {
                 //银联代扣
                 List<BasicNameValuePair> list = new ArrayList<>();
                 list.add(new BasicNameValuePair("MerOrderNo", mortgageDeduction.getOrdId()));

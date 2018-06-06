@@ -8,11 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ResourceUtils;
+import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
-import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.transaction.Transactional;
 import java.net.URL;
@@ -36,13 +36,16 @@ public class ApplicationTest {
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
 
+    @Autowired
+    private ChinaPayConfig chinaPayConfig;
+
     @Before
     public void setUp() {
     }
 
     @Test
     public void test() throws Exception {
-        URL url = ResourceUtils.getURL("classpath:" + Utility.SEND_BANK_KEY_FILE);
+        URL url = ResourceUtils.getURL("classpath:" +chinaPayConfig.getClassicPfxFile());
         System.out.println("urlxxxxx    " + url.getPath());
 
 //        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findByOrdId("789");

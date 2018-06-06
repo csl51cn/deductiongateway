@@ -11,7 +11,6 @@ import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.common.SameUrlData;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
@@ -26,7 +25,7 @@ import java.util.List;
  * @Modified By:
  */
 @Controller
-@RequestMapping("/channelDispatch")
+@RequestMapping("/channelDispatchController")
 public class ChannelDispatchController {
     @Autowired
     private ChannelDispatchService channelDispatchService;
@@ -80,9 +79,9 @@ public class ChannelDispatchController {
     /**
      * 执行代扣
      *
-     * @param ids 代扣记录id
+     * @param ids        代扣记录id
      * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
-     * @param channel 渠道
+     * @param channel    渠道
      * @return 返回代扣执行情况
      */
     @RequestMapping(value = "/doPay.do")
@@ -110,13 +109,8 @@ public class ChannelDispatchController {
                 }
                 list = mortgageDeductionList;
             }
-            Message message = channelDispatchService.doPay(list, channel);
-            if (message.getCode() ==ConstantsEnum.REQUEST_SUCCESS.getCode() ){
-                return "1";
-            }else{
-                return message.getMessage();
-            }
-
+            channelDispatchService.doPay(list, channel);
+            return "1";
         } catch (Exception e) {
             e.printStackTrace();
             return "error";
@@ -125,17 +119,16 @@ public class ChannelDispatchController {
 
     /**
      * 查询代扣结果
-     * @param id  要查询结果的记录id
-     * @param channel 渠道
+     *
+     * @param id      要查询结果的记录id
      * @return 返回包含查询结果的Message对象
      */
-    @RequestMapping(value = "/queryPayResult.do",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/queryPayResult.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Message  queryPayResult(Integer id , String channel){
-        Message message = channelDispatchService.queryPayResult(id, channel);
+    public Message queryPayResult(Integer id) {
+        Message message = channelDispatchService.queryPayResult(id);
         return message;
     }
-
 
 
 }

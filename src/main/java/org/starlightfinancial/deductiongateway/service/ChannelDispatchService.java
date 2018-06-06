@@ -49,15 +49,14 @@ public interface ChannelDispatchService {
      * @param channel 渠道
      * @return 返回包含代扣执行情况的Message对象
      */
-    Message doPay(List<MortgageDeduction> list, String channel);
+    void doPay(List<MortgageDeduction> list, String channel) throws Exception;
 
 
     /**
      * 查询代扣结果
      *
-     * @param id      代扣记录id
-     * @param channel 渠道
+     * @param id 代扣记录id
      * @return 返回包含代扣查询结果Message对象
      */
-    Message queryPayResult(Integer id, String channel);
+    Message queryPayResult(Integer id);
 }

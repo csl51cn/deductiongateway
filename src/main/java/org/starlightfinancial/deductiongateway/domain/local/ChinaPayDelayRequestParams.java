@@ -7,23 +7,15 @@ import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description: 银联分账支付交易请求参数
- * @date: Created in 2018/5/15 16:37
+ * @Description: 银联新无卡代扣
+ * @date: Created in 2018/6/6 9:14
  * @Modified By:
  */
-public class UnionPayRequestParams {
-
+public class ChinaPayDelayRequestParams {
     /**
      * 订单号
      */
     private String merOrderNo;
-
-
-    /**
-     * 协议号
-     */
-    private String protocolNo;
-
 
     /**
      * 分账类型
@@ -50,6 +42,26 @@ public class UnionPayRequestParams {
      */
     private String orderAmt;
 
+    /**
+     * 卡号
+     */
+    private String cardNo;
+
+    /**
+     * 证件类型
+     */
+    private String certType;
+
+    /**
+     * 证件号
+     */
+    private String certNo;
+
+    /**
+     * 账户名
+     */
+    private String accName;
+
 
     public String getMerOrderNo() {
         return merOrderNo;
@@ -57,14 +69,6 @@ public class UnionPayRequestParams {
 
     public void setMerOrderNo(String merOrderNo) {
         this.merOrderNo = merOrderNo;
-    }
-
-    public String getProtocolNo() {
-        return protocolNo;
-    }
-
-    public void setProtocolNo(String protocolNo) {
-        this.protocolNo = protocolNo;
     }
 
     public String getSplitType() {
@@ -99,18 +103,54 @@ public class UnionPayRequestParams {
         this.orderAmt = orderAmt;
     }
 
+    public String getCardNo() {
+        return cardNo;
+    }
+
+    public void setCardNo(String cardNo) {
+        this.cardNo = cardNo;
+    }
+
+    public String getCertType() {
+        return certType;
+    }
+
+    public void setCertType(String certType) {
+        this.certType = certType;
+    }
+
+    public String getCertNo() {
+        return certNo;
+    }
+
+    public void setCertNo(String certNo) {
+        this.certNo = certNo;
+    }
+
+    public String getAccName() {
+        return accName;
+    }
+
+    public void setAccName(String accName) {
+        this.accName = accName;
+    }
+
     /**
      * 转换为BasicNameValuePair集合
+     *
      * @return
      */
     public List<BasicNameValuePair> transToNvpList() {
         List<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("MerOrderNo", this.merOrderNo));
-        basicNameValuePairs.add(new BasicNameValuePair("ProtocolNo", this.protocolNo));
         basicNameValuePairs.add(new BasicNameValuePair("SplitType", this.splitType));
         basicNameValuePairs.add(new BasicNameValuePair("SplitMethod", this.splitMethod));
         basicNameValuePairs.add(new BasicNameValuePair("MerSplitMsg", this.merSplitMsg));
         basicNameValuePairs.add(new BasicNameValuePair("OrderAmt", this.orderAmt));
+        basicNameValuePairs.add(new BasicNameValuePair("CardNo", this.cardNo));
+        basicNameValuePairs.add(new BasicNameValuePair("CertType", this.certType));
+        basicNameValuePairs.add(new BasicNameValuePair("CertNo", this.certNo));
+        basicNameValuePairs.add(new BasicNameValuePair("AccName", this.accName));
         return basicNameValuePairs;
     }
 

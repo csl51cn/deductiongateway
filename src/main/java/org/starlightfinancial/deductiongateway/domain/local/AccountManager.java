@@ -143,10 +143,12 @@ public class AccountManager {
     /**
      * 签约短信验证码
      */
+    @Transient
     private String smsCode;
     /**
      * 短信验证码对应的订单号
      */
+    @Transient
     private String merOrderNo;
 
     public Integer getId() {
