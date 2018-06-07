@@ -3,13 +3,11 @@ package org.starlightfinancial.deductiongateway.service;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 批量扣款
@@ -23,15 +21,6 @@ public interface MortgageDeductionService {
      */
     public void importCustomerData(MultipartFile uploadedFile, int staffId);
 
-
-    /**
-     * 执行代扣.
-     *
-     * @param list            the list
-     * @param deductionMethod 代扣方式:UNIONPAY 使用银联代扣,BAOFU使用宝付代扣
-     * @return the list
-     */
-    public List<Map> saveMortgageDeductions(List<MortgageDeduction> list, String deductionMethod) throws Exception;
 
     /**
      * 查询代扣数据
@@ -91,11 +80,4 @@ public interface MortgageDeductionService {
      */
     void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
 
-    /**
-     * 查询支付结果
-     *
-     * @param id  记录id
-     * @return
-     */
-    Message queryResult(String id);
 }
