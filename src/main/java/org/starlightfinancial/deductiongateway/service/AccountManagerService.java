@@ -42,6 +42,7 @@ public interface AccountManagerService {
      * 添加代扣卡信息
      *
      * @param bizNo 业务编号
+     * @return
      */
     Message addAccount(String bizNo);
 

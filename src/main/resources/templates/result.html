@@ -181,21 +181,19 @@
                                         <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>
                                     </td>
                                     <td>
+                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-primary   btn-small" style="margin-right:15px;">银联代扣</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <!--<img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-primary  btn-small" style="margin-right:15px;">银联旧代扣</button>-->
                                         <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>
                                     </td>
-                                </tr>
-                                <tr>
                                     <td>
-                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayClassicDeductionBtn" class="deduction btn btn-primary  btn-small" style="margin-right:15px;">银联旧代扣</button>
-                                    </td>
-                                    <td>
-                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付旧代扣</button>
+                                        <img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuClassicDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付代扣</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        <img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-primary  btn-small" style="margin-right:15px;">银联新代扣</button>
-                                    </td>
                                     <td>
                                         <button type="button" id="manualConfirmBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
                                     </td>
@@ -519,11 +517,11 @@
         });
 
         <!--银联白名单-->
-        $("#chinaPayClassicDeductionBtn").click(function () {
-            var url  ="/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0003"},url);
-        });
-        <!--银联新无卡-->
+        // $("#chinaPayClassicDeductionBtn").click(function () {
+        //     var url  ="/channelDispatchController/doPay.do";
+        //     executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0003"},url);
+        // });
+        <!--银联新无卡代扣-->
         $("#chinaPayNewDeductionBtn").click(function () {
             var url  ="/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0004"},url);

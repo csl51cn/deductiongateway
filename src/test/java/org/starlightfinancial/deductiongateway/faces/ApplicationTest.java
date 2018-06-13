@@ -58,6 +58,5 @@ public class ApplicationTest {
 //        mortgageDeductionService.importCustomerData(file, 14);
         List<MortgageDeduction> list = mortgageDeductionRepository.findByTypeAndCreatId("1", 14);
 
-
     }
 }
