@@ -398,7 +398,7 @@ public class BeanConverter {
         //设置证件类型
         chinaPayDelayRequestParams.setCertType(ChinaPayCertTypeEnum.CERT_TYPE_01.getCode());
         //设置证件号码
-        chinaPayDelayRequestParams.setCardNo(mortgageDeduction.getParam6());
+        chinaPayDelayRequestParams.setCertNo(mortgageDeduction.getParam6());
         //设置账户名
         chinaPayDelayRequestParams.setAccName(mortgageDeduction.getParam4());
         return chinaPayDelayRequestParams;
