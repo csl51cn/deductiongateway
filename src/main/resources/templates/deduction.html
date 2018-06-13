@@ -134,10 +134,10 @@
                                         <td>
                                             <input type="button" id="queryBtn" value="查询"/>
                                             <input type="button" id="deductionBtn" value="银联快捷支付"/>
+                                            <input type="button" id="chinaPayNewDeductionBtn" value="银联代扣"/>
                                             <input type="button" id="baoFuDeductionBtn" value="宝付协议支付"/>
-                                            <input type="button" id="chinaPayClassicDeductionBtn" value="银联旧代扣"/>
-                                            <input type="button" id="chinaPayNewDeductionBtn" value="银联新代扣"/>
-                                            <input type="button" id="baoFuClassicDeductionBtn" value="宝付旧代扣"/>
+                                            <!--<input type="button" id="chinaPayClassicDeductionBtn" value="银联旧代扣"/>-->
+                                            <input type="button" id="baoFuClassicDeductionBtn" value="宝付代扣"/>
                                             <input type="button" id="deleteBtn" value="删除"/>
                                         </td>
                                     </tr>
@@ -362,10 +362,10 @@
             executeDeduct("0002");
         });
         <!--银联旧代扣-->
-        $("#chinaPayClassicDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-            executeDeduct("0003");
-        });
+        // $("#chinaPayClassicDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+        //     executeDeduct("0003");
+        // });
         <!--银联新代扣-->
         $("#chinaPayNewDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
