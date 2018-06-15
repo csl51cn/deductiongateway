@@ -95,7 +95,7 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
             mortgageDeduction.setIsoffs("0");
-            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_DELAY.getCode());
             mortgageDeduction.setPayTime(new Date());
 
             try {

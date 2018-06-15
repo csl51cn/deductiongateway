@@ -280,8 +280,8 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
                 } else if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_008.getCode(), result.getString("OrderStatus"))) {
                     //订单状态不为"0014,数据接收成功"为失败
                     mortgageDeduction.setIssuccess("0");
-                    mortgageDeduction.setResult(jsonObject.getString("error_code"));
-                    mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code")));
+                    mortgageDeduction.setResult(result.getString("OrderStatus"));
+                    mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(result.getString("OrderStatus")));
                     mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 }
                 message = Message.success();
