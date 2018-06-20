@@ -77,10 +77,10 @@ public enum DeductionChannelEnum {
         this.deductionChannelDesc = deductionChannelDesc;
     }
 
-    public static String getCodeByDesc(String desc) {
+    public static String getDescByCode(String code) {
         for (DeductionChannelEnum deductionChannelEnum : DeductionChannelEnum.values()) {
-            if (desc.equals(deductionChannelEnum.getDeductionChannelDesc())) {
-                return deductionChannelEnum.getCode();
+            if (code.equals(deductionChannelEnum.getCode())) {
+                return deductionChannelEnum.getDeductionChannelDesc();
             }
         }
         return null;
