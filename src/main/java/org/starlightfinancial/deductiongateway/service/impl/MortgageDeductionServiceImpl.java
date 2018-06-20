@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.DictionaryType;
 import org.starlightfinancial.deductiongateway.utility.ExcelReader;
@@ -484,7 +485,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
 
             cell = row.createCell(14);
-            cell.setCellValue(mortgageDeduction.getOrderDesc());
+            cell.setCellValue(DeductionChannelEnum.getDescByCode(mortgageDeduction.getChannel()));
             cell = row.createCell(15);
             if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
