@@ -62,5 +62,10 @@ public class PageController {
         return "deduction-template";
     }
 
+    @RequestMapping("/reset-password")
+    public String toResetPasswordPage() {
+        return "reset-password";
+    }
+
 }
 

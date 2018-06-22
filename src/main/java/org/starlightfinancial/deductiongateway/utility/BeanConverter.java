@@ -90,10 +90,24 @@ public class BeanConverter {
             chinaPayRealTimeRequestParams.setSplitType("0001");
 
         }
-        //设置协议号
-        AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
-        chinaPayRealTimeRequestParams.setProtocolNo(accountManager.getUnionpayProtocolNo());
 
+        AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
+        //首先判断协议号是否存在,如果不存在使用五要素进行交易,五要素:卡号，证件类型 ，证件号，姓名，手机号
+        if(StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())){
+            //设置协议号
+            chinaPayRealTimeRequestParams.setProtocolNo(accountManager.getUnionpayProtocolNo());
+        }else{
+            //设置卡号
+            chinaPayRealTimeRequestParams.setCardNo(mortgageDeduction.getParam3());
+            //设置证件类型
+            chinaPayRealTimeRequestParams.setCertType(ChinaPayCertTypeEnum.CERT_TYPE_01.getCode());
+            //设置证件号码
+            chinaPayRealTimeRequestParams.setCertNo(mortgageDeduction.getParam6());
+            //设置账户名
+            chinaPayRealTimeRequestParams.setAccName(mortgageDeduction.getParam4());
+            //设置
+            chinaPayRealTimeRequestParams.setMobile(accountManager.getMobile());
+        }
         return chinaPayRealTimeRequestParams;
     }
 
