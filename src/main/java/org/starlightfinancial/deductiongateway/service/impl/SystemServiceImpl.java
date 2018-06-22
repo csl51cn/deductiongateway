@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.service.impl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
 import org.starlightfinancial.deductiongateway.domain.local.MD5ValueRepository;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
@@ -34,8 +35,9 @@ public class SystemServiceImpl implements SystemService {
     public SysUser findSysUser(String loginName, String password) {
 
         String de_password = EncryptHelper.Instance.getEncString(password);
-        if (StringUtils.isEmpty(de_password))
+        if (StringUtils.isEmpty(de_password)) {
             return null;
+        }
         de_password = de_password.trim();
         List<SysUser> listSysUser = sysUserRepository.findByLoginNameAndLoginPasswordAndDeleteFlag(loginName, de_password, "0");
         if (listSysUser.size() > 0) {
@@ -47,6 +49,7 @@ public class SystemServiceImpl implements SystemService {
 
     /**
      * 查询所有md5值
+     *
      * @return
      */
     @Override
@@ -57,6 +60,7 @@ public class SystemServiceImpl implements SystemService {
 
     /**
      * 保存md5值
+     *
      * @param md5Valeu
      */
     @Override
@@ -64,5 +68,17 @@ public class SystemServiceImpl implements SystemService {
         MD5Value md5Value = new MD5Value();
         md5Value.setMd5(md5Valeu);
         md5ValueRepository.save(md5Value);
+    }
+
+    /**
+     * 更新密码
+     *
+     * @param password 新密码
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void resetPassword(String password, SysUser user) {
+        user.setLoginPassword(EncryptHelper.Instance.getEncString(password));
+        sysUserRepository.saveAndFlush(user);
     }
 }

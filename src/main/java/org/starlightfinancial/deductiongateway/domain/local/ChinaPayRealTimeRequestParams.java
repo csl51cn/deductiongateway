@@ -51,6 +51,31 @@ public class ChinaPayRealTimeRequestParams {
     private String orderAmt;
 
 
+    /**
+     * 卡号
+     */
+    private String cardNo;
+
+    /**
+     * 证件类型
+     */
+    private String certType;
+
+    /**
+     * 证件号
+     */
+    private String certNo;
+
+    /**
+     * 账户名
+     */
+    private String accName;
+
+    /**
+     * 手机号码
+     */
+    private String mobile;
+
     public String getMerOrderNo() {
         return merOrderNo;
     }
@@ -99,6 +124,46 @@ public class ChinaPayRealTimeRequestParams {
         this.orderAmt = orderAmt;
     }
 
+    public String getCardNo() {
+        return cardNo;
+    }
+
+    public void setCardNo(String cardNo) {
+        this.cardNo = cardNo;
+    }
+
+    public String getCertType() {
+        return certType;
+    }
+
+    public void setCertType(String certType) {
+        this.certType = certType;
+    }
+
+    public String getCertNo() {
+        return certNo;
+    }
+
+    public void setCertNo(String certNo) {
+        this.certNo = certNo;
+    }
+
+    public String getAccName() {
+        return accName;
+    }
+
+    public void setAccName(String accName) {
+        this.accName = accName;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
     /**
      * 转换为BasicNameValuePair集合
      *
@@ -112,6 +177,11 @@ public class ChinaPayRealTimeRequestParams {
         basicNameValuePairs.add(new BasicNameValuePair("SplitMethod", this.splitMethod));
         basicNameValuePairs.add(new BasicNameValuePair("MerSplitMsg", this.merSplitMsg));
         basicNameValuePairs.add(new BasicNameValuePair("OrderAmt", this.orderAmt));
+        basicNameValuePairs.add(new BasicNameValuePair("CardNo", this.cardNo));
+        basicNameValuePairs.add(new BasicNameValuePair("CertType", this.certType));
+        basicNameValuePairs.add(new BasicNameValuePair("CertNo", this.certNo));
+        basicNameValuePairs.add(new BasicNameValuePair("AccName", this.accName));
+        basicNameValuePairs.add(new BasicNameValuePair("MobileNo", this.mobile));
         return basicNameValuePairs;
     }
 

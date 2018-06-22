@@ -35,7 +35,6 @@ import org.starlightfinancial.deductiongateway.service.impl.AutoBatchItemWriter;
 import org.starlightfinancial.deductiongateway.service.impl.ConcreteHandler;
 
 import javax.sql.DataSource;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -244,10 +243,11 @@ public class BatchConfig {
         jdbcCursorItemReader.setRowMapper(new AutoBatchDeductionRowMapper());
 
         String sql = null;
-        if ("1".equals(autoSwitch)) { //autoSwitch状态1代表付易贷日扣开启自动代扣,0代表关闭自动代扣
-            sql = "SELECT * FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
+        //autoSwitch状态1代表付易贷日扣开启自动代扣,0代表关闭自动代扣
+        if ("1".equals(autoSwitch)) {
+            sql = "SELECT distinct  Date_Id,业务编号,合同编号,计划期数,计划还款日,还款账号银行,代扣卡折类型,还款账号,还款账户名,代扣人证件类型,代扣人证件号码,BX_Plan,Fwf_Plan,服务费管理司,LoginId  FROM Temp_当前代扣数据 WHERE CONVERT (VARCHAR, 计划还款日, 1) = CONVERT (VARCHAR, GETDATE(), 1) and LoginId = 14";
         } else {
-            sql = "SELECT a.* FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +
+            sql = "SELECT distinct  a.Date_Id,a.业务编号,a.合同编号,a.计划期数,a.计划还款日,a.还款账号银行,a.代扣卡折类型,a.还款账号,a.还款账户名,a.代扣人证件类型,a.代扣人证件号码,a.BX_Plan,a.Fwf_Plan,a.服务费管理司,a.LoginId  FROM Temp_当前代扣数据 a LEFT JOIN Data_WorkInfo b ON b.Date_Id = a.Date_Id" +
                     " WHERE a.LoginId = 14  AND b.授信期限单位 <> 2081  AND  " +
                     "CONVERT (VARCHAR,a.计划还款日,1) = CONVERT (VARCHAR, GETDATE(), 1)";
         }

@@ -1,6 +1,8 @@
 package org.starlightfinancial.deductiongateway.web;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -11,9 +13,13 @@ import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.common.SameUrlData;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +33,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/channelDispatchController")
 public class ChannelDispatchController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelDispatchController.class);
     @Autowired
     private ChannelDispatchService channelDispatchService;
     @Autowired
@@ -82,16 +90,22 @@ public class ChannelDispatchController {
      * @param ids        代扣记录id
      * @param reGenerate 扣款结果页面发起的代扣需要重新生成一条记录,0表示不需要生成,1表示需要生成
      * @param channel    渠道
+     * @param request    请求
+     * @param session    会话session
      * @return 返回代扣执行情况
      */
     @RequestMapping(value = "/doPay.do")
     @SameUrlData
     @ResponseBody
-    public String doPay(String ids, String reGenerate, String channel) {
+    public String doPay(String ids, String reGenerate, String channel, HttpServletRequest request, HttpSession session) {
         try {
             if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
             }
+            String ipAddr = Utility.getIpAddress(request);
+            LOGGER.info("执行代扣,操作人员:{},发起请求ip:{},代扣记录ids:{},是(1)否(0)重新生成记录:{},代扣渠道",
+                    ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddr, ids, reGenerate,channel);
+
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
             ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
             if ("1".equals(reGenerate)) {
@@ -120,7 +134,7 @@ public class ChannelDispatchController {
     /**
      * 查询代扣结果
      *
-     * @param id      要查询结果的记录id
+     * @param id 要查询结果的记录id
      * @return 返回包含查询结果的Message对象
      */
     @RequestMapping(value = "/queryPayResult.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
