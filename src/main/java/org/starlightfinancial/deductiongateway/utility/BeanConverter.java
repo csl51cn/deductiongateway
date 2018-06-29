@@ -77,20 +77,18 @@ public class BeanConverter {
         chinaPayRealTimeRequestParams.setOrderAmt(String.valueOf(m1 + m2));
 
         //设置分账三个相关参数
+        //设置分账方式:按金额分账
+        chinaPayRealTimeRequestParams.setSplitMethod("0");
+        //设置分账类型:实时分账
+        chinaPayRealTimeRequestParams.setSplitType("0001");
+        StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
+        merSplitMsg.append("^").append(m1);
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
-
             //设置分账信息
-            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
-            merSplitMsg.append("^").append(m1);
             merSplitMsg.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode())).append("^").append(m2).append(";");
-            chinaPayRealTimeRequestParams.setMerSplitMsg(merSplitMsg.toString());
-            //设置分账方式:按金额分账
-            chinaPayRealTimeRequestParams.setSplitMethod("0");
-            //设置分账类型:实时分账
-            chinaPayRealTimeRequestParams.setSplitType("0001");
 
         }
-
+        chinaPayRealTimeRequestParams.setMerSplitMsg(merSplitMsg.toString());
         AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
         //首先判断协议号是否存在,如果不存在使用五要素进行交易,五要素:卡号，证件类型 ，证件号，姓名，手机号
         if(StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())){
@@ -394,18 +392,18 @@ public class BeanConverter {
         chinaPayDelayRequestParams.setOrderAmt(String.valueOf(m1 + m2));
 
         //设置分账三个相关参数
+        //设置分账方式:按金额分账
+        chinaPayDelayRequestParams.setSplitMethod("0");
+        //设置分账类型:实时分账
+        chinaPayDelayRequestParams.setSplitType("0001");
+        StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
+        merSplitMsg.append("^").append(m1);
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
             //设置分账信息
-            StringBuilder merSplitMsg = new StringBuilder(chinaPayConfig.getExpressRealTimeRunTongMemberId());
-            merSplitMsg.append("^").append(m1);
             merSplitMsg.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_EXPRESS_DELAY.getCode())).append("^").append(m2).append(";");
-            chinaPayDelayRequestParams.setMerSplitMsg(merSplitMsg.toString());
-            //设置分账方式:按金额分账
-            chinaPayDelayRequestParams.setSplitMethod("0");
-            //设置分账类型:实时分账
-            chinaPayDelayRequestParams.setSplitType("0001");
-
         }
+
+        chinaPayDelayRequestParams.setMerSplitMsg(merSplitMsg.toString());
 
         //设置卡号
         chinaPayDelayRequestParams.setCardNo(mortgageDeduction.getParam3());
