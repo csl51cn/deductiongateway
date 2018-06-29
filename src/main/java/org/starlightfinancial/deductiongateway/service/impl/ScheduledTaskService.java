@@ -46,30 +46,32 @@ public class ScheduledTaskService {
     public void execute() throws Exception {
         System.out.println("执行了吗");
 
-        //下面是判断是否当天在轧账时间内:从当月最后一天开始判断是否是节假日,如果是节假日将最后一天添加到集合中,
-        // 往前推算一天判断是否是节假日,如果是添加到集合中,依次类推直到不是节假日,获取到了轧账时间的最早的一天.通过
-        //判断当天是否在轧账的
+        //轧账后不进行代扣,下面是判断是否当天在不进行代扣的时间段内:从当月最后一天开始判断是否是节假日,如果是节假日将最后一天保存到firstDay中,
+        // 往前推算一天判断是否是节假日,如果是就保存到firstDay中,依次类推直到不是节假日,获取到了轧账后不代扣的第一天.通过
+        //判断当天是否>=不代扣的最早一天,如果成立,不进行自动代扣,如果不成立进行自动代扣
         LocalDate now = LocalDate.now();
-        //
         LocalDate firstDay = null;
-        LocalDate lastDay = now.with(TemporalAdjusters.lastDayOfMonth());
+        //首先获取到当月最后一天
+        LocalDate tempDay = now.with(TemporalAdjusters.lastDayOfMonth());
         while (true) {
-            String autoSwitch = isHoliday(lastDay);
+            String autoSwitch = isHoliday(tempDay);
             if (StringUtils.equals("0", autoSwitch)) {
-                firstDay = lastDay;
+                firstDay = tempDay;
             } else {
                 break;
             }
-            lastDay = lastDay.minusDays(1);
+            tempDay = tempDay.minusDays(1);
         }
-        System.out.println(lastDay);
+        boolean afterOrEqual =false;
 
-        boolean afterOrEqual = now.isAfter(firstDay) || now.isEqual(firstDay);
+        if (firstDay != null){
+            afterOrEqual = now.isAfter(firstDay) || now.isEqual(firstDay);
+        }
         if (afterOrEqual) {
             //如果是轧账期间,不执行自动代扣
-            return;
+            LOGGER.info("今天{} 处于轧账时间内不自动代扣",now.toString());
         } else {
-            //如果是在轧账时间前,执行
+            //如果是在轧账时间前,执行自动代扣
             String autoSwitch = isHoliday(now);
             jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
             jobLauncher.run(autoDeduction, jobParameters);
