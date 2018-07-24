@@ -91,7 +91,6 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setPlanNo(0);
             mortgageDeduction.setType("0");
             mortgageDeduction.setPayTime(new Date());
-            mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode());
 

@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.utility;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,8 +55,8 @@ public class ExcelReader {
      * @param cell
      * @return
      */
-    public static String getCellFormatValue(HSSFCell cell) {
-        String cellvalue = "";
+    public static String getCellFormatValue(Cell cell) {
+        String cellValue = "";
         if (cell != null) {
             // 判断当前Cell的Type
             switch (cell.getCellType()) {
@@ -72,29 +73,29 @@ public class ExcelReader {
                         //方法2：这样子的data格式是不带带时分秒的：2011-10-12
                         Date date = cell.getDateCellValue();
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        cellvalue = sdf.format(date);
+                        cellValue = sdf.format(date);
 
                     }
                     // 如果是纯数字
                     else {
                         // 取得当前Cell的数值
-                        cellvalue = String.valueOf(cell.getNumericCellValue());
+                        cellValue = String.valueOf(cell.getNumericCellValue());
                     }
                     break;
                 }
                 // 如果当前Cell的Type为STRIN
                 case HSSFCell.CELL_TYPE_STRING:
                     // 取得当前的Cell字符串
-                    cellvalue = cell.getRichStringCellValue().getString();
+                    cellValue = cell.getRichStringCellValue().getString();
                     break;
                 // 默认的Cell值
                 default:
-                    cellvalue = " ";
+                    cellValue = " ";
             }
         } else {
-            cellvalue = "";
+            cellValue = "";
         }
-        return cellvalue;
+        return cellValue;
     }
 
     /**

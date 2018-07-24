@@ -83,7 +83,7 @@
                         <div>
                             <form class="form-horizontal" id="form">
                                 <table class="table-bordered">
-                                    <tr with="33%">
+                                    <tr >
                                         <td>还款开始日期</td>
                                         <td><input size="16" type="text" id="startDate" class="form_datetime"
                                                    name="startDate" style="width: 150px;"/></td>
@@ -91,32 +91,34 @@
                                         <td>
                                             <input size="16" type="text" id="endDate" class="form_datetime"
                                                    name="endDate" style="width: 150px;"/></td>
-                                        <td>客户姓名</td>
+                                        <td>操作</td>
                                         <td>
-                                            <input type="text" class="" id="customerName" name="customerName"
-                                                   style="width: 150px;"/>
+                                            <input type="button" id="queryBtn" class="btn" value="查询"/>
+                                            <input type="button" id="exportBtn"  class="btn" value="导出模板"/>
+                                            <input type='button' id='manualImportBtn'  class="btn" value='手动导入模板'/>
+                                            <input type='button' id='manualBatchDeduction'  class="btn" value='手动批量代扣'/>
                                         </td>
-                                        <td>合同号</td>
-                                        <td>
-                                            <input type="text" class="" id="contractNo" name="contractNo"
-                                                   style="width: 150px;"/></td>
 
-                                        <td rowspan="4">
-                                            <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="exportBtn" value="导出模板"/>
-                                            <input type='button' id='manualImportBtn' value='手动导入模板'/>
-                                            <input type='button' id='manualBatchDeduction' value='手动批量代扣'/>
-                                        </td>
                                     </tr>
                                     <tr>
                                         <td>交易结果</td>
                                         <td>
-                                            <select id="result"  style="width: 150px;">
+                                            <select id="result"  style="width: 150px;" >
                                                 <option value="0,1" selected>全部</option>
                                                 <option value="0">失败</option>
                                                 <option value="1">成功</option>
                                             </select>
                                         </td>
+                                        <td>合同号</td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
+                                        <td>客户姓名</td>
+                                        <td>
+                                            <input type="text" class="" id="customerName" name="customerName"
+                                                   style="width: 150px;"/>
+                                        </td>
+
 
                                     </tr>
                                 </table>
@@ -321,16 +323,6 @@
 
 
         var value = 0;
-        <!--进度条自动增长-->
-        function increment() {
-            value += 1;
-            if (value == 80) {
-                clearTimeout(st);
-                return;
-            }
-            $("#prog").css("width", value + "%")
-            st = setTimeout(increment, 500);
-        }
         <!--非管理员用户不展示手动导入模板,手动执行批量代扣按钮-->
         if(staffId != '1'){
             $("#manualImportBtn").hide();

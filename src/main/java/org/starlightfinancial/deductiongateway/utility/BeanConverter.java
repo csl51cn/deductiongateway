@@ -17,8 +17,11 @@ import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
+import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayCertTypeEnum;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.enums.RepaymentTypeEnum;
+import org.starlightfinancial.deductiongateway.service.CacheService;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -91,10 +94,10 @@ public class BeanConverter {
         chinaPayRealTimeRequestParams.setMerSplitMsg(merSplitMsg.toString());
         AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
         //首先判断协议号是否存在,如果不存在使用五要素进行交易,五要素:卡号，证件类型 ，证件号，姓名，手机号
-        if(StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())){
+        if (StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())) {
             //设置协议号
             chinaPayRealTimeRequestParams.setProtocolNo(accountManager.getUnionpayProtocolNo());
-        }else{
+        } else {
             //设置卡号
             chinaPayRealTimeRequestParams.setCardNo(mortgageDeduction.getParam3());
             //设置证件类型
@@ -146,7 +149,6 @@ public class BeanConverter {
         mortgageDeduction.setParam5(autoBatchDeduction.getCertificateType());
         //证件号
         mortgageDeduction.setParam6(autoBatchDeduction.getCertificateNo());
-
         //设置支付状态:0:失败,1:成功,2:暂无结果
         mortgageDeduction.setIssuccess("2");
         //是否发起过交易:0:是,1:否
@@ -159,6 +161,8 @@ public class BeanConverter {
         mortgageDeduction.setCreatId(113);
         mortgageDeduction.setParam1(handleBankName(mortgageDeduction.getParam1()));
         mortgageDeduction.setParam5(handleCertificateType(mortgageDeduction.getParam5()));
+        //设置是否上传自动入账表格
+        mortgageDeduction.setIsUploaded(String.valueOf(0));
         return mortgageDeduction;
     }
 
@@ -235,7 +239,7 @@ public class BeanConverter {
         //设置合同编号
         goPayBean.setContractNo(mortgageDeduction.getContractNo());
         //设置服务费的管理公司
-        goPayBean.setOrgManagerId(mortgageDeduction.getOrdId());
+        goPayBean.setOrgManagerId(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode()));
         //设置还款计划的id
         goPayBean.setRePlanId("");
         goPayBean.setSplitData1(mortgageDeduction.getSplitData1());
@@ -414,6 +418,99 @@ public class BeanConverter {
         //设置账户名
         chinaPayDelayRequestParams.setAccName(mortgageDeduction.getParam4());
         return chinaPayDelayRequestParams;
+    }
+
+    /**
+     * 将代扣数据转换为自动入账excel表格行元素对应实体类
+     *
+     * @param mortgageDeduction 代扣数据
+     * @return 自动入账excel表格行元素对应实体类
+     */
+    public AutoAccountingExcelRow transToAutoAccountingExcelRow(MortgageDeduction mortgageDeduction) {
+        AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
+        //客户名称
+        autoAccountingExcelRow.setCustomerName(mortgageDeduction.getCustomerName());
+        //合同编号
+        autoAccountingExcelRow.setContractNo(mortgageDeduction.getContractNo());
+        //还款日期
+        autoAccountingExcelRow.setRepaymentTermDate(Utility.convertToString(mortgageDeduction.getPayTime(), "yyyy/MM/dd"));
+        //入账日期
+        autoAccountingExcelRow.setAccountingDate(autoAccountingExcelRow.getRepaymentTermDate());
+        //本息
+        autoAccountingExcelRow.setPrincipalAndInterest(mortgageDeduction.getSplitData1());
+        //服务费
+        autoAccountingExcelRow.setServiceFee(mortgageDeduction.getSplitData2());
+        //服务费入账公司
+        //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 对接银联新无卡重构代码后保存的是公司名称(汉字)
+        if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+            //为数字的时候需要转换
+            if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                autoAccountingExcelRow.setServiceFeeChargeCompany("铠岳");
+            } else if (chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                autoAccountingExcelRow.setServiceFeeChargeCompany("润坤");
+            }
+        } else {
+            //为汉字的情况,直接设置
+            autoAccountingExcelRow.setServiceFeeChargeCompany(mortgageDeduction.getTarget());
+        }
+        //是否代扣
+        autoAccountingExcelRow.setIsDeduction("是");
+        //还款方式
+        String repaymentMethod = DeductionChannelEnum.getDescByCode(mortgageDeduction.getChannel());
+        if (repaymentMethod == null) {
+            repaymentMethod = mortgageDeduction.getOrderDesc() + "代扣";
+        }
+        autoAccountingExcelRow.setRepaymentMethod(repaymentMethod);
+
+        return autoAccountingExcelRow;
+    }
+
+    /**
+     * 将非代扣还款数据转换为自动入账excel表格行元素对应实体类
+     *
+     * @param nonDeductionRepaymentInfo 非代扣还款数据
+     * @return  自动入账excel表格行元素对应实体类
+     */
+    public AutoAccountingExcelRow transToAutoAccountingExcelRow(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
+        AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
+        BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
+        //客户名称
+        autoAccountingExcelRow.setCustomerName(businessTransaction.getSubject());
+        //合同编号
+        autoAccountingExcelRow.setContractNo(nonDeductionRepaymentInfo.getContractNo());
+        //还款日期
+        autoAccountingExcelRow.setRepaymentTermDate(Utility.convertToString(nonDeductionRepaymentInfo.getRepaymentTermDate(), "yyyy/MM/dd"));
+        //入账日期
+        autoAccountingExcelRow.setAccountingDate(autoAccountingExcelRow.getRepaymentTermDate());
+
+        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //本息
+            autoAccountingExcelRow.setPrincipalAndInterest(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
+        }
+
+        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //服务费
+            autoAccountingExcelRow.setServiceFee(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
+            autoAccountingExcelRow.setServiceFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+        }
+
+        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //服务费
+            autoAccountingExcelRow.setEvaluationFee(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
+            autoAccountingExcelRow.setEvaluationFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+
+        }
+        //是否代扣
+        autoAccountingExcelRow.setIsDeduction("否");
+        //还款方式
+        StringBuilder repaymentMethod = new StringBuilder(nonDeductionRepaymentInfo.getRepaymentMethod());
+        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getBankName())) {
+            repaymentMethod.append("-").append(nonDeductionRepaymentInfo.getBankName());
+        }
+        autoAccountingExcelRow.setRepaymentMethod(repaymentMethod.toString());
+        return autoAccountingExcelRow;
+
+
     }
 
 

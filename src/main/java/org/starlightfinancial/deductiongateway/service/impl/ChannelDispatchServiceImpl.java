@@ -107,7 +107,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
     @Override
     public Message queryPayResult(Integer id) {
         Message message;
-        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findById(id);
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.getOne(id);
         if (StringUtils.equals(mortgageDeduction.getType(), "1")) {
             message = Message.fail("请先进行代扣操作,再查询代扣结果");
             return message;

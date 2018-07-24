@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
 import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
+import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -42,11 +43,14 @@ public class ScheduledTaskService {
 
     public JobParameters jobParameters;
 
+    @Autowired
+    private MortgageDeductionService mortgageDeductionService;
+
     @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
         System.out.println("执行了吗");
 
-        //轧账后不进行代扣,下面是判断是否当天在不进行代扣的时间段内:从当月最后一天开始判断是否是节假日,如果是节假日将最后一天保存到firstDay中,
+        //轧账后的月底节假日不进行代扣,下面是判断是否当天在不进行代扣的时间段内:从当月最后一天开始判断是否是节假日,如果是节假日将最后一天保存到firstDay中,
         // 往前推算一天判断是否是节假日,如果是就保存到firstDay中,依次类推直到不是节假日,获取到了轧账后不代扣的第一天.通过
         //判断当天是否>=不代扣的最早一天,如果成立,不进行自动代扣,如果不成立进行自动代扣
         LocalDate now = LocalDate.now();
@@ -68,8 +72,8 @@ public class ScheduledTaskService {
             afterOrEqual = now.isAfter(firstDay) || now.isEqual(firstDay);
         }
         if (afterOrEqual) {
-            //如果是轧账期间,不执行自动代扣
-            LOGGER.info("今天{} 处于轧账时间内不自动代扣",now.toString());
+            //如果是轧账后的月底节假日,不执行自动代扣
+            LOGGER.info("今天{} 处于轧账后的月底节假日内不自动代扣",now.toString());
         } else {
             //如果是在轧账时间前,执行自动代扣
             String autoSwitch = isHoliday(now);
@@ -95,6 +99,13 @@ public class ScheduledTaskService {
             autoSwitch = "1";
         }
         return autoSwitch;
+    }
+
+//    @Scheduled(cron = "0 0/48 8-20 * * ? ")
+    @Scheduled(cron = "0 27 15 * * ? ")
+    public void uploadAutoAccountingFile(){
+        LOGGER.info("开始处理自动入账excel文档");
+        mortgageDeductionService.uploadAutoAccountingFile();
     }
 
 

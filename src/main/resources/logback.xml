@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
     scan:当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true
-    scanPeriod:设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位默认单位是毫秒，当scan为true时此属性生效，默认时间间隔为1分钟
+    scanPeriod:设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位默认单位是毫秒，当scan为true时此属性生效，默认时间间隔为1分钟.
+                单位可以有milliseconds、seconds、minutes和hours。
     debug:当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态，默认值为false
  -->
-<configuration scan="false" scanPeriod="60 seconds" debug="false">
+<configuration scan="false" scanPeriod="60 seconds" debug="true">
 
     <!-- 定义参数 -->
     <property name="log.lever" value="debug"/>
@@ -22,9 +23,9 @@
     -->
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <!-- 对日志进行格式化 -->
-        <layout class="ch.qos.logback.classic.PatternLayout">
+        <encoder>
             <pattern>${log.pattern}</pattern>
-        </layout>
+        </encoder>
     </appender>
 
     <!-- DEBUG -->

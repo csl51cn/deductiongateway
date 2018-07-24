@@ -1,3 +1,18 @@
+<!--进度条自动增长-->
+function increment() {
+    value += 1;
+    if (value == 80) {
+        clearTimeout(st);
+        return;
+    }
+    $("#prog").css("width", value + "%")
+    st = setTimeout(increment, 500);
+}
+/* -------------------- formatter  date  by yyyy-MM-dd --------------------- */
+function formatDate(strTime) {
+    var date = new Date(strTime);
+    return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+}
 /* -------------------- Check Browser --------------------- */
 
 function browser() {

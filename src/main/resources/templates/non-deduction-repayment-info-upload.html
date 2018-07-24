@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <title>导入非代扣还款信息</title>
+    <link href="/css/jquery.noty.css" rel="stylesheet">
+    <link href="/css/uploadify.css" rel="stylesheet">
+    <link href="/css/fileinput.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div th:include="common :: #navbar" th:remove="tag"></div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/non-deduction-upload.do">导入非代扣还款信息</a></li>
+            </ul>
+
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>导入非代扣还款信息</h2>
+                    </div>
+                    <div class="box-content">
+                        <form class="form-horizontal" id="fileInputForm">
+                            <fieldset>
+
+                                <div class="control-group">
+                                    <label class="control-label" for="uploadify">文件上传</label>
+                                    <div class="controls">
+                                        <input class="input-file uniform_on" id="uploadify" type="file"
+                                               name="uploadFile">
+                                        <div id="fileQueue"></div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+
+        </div><!--/row-->
+    </div><!--/.fluid-container-->
+
+    <!-- end: Content -->
+</div><!--/#content.span10-->
+</div><!--/fluid-row-->
+
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/piexif.min.js"></script>
+<script src="/js/sortable.min.js"></script>
+<script src="/js/purify.min.js"></script>
+<script src="/js/fileinput.min.js"></script>
+<script src="/js/theme.min.js"></script>
+<script src="/js/zh.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#uploadify").fileinput({
+            language: 'zh', //设置语言
+            uploadUrl: "/nonDeductionController/upload.do", //上传的地址
+            allowedFileExtensions:['xls', 'xlsx'],//['xls', 'xlsx']指定文件扩展名
+            showUpload: true, //是否显示上传按钮
+            showCaption: true,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            maxFileCount: 10,//最大上传文件数限制
+            uploadAsync: true,
+            maxFileSize: 10240
+        });
+        //导入文件上传完成之后的事件
+        $("#uploadify").on("fileuploaded", function (event, data, previewId, index) {
+            var result = data.response.result;
+            var msg = data.response.msg;
+            if ("1" == result) {
+                noty({'text':  msg + '上传成功,请到非代扣还款数据查看', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+            } else {
+                noty({'text':  '上传失败,'+ msg, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            }
+        })
+    })
+</script>
+<!--end : JavaScript-->
+</body>
+</html>

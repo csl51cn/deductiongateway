@@ -85,7 +85,42 @@
                             <h4 class="modal-title" id="signModalLabel">快捷支付签约</h4>
                         </div>
                         <div class="modal-body" id="signModalBody">
-
+                            <div id="tableInfo" >
+                                <table class="table table-bordered table-hover">
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">合同号:</td>
+                                        <td id="contractNoInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">账户名:</td>
+                                        <td id="accountNameInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">开户行:</td>
+                                        <td id="bankNameInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">卡号:</td>
+                                        <td id="accountInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">证件类型:</td>
+                                        <td id="certificateTypeInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">证件号码:</td>
+                                        <td id="certificateNoInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">银联协议号:</td>
+                                        <td id="unionPayProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">宝付协议号:</td>
+                                        <td id="baoFuProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
@@ -106,6 +141,49 @@
                             <h4 class="modal-title" id="moreInfoModalLabel">代扣信息</h4>
                         </div>
                         <div class="modal-body" id="moreInfoBody">
+                            <div id="signTableInfo" >
+                                <div><img src="" id="channelLogo" style="max-width:25%;"></div>
+                                <table class="table table-bordered table-hover">
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">账户名:</td>
+                                        <td style="width: 200px;text-align: left;">
+                                            <input type="text" id="accountNameInContractTable" name="accountNameInContractTable"/>
+                                            <input type="hidden" id="channelMarking" name="channelMarking">
+                                            <input type="hidden" id="id" name="id">
+                                            <input type="hidden" id="merOrderNo" name="merOrderNo">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">卡号:</td>
+                                        <td style="width: 200px;text-align: left;">
+                                            <input type="text" id="account" name="account"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">证件类型:</td>
+                                        <td style="width: 200px;text-align: left;">
+                                            <input type="text" id="certificateType" name="certificateType"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">证件号:</td>
+                                        <td style="width: 200px;text-align: left;">
+                                            <input type="text" id="certificateNo" name="certificateNo"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">手机号:</td>
+                                        <td style="width: 200px;text-align: left;"><input type="text" id="mobile" name="mobile"/></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">短信验证码:</td>
+                                        <td style="width: 200px;text-align: left;"><input type="text" id="smsCode"
+                                                                                          name="smsCode"/>
+                                            <input type="button" class="sendSmsCodeBtn" value="获取短信验证码"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -129,9 +207,9 @@
                                         <td>账户名</td>
                                         <td><input type="text" class="" id="accountName" name="accountName"/></td>
                                         <td>
-                                            <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="addBtn" value="新增"/>
-                                            <!--<input type="button" id="importBtn" value="批量更新代扣卡"/>-->
+                                            <input type="button" id="queryBtn" class="btn" value="查询"/>
+                                            <!--<input type="button" id="addBtn" class="btn"  value="新增"/>-->
+                                            <input type="button" id="importBtn"  class="btn" value="批量更新代扣卡"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -153,84 +231,7 @@
     </p>
 </footer>
 
-<div id="signTableInfo" style="display: none">
-    <div><img src="" id="channelLogo" style="max-width:25%;"></div>
-    <table class="table table-bordered table-hover">
-        <tr>
-            <td style="width: 100px;text-align: right;">账户名:</td>
-            <td style="width: 200px;text-align: left;">
-                <input type="text" id="accountNameInContractTable" name="accountNameInContractTable"/>
-                <input type="hidden" id="channelMarking" name="channelMarking">
-                <input type="hidden" id="id" name="id">
-                <input type="hidden" id="merOrderNo" name="merOrderNo">
-            </td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">卡号:</td>
-            <td style="width: 200px;text-align: left;">
-                <input type="text" id="account" name="account"/></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">证件类型:</td>
-            <td style="width: 200px;text-align: left;">
-                <input type="text" id="certificateType" name="certificateType"/>
-            </td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">证件号:</td>
-            <td style="width: 200px;text-align: left;">
-                <input type="text" id="certificateNo" name="certificateNo"/></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">手机号:</td>
-            <td style="width: 200px;text-align: left;"><input type="text" id="mobile" name="mobile"/></td>
-        </tr>
 
-        <tr>
-            <td style="width: 100px;text-align: right;">短信验证码:</td>
-            <td style="width: 200px;text-align: left;"><input type="text" id="smsCode"
-                                                              name="smsCode"/>
-                <input type="button" class="sendSmsCodeBtn" value="获取短信验证码"/></td>
-        </tr>
-    </table>
-</div>
-
-<div id="tableInfo" style="display: none">
-    <table class="table table-bordered table-hover">
-        <tr>
-            <td style="width: 100px;text-align: right;">合同号:</td>
-            <td id="contractNoInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">账户名:</td>
-            <td id="accountNameInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">开户行:</td>
-            <td id="bankNameInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">卡号:</td>
-            <td id="accountInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">证件类型:</td>
-            <td id="certificateTypeInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">证件号码:</td>
-            <td id="certificateNoInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">银联协议号:</td>
-            <td id="unionPayProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-        <tr>
-            <td style="width: 100px;text-align: right;">宝付协议号:</td>
-            <td id="baoFuProtocolInTableInfo" style="width: 200px;text-align: left;"></td>
-        </tr>
-    </table>
-</div>
 
 
 <!-- start: JavaScript-->
@@ -271,8 +272,7 @@
                         $("#channelMarking").attr("value", "0001");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/unionpay.png");
-
-                        $("#signModalBody").html($("#signTableInfo").html());
+                        // $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
                 }
@@ -309,8 +309,6 @@
                         $("#channelMarking").attr("value", "0002");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/baofu.png");
-
-                        $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
                 }
@@ -376,71 +374,74 @@
                 if (!v) return '证件号码不能为空';
             }
         }
-    }, {
-        field: 'mobile',
-        title: '手机号',
-        editable: {
-            type: 'text',
-            title: '手机号',
-            validate: function (v) {
-                if (!v) return '手机号不能为空';
-            }
-        }
-    }, {
-        field: 'unionpayIsSigned',
-        title: '银联签约',
-        formatter: function (value, row, index) {
-            if (value == 1) {
-                return "已签约";
-            } else {
-                return "未签约";
-            }
-        },
-        cellStyle:function(value,row,index){
-            var cssObject  = {};
-
-            if (value==1){
-                cssObject.color = "green";
-            }else{
-                cssObject.color = "red";
-            }
-            if (index % 2 == 0){
-                cssObject.background = "#fff"
-            }else{
-                cssObject.background ="#aaa"
-            }
-
-            return {css:{"color":cssObject.color,"background":cssObject.background}};
-        }
     },
+    //     {
+    //     field: 'mobile',
+    //     title: '手机号',
+    //     editable: {
+    //         type: 'text',
+    //         title: '手机号',
+    //         validate: function (v) {
+    //             if (!v) return '手机号不能为空';
+    //         }
+    //     }
+    // } ,
+    //   {
+    //     field: 'unionpayIsSigned',
+    //     title: '银联签约',
+    //     formatter: function (value, row, index) {
+    //         if (value == 1) {
+    //             return "已签约";
+    //         } else {
+    //             return "未签约";
+    //         }
+    //     },
+    //     cellStyle:function(value,row,index){
+    //         var cssObject  = {};
+    //
+    //         if (value==1){
+    //             cssObject.color = "green";
+    //         }else{
+    //             cssObject.color = "red";
+    //         }
+    //         if (index % 2 == 0){
+    //             cssObject.background = "#fff"
+    //         }else{
+    //             cssObject.background ="#aaa"
+    //         }
+    //
+    //         return {css:{"color":cssObject.color,"background":cssObject.background}};
+    //     }
+    // },
+    //     {
+    //         field: 'baofuIsSigned',
+    //         title: '宝付签约',
+    //         formatter: function (value, row, index) {
+    //             if (value == 1) {
+    //                 return "已签约";
+    //             } else {
+    //                 return "未签约";
+    //             }
+    //
+    //         },
+    //         cellStyle:function(value,row,index){
+    //             var cssObject  = {};
+    //
+    //             if (value==1){
+    //                 cssObject.color = "green";
+    //             }else{
+    //                 cssObject.color = "red";
+    //             }
+    //             if (index % 2 == 0){
+    //                 cssObject.background = "#fff"
+    //             }else{
+    //                 cssObject.background ="#aaa"
+    //             }
+    //
+    //             return {css:{"color":cssObject.color,"background":cssObject.background}};
+    //         }
+    //     },
         {
-            field: 'baofuIsSigned',
-            title: '宝付签约',
-            formatter: function (value, row, index) {
-                if (value == 1) {
-                    return "已签约";
-                } else {
-                    return "未签约";
-                }
-
-            },
-            cellStyle:function(value,row,index){
-                var cssObject  = {};
-
-                if (value==1){
-                    cssObject.color = "green";
-                }else{
-                    cssObject.color = "red";
-                }
-                if (index % 2 == 0){
-                    cssObject.background = "#fff"
-                }else{
-                    cssObject.background ="#aaa"
-                }
-
-                return {css:{"color":cssObject.color,"background":cssObject.background}};
-            }
-        }, {
             field: 'sort',
             title: '扣款顺序',
             editable: {
@@ -461,12 +462,14 @@
                     if (!v) return '不能为空';
                 }
             }
-        }, {
-            field: 'operate',
-            title: '操作',
-            events: operateEvents,
-            formatter: operateFormatter
-        }];
+        },
+        // {
+        //     field: 'operate',
+        //     title: '操作',
+        //     events: operateEvents,
+        //     formatter: operateFormatter
+        // }
+        ];
 
     $(function () {
         function initTable() {
@@ -537,7 +540,6 @@
                         $("#certificateNoInTableInfo").html(row.certificateNo);
                         $("#unionPayProtocolInTableInfo").html(row.unionpayProtocolNo);
                         $("#baoFuProtocolInTableInfo").html(row.baofuProtocolNo);
-                        $("#moreInfoBody").html($("#tableInfo").html());
                         $("#moreInfoModal").modal();
                     }
                     return false;
@@ -635,15 +637,15 @@
         });
 
 
-        <!--签约窗口隐藏时,清空modal-body数据-->
-        $('#signModal').on('hidden.bs.modal', function () {
-            $(this).find(".modal-body").empty();
-        });
-
-        <!--更多信息窗口隐藏时,清空modal-body数据-->
-        $('#moreInfoModal').on('hidden.bs.modal', function () {
-            $(this).find(".modal-body").empty();
-        });
+        // <!--签约窗口隐藏时,清空modal-body数据-->
+        // $('#signModal').on('hidden.bs.modal', function () {
+        //     $(this).find(".modal-body").empty();
+        // });
+        //
+        // <!--更多信息窗口隐藏时,清空modal-body数据-->
+        // $('#moreInfoModal').on('hidden.bs.modal', function () {
+        //     $(this).find(".modal-body").empty();
+        // });
 
         <!--查询按钮功能-->
         $("#queryBtn").click(function () {
@@ -729,17 +731,6 @@
 
 
         var value = 0;
-
-        <!--进度条自动增长-->
-        function increment() {
-            value += 1;
-            if (value == 80) {
-                clearTimeout(st);
-                return;
-            }
-            $("#prog").css("width", value + "%")
-            st = setTimeout(increment, 500);
-        }
 
 
     })

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <title>关联还款人</title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-editable.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div th:include="common :: #navbar" th:remove="tag"></div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/associate-payer.do">关联还款人</a></li>
+            </ul>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="editModal" style="width: 600px">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title" id="modalTitle">新增关联还款人</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editForm"  class="form-horizontal">
+                                <table class="table">
+                                    <tbody>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_contract_no">合同编号</label></td>
+                                        <td><input type="text" name="contractNo" id="txt_contract_no" placeholder="合同编号">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_payer1">关联还款人1</label></td>
+                                        <td><input type="text" name="payer1" id="txt_payer1" placeholder="关联还款人1">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_payer2">关联还款人2</label></td>
+                                        <td><input type="text" name="payer2" id="txt_payer2" placeholder="关联还款人2">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_payer3">关联还款人3</label></td>
+                                        <td><input type="text" name="payer3" id="txt_payer3" placeholder="关联还款人3">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_payer4">关联还款人4</label></td>
+                                        <td><input type="text" name="payer4" id="txt_payer4" placeholder="关联还款人4">
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>限额管理</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form class="form-horizontal" id="form">
+                                <table class="table-bordered">
+                                    <tr with="33%">
+                                        <td>合同号</td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
+                                        <td>
+                                            <input type="button" class="btn btn-info" id="queryBtn" value="查询"/>
+                                            <input type="button" class="btn " id="addBtn" value="新增"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <table id="table"></table>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-editable.min.js"></script>
+<script src="/js/bootstrap-table-editable.min.js"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+    var staffId = [[${session.loginUser.staffId}]];
+    var columns = [{
+        field: 'state',
+        checkbox: true
+    }, {
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
+        field: 'id',
+        title: 'id'
+    }, {
+        field: 'dateId',
+        title: 'dateId'
+    }, {
+        field: 'contractNo',
+        title: '合同编号',
+    }, {
+        field: 'payer1',
+        title: '关联还款人1',
+        editable: {
+            type: 'text',
+            title: '关联还款人1编辑'
+        },
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        }
+    }, {
+        field: 'payer2',
+        title: '关联还款人2',
+        editable: {
+            type: 'text',
+            title: '关联还款人2编辑'
+        },
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        }
+    }, {
+        field: 'payer3',
+        title: '关联还款人3',
+        editable: {
+            type: 'text',
+            title: '关联还款人3编辑'
+        },
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        }
+    }, {
+        field: 'payer4',
+        title: '关联还款人4',
+        editable: {
+            type: 'text',
+            title: '关联还款人4编辑'
+        },
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        }
+    }];
+    $(function () {
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/associatePayerController/queryAssociatePayer.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 30,
+                pageList: [10, 20, 30, 50, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                clickEdit: true,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                },
+                onEditableSave: function (field, row, oldValue, $el) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211) {
+                        $.ajax({
+                            type: "post",
+                            url: "/associatePayerController/updateAssociatePayer.do",
+                            data: row,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                if (data == "1") {
+                                    noty({
+                                        'text': '执行完成',
+                                        'layout': 'center',
+                                        'type': 'information',
+                                        "timeout": "4000"
+                                    });
+                                } else {
+                                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                }
+                            },
+                            error: function () {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        })
+                    } else {
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                    ;
+                }
+            });
+        };
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+        $('#table').bootstrapTable('hideColumn', 'dateId');
+
+        function queryParams() {
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                contractNo: $("#contractNo").val()
+            }
+        };
+        <!--新增按钮功能-->
+        $("#addBtn").click(function () {
+            $("#editForm")[0].reset();
+            $("#editModal").modal();
+
+        });
+        <!--新增限额模态框中的确认按钮功能-->
+        $(".btn-success").click(function () {
+            $.ajax({
+                type: "post",
+                url: "/associatePayerController/saveAssociatePayer.do",
+                data: $("#editForm").serialize(),
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data == "1") {
+                        setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                        if (data == "1") {
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                }
+            });
+        });
+
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

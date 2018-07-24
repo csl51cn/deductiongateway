@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
-import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.service.ReconciliationService;
 import org.starlightfinancial.deductiongateway.service.SystemService;
@@ -81,7 +80,7 @@ public class MortgageDeductionController {
             return map;
         }
         systemService.saveMD5(md5ByFile);
-        mortgageDeductionService.importCustomerData(uploadFile, getLoginUserId(session));
+        mortgageDeductionService.importCustomerData(uploadFile, Utility.getLoginUserId(session));
         map.put("result", "1");
         map.put("msg", uploadFile.getOriginalFilename());
         return map;
@@ -103,7 +102,7 @@ public class MortgageDeductionController {
     @ResponseBody
     public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, HttpSession session) {
         endDate = Utility.toMidNight(endDate);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, contractNo.trim(), getLoginUserId(session));
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, contractNo.trim(), Utility.getLoginUserId(session));
         return Utility.pageBean2Map(pageBean);
     }
 
@@ -158,6 +157,12 @@ public class MortgageDeductionController {
     }
 
 
+    /**
+     * 删除记录
+     *
+     * @param ids 记录id
+     * @return
+     */
     @RequestMapping(value = "/mortgageDeductionController/deleteMortgageDeductions")
     @ResponseBody
     public String deleteMortgageDeductions(String ids) {
@@ -199,15 +204,4 @@ public class MortgageDeductionController {
 
     }
 
-
-    /**
-     * 获取登录用户StaffId
-     *
-     * @param session
-     * @return
-     */
-    private int getLoginUserId(HttpSession session) {
-        SysUser loginUser = (SysUser) session.getAttribute("loginUser");
-        return Integer.parseInt(loginUser.getStaffId());
-    }
 }

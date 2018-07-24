@@ -130,6 +130,14 @@ public class MortgageDeduction {
     private String channel;
 
 
+    /**
+     * 是否上传自动入账文件:0-否,1-是
+     */
+    @Column(name = "is_uploaded")
+    private String  isUploaded;
+
+
+
     public MortgageDeduction() {
     }
 
@@ -400,4 +408,14 @@ public class MortgageDeduction {
     public void setChannel(String channel) {
         this.channel = channel;
     }
+
+    public String getIsUploaded() {
+        return isUploaded;
+    }
+
+    public void setIsUploaded(String isUploaded) {
+        this.isUploaded = isUploaded;
+    }
+
+
 }

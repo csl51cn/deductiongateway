@@ -80,4 +80,8 @@ public interface MortgageDeductionService {
      */
     void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
 
+    /**
+     * 自动上传代扣成功的记录
+     */
+    void uploadAutoAccountingFile();
 }

@@ -33,11 +33,4 @@ public interface AccountManagerRepository extends JpaRepository<AccountManager, 
      */
     AccountManager findByDateIdAndAccountAndAccountNameAndCertificateNo(Integer dateId, String account, String accountName, String certificationNo);
 
-    /**
-     * 根据id查询代扣卡信息
-     * @param id
-     * @return
-     */
-    AccountManager findById(Integer id);
-
 }

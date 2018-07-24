@@ -64,7 +64,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
      */
     @Override
     public Message queryIsSigned(Integer id) {
-        AccountManager accountManager = accountManagerRepository.findById(id);
+        AccountManager accountManager = accountManagerRepository.getOne(id);
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("accNo", accountManager.getAccount()));
 
@@ -168,7 +168,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
     @Override
     public Message sign(AccountManager accountManager) {
         Message message = null;
-        AccountManager accountManagerById = accountManagerRepository.findById(accountManager.getId());
+        AccountManager accountManagerById = accountManagerRepository.getOne(accountManager.getId());
         //格式：预签约唯一码|短信验证码
         String uniqueCode = accountManager.getMerOrderNo() + "|" + accountManager.getSmsCode();
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();

@@ -122,7 +122,7 @@
                                 <table class="table-bordered">
                                     <tr with="33%">
                                         <td>
-                                            <input type="button" id="addBtn" value="新增"/>
+                                            <input type="button" id="addBtn" class="btn" value="新增"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -250,7 +250,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 1250) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 ||  staffId == 1211 ) {
                         $.ajax({
                             type: "post",
                             url: "/limitManagerController/saveOrUpdateLimit.do",
@@ -288,10 +288,7 @@
         function queryParams() {
             return {
                 pageNumber: this.pageNumber,
-                pageSize: this.pageSize,
-                contractNo: $("#contractNo").val(),
-                bizNo: $("#bizNo").val(),
-                accountName: $("#accountName").val()
+                pageSize: this.pageSize
             }
         };
         <!--新增按钮功能-->

@@ -3,10 +3,16 @@ package org.starlightfinancial.deductiongateway.utility;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -92,11 +98,13 @@ public class Utility {
      * @param checkValue
      * @return
      */
-    public static boolean checkBigDecimal2(BigDecimal checkValue)// 判断大于0
-    {
+    public static boolean checkBigDecimal2(BigDecimal checkValue)
+    {   // 判断大于0
         if (checkValue != null
-                && checkValue.compareTo(new BigDecimal("0.00")) == 1)
+                && checkValue.compareTo(new BigDecimal("0.00")) == 1){
             return true;
+        }
+
         return false;
     }
 
@@ -110,7 +118,7 @@ public class Utility {
     public static Date addDay(Date date, Integer days) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(calendar.DATE, days);
+        calendar.add(Calendar.DATE, days);
         return calendar.getTime();
     }
 
@@ -123,9 +131,12 @@ public class Utility {
     public static Date toMidNight(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR); //年
-        int month = calendar.get(Calendar.MONTH);//月
-        int day = calendar.get(Calendar.DAY_OF_MONTH); //日
+        //年
+        int year = calendar.get(Calendar.YEAR);
+        //月
+        int month = calendar.get(Calendar.MONTH);
+        //日
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
         calendar.set(year, month, day, 23, 59, 59);
         return calendar.getTime();
     }
@@ -154,7 +165,7 @@ public class Utility {
     /**
      * 获取访问用户的客户端IP（适用于公网与局域网）.
      */
-    public static final String getIpAddress(final HttpServletRequest request)
+    public static  String getIpAddress(final HttpServletRequest request)
             throws Exception {
         if (request == null) {
             throw (new Exception("getIpAddress method HttpServletRequest Object is null"));
@@ -181,4 +192,43 @@ public class Utility {
 
         return ipString;
     }
+
+
+    /**
+     * 获取登录用户StaffId
+     *
+     * @param session 会话session
+     * @return 用户StaffId
+     */
+    public static int getLoginUserId(HttpSession session) {
+        SysUser loginUser = (SysUser) session.getAttribute("loginUser");
+        return Integer.parseInt(loginUser.getStaffId());
+    }
+
+
+    /**
+     * Date 转换为 LocalDate
+     *
+     * @param date 需要转换的Date
+     * @return 返回转换后的LocalDate
+     */
+    public static LocalDate getLocalDate(Date date) {
+        Instant instant = date.toInstant();
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
+        return zonedDateTime.toLocalDate();
+    }
+
+
+    /**
+     * LocalDate 转换为 Date
+     *
+     * @param localDate 需要转换的LocalDate
+     * @return 返回转换后的Date
+     */
+    public static Date getDate(LocalDate localDate) {
+        Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
+    }
+
+
 }

@@ -78,9 +78,11 @@ public enum DeductionChannelEnum {
     }
 
     public static String getDescByCode(String code) {
-        for (DeductionChannelEnum deductionChannelEnum : DeductionChannelEnum.values()) {
-            if (code.equals(deductionChannelEnum.getCode())) {
-                return deductionChannelEnum.getDeductionChannelDesc();
+        if (code != null) {
+            for (DeductionChannelEnum deductionChannelEnum : DeductionChannelEnum.values()) {
+                if (code.equals(deductionChannelEnum.getCode())) {
+                    return deductionChannelEnum.getDeductionChannelDesc();
+                }
             }
         }
         return null;

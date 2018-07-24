@@ -102,9 +102,9 @@ public class ChannelDispatchController {
             if (StringUtils.isEmpty(ids)) {
                 return "请选择一条记录进行代扣";
             }
-            String ipAddr = Utility.getIpAddress(request);
+            String ipAddress = Utility.getIpAddress(request);
             LOGGER.info("执行代扣,操作人员:{},发起请求ip:{},代扣记录ids:{},是(1)否(0)重新生成记录:{},代扣渠道",
-                    ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddr, ids, reGenerate,channel);
+                    ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddress, ids, reGenerate,channel);
 
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
             ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
@@ -119,6 +119,7 @@ public class ChannelDispatchController {
                     newMortgageDeduction.setType("1");
                     newMortgageDeduction.setCreateDate(new Date());
                     newMortgageDeduction.setCheckState(null);
+                    newMortgageDeduction.setIsUploaded("0");
                     mortgageDeductionList.add(newMortgageDeduction);
                 }
                 list = mortgageDeductionList;
