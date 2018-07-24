@@ -102,7 +102,7 @@ public class ScheduledTaskService {
     }
 
 //    @Scheduled(cron = "0 0/48 8-20 * * ? ")
-    @Scheduled(cron = "0 27 15 * * ? ")
+    @Scheduled(cron = "0 13 17 * * ? ")
     public void uploadAutoAccountingFile(){
         LOGGER.info("开始处理自动入账excel文档");
         mortgageDeductionService.uploadAutoAccountingFile();

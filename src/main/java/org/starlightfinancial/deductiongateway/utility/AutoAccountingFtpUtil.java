@@ -4,13 +4,12 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 
 import java.io.*;
 import java.net.ConnectException;
-import java.util.Properties;
 
 /**
  * @author: Senlin.Deng
@@ -40,21 +39,13 @@ public class AutoAccountingFtpUtil {
      */
     private static String password;
 
+    private static Environment environment = SpringContextUtil.getBean(Environment.class);
+
     static{
-        Properties properties = new Properties();
-        InputStream resourceAsStream = AutoAccountingFtpUtil.class.getResourceAsStream("/ftp.properties");
-        try {
-            properties.load(resourceAsStream);
-            server=(String) properties.get("ftp.auto_accounting.server");
-            port = Integer.parseInt((String)properties.get("ftp.auto_accounting.port")) ;
-            username = (String) properties.get("ftp.auto_accounting.username");
-            password = (String) properties.get("ftp.auto_accounting.password");
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error("加载自动入账FTP配置失败.");
-        }finally {
-            IOUtils.closeQuietly(resourceAsStream);
-        }
+        server=  environment.getProperty("ftp.auto_accounting.server");
+        port = Integer.parseInt(environment.getProperty("ftp.auto_accounting.port")) ;
+        username =  environment.getProperty("ftp.auto_accounting.username");
+        password =  environment.getProperty("ftp.auto_accounting.password");
     }
 
 
