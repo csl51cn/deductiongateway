@@ -90,7 +90,7 @@ public class NonDeductionRepaymentInfo {
 
 
     /**
-     * 信息是否完整:判断标准是否有对应的dateId
+     * 信息是否完整:判断标准是否有对应的合同号
      */
     @Column(name = "is_integrated")
     private String isIntegrated;

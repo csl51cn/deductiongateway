@@ -598,13 +598,13 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             return;
         }
 
-        //设置为已上传
+        //设置为已上传,并更新
         mortgageDeductions.forEach(
                 mortgageDeduction -> {
                     mortgageDeduction.setIsUploaded(String.valueOf("1"));
+                    mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 }
         );
-        mortgageDeductionRepository.save(mortgageDeductions);
 
     }
 

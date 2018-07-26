@@ -87,6 +87,7 @@
                                             <input type="button" class="btn btn-info" id="queryBtn" value="查询"/>
                                             <input type="button" class="btn " id="addBtn" value="新增"/>
                                             <input type="button" class="btn " id="uploadBtn" value="上传自动入账文件"/>
+                                            <input type="button" class="btn " id="freshBtn" value="重新尝试匹配"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -581,7 +582,7 @@
                 dataType: 'JSON',
                 success: function (data) {
                     if (data == "1") {
-                        setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                        setTimeout(query, 4000);
                         if (data == "1") {
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
@@ -618,7 +619,7 @@
                         value = 0;
                         $('#myModal').modal('hide');
                         if ("1" == data) {
-                            setTimeout("location.reload();", 4020);
+                            setTimeout(query(), 4020);
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                         } else {
                             if (data.length > 5) {
@@ -652,6 +653,39 @@
             repaymentMethodNode.append("<option value='" + repaymentMethod[i] + "'>" + repaymentMethod[i] + "</option>");
         }
 
+        $("#freshBtn").click(function () {
+            value = 0;
+            increment();
+            $('#myModal').modal('show');
+            $.ajax({
+                url: "/nonDeductionController/retrySearchBusinessTransactionInfo.do",
+                timeout: 1800000,
+                method: "POST",
+                data: {"startDate":$("#startDate").val(),"endDate":$("#endDate").val()},
+                success: function (data) {
+                    value = 0;
+                    $('#myModal').modal('hide');
+                    if ("1" == data) {
+                       setTimeout(query(), 4020);
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        if (data.length > 5) {
+                            noty({
+                                'text': '刷新失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                }
+            })
+
+
+        })
 
     })
 </script>

@@ -188,4 +188,25 @@ public class NonDeductionRepaymentInfoController {
     }
 
 
+    /**
+     * 刷新CacheService,重新尝试查找匹配的业务信息
+     *
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param session   会话session
+     * @return 执行结果
+     */
+    @RequestMapping(value = "/retrySearchBusinessTransactionInfo.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session) {
+        try {
+            nonDeductionRepaymentInfoService.retrySearchBusinessTransactionInfo(startDate,endDate,session);
+            return "1";
+        } catch (Exception e) {
+            LOGGER.debug("重新尝试查找匹配的业务信息失败", e);
+            return "0";
+        }
+    }
+
+
 }

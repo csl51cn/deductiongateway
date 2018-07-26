@@ -68,4 +68,13 @@ public interface NonDeductionRepaymentInfoService {
      * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
      */
     void splitNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, Long originalNonDeductionRepaymentInfoId);
+
+    /**
+     * 刷新CacheService,重新尝试查找匹配的业务信息
+     *
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param session   会话session
+     */
+    void retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session);
 }

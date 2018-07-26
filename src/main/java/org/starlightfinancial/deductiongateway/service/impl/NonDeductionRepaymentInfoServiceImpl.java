@@ -238,6 +238,36 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     }
 
     /**
+     * 刷新CacheService,重新尝试查找匹配的业务信息
+     *
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param session   会话session
+     * @param session   会话session
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session) {
+        //首先刷新缓存服务
+        CacheService.refresh();
+        //查找信息不完整的非代扣还款信息
+        List<NonDeductionRepaymentInfo> notIntegratedList = nonDeductionRepaymentInfoRepository.findByRepaymentTermDateBetweenAndIsIntegrated(startDate, endDate, String.valueOf(0));
+        //查找匹配的业务信息
+        notIntegratedList.forEach(nonDeductionRepaymentInfo -> {
+            setBusinessTransactionInfo(nonDeductionRepaymentInfo);
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getIsIntegrated(), "1")) {
+                nonDeductionRepaymentInfo.setModifiedId(Utility.getLoginUserId(session));
+                nonDeductionRepaymentInfo.setGmtModified(new Date());
+            }
+        });
+
+        //筛选出找到匹配的业务信息的非代扣还款信息,并更新
+        notIntegratedList.stream().filter(nonDeductionRepaymentInfo -> StringUtils.equals(nonDeductionRepaymentInfo.getIsIntegrated(), "1")).forEach(nonDeductionRepaymentInfo -> nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo));
+
+
+    }
+
+    /**
      * 设置非代扣还款数据的业务信息
      *
      * @param nonDeductionRepaymentInfo 非代扣还款数据
@@ -254,7 +284,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             }
         }
         //判断数据是否完整
-        if (nonDeductionRepaymentInfo.getDateId() != null) {
+        if (StringUtils.isNotEmpty(nonDeductionRepaymentInfo.getContractNo())) {
             nonDeductionRepaymentInfo.setIsIntegrated(String.valueOf(1));
         } else {
             nonDeductionRepaymentInfo.setIsIntegrated(String.valueOf(0));

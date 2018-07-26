@@ -133,7 +133,6 @@ public class AutoAccountUploadService {
             //还款方式
             cell = row.createCell(21);
             cell.setCellValue(autoAccountingExcelRow.getRepaymentMethod());
-            System.out.println(i);
             i++;
         }
         return workbook;
@@ -154,6 +153,5 @@ public class AutoAccountUploadService {
         fileName.append(Utility.convertToString(new Date(), "yyyyMMdd_HHmmss"));
         fileName.append(".xls");
         AutoAccountingFtpUtil.upload(fileName.toString(), is);
-        LOGGER.info("上传自动入账文件成功,文件名{}", fileName.toString());
     }
 }
