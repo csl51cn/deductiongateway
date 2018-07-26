@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +72,8 @@ public class NonDeductionRepaymentInfoController {
      */
     @RequestMapping(value = "/queryNonDeductionRepaymentInfo.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Map<String, Object> queryNonDeductionRepaymentInfo(PageBean pageBean, Date startDate, Date endDate, String customerName, String contractNo) {
-        PageBean result = nonDeductionRepaymentInfoService.queryNonDeductionRepaymentInfo(pageBean, startDate, endDate, customerName, contractNo);
+    public Map<String, Object> queryNonDeductionRepaymentInfo(PageBean pageBean, Date startDate, Date endDate, String customerName, String contractNo, String isIntegrated) {
+        PageBean result = nonDeductionRepaymentInfoService.queryNonDeductionRepaymentInfo(pageBean, startDate, endDate, customerName, contractNo, isIntegrated);
         return Utility.pageBean2Map(result);
     }
 
@@ -81,6 +82,7 @@ public class NonDeductionRepaymentInfoController {
      * 新增非代扣还款信息
      *
      * @param nonDeductionRepaymentInfo 由页面传入的非代扣还款信息
+     * @param session                   会话session
      * @return
      */
     @RequestMapping(value = "/saveNonDeduction.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -134,15 +136,19 @@ public class NonDeductionRepaymentInfoController {
 
     /**
      * 上传自动入账excel文件
+     *
      * @param ids 一个或多个记录的id
      * @return
      */
     @RequestMapping(value = "/uploadAutoAccountingFile.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     @SameUrlData
-    public  String  uploadAutoAccountingFile(String ids){
+    public String uploadAutoAccountingFile(String ids, HttpSession session) {
+        if (StringUtils.isEmpty(ids)) {
+            return "请选择一条记录上传";
+        }
         try {
-            nonDeductionRepaymentInfoService.uploadAutoAccountingFile(ids);
+            nonDeductionRepaymentInfoService.uploadAutoAccountingFile(ids, session);
             return "1";
         } catch (IOException e) {
             e.printStackTrace();
@@ -151,9 +157,35 @@ public class NonDeductionRepaymentInfoController {
     }
 
 
-
-
-
+    /**
+     * 拆分非代扣还款信息
+     *
+     * @param nonDeductionRepaymentInfo           由页面传入的非代扣还款信息
+     * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
+     * @param session                             会话session
+     * @return 拆分结果
+     */
+    @RequestMapping(value = "/splitNonDeduction.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String splitNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, Long originalNonDeductionRepaymentInfoId, HttpSession session) {
+        //设置是否已上传自动入账文件
+        nonDeductionRepaymentInfo.setIsUploaded(String.valueOf(0));
+        //设置创建时间
+        nonDeductionRepaymentInfo.setGmtCreate(new Date());
+        //设置修改时间
+        nonDeductionRepaymentInfo.setGmtModified(nonDeductionRepaymentInfo.getGmtCreate());
+        //设置创建人id
+        nonDeductionRepaymentInfo.setCreateId(Utility.getLoginUserId(session));
+        //设置修改人id
+        nonDeductionRepaymentInfo.setModifiedId(nonDeductionRepaymentInfo.getCreateId());
+        try {
+            nonDeductionRepaymentInfoService.splitNonDeduction(nonDeductionRepaymentInfo, originalNonDeductionRepaymentInfoId);
+            return "1";
+        } catch (Exception e) {
+            LOGGER.debug("拆分非代扣还款信息失败", e);
+            return "0";
+        }
+    }
 
 
 }

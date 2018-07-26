@@ -35,6 +35,7 @@ public class AutoAccountUploadService {
 
     private static ChinaPayConfig chinaPayConfig = SpringContextUtil.getBean(ChinaPayConfig.class);
 
+
     /**
      * 生成自动入账excel文档
      *
@@ -132,6 +133,7 @@ public class AutoAccountUploadService {
             //还款方式
             cell = row.createCell(21);
             cell.setCellValue(autoAccountingExcelRow.getRepaymentMethod());
+            System.out.println(i);
             i++;
         }
         return workbook;
@@ -148,7 +150,10 @@ public class AutoAccountUploadService {
         workbook.write(os);
         byte[] content = os.toByteArray();
         InputStream is = new ByteArrayInputStream(content);
-        AutoAccountingFtpUtil.upload("/AutoAccouting/" + Utility.convertToString(new Date(), "yyyyMMdd_HHmmss") + ".xls", is);
-        LOGGER.info("上传自动入账文件成功");
+        StringBuilder fileName = new StringBuilder("/AutoAccouting/");
+        fileName.append(Utility.convertToString(new Date(), "yyyyMMdd_HHmmss"));
+        fileName.append(".xls");
+        AutoAccountingFtpUtil.upload(fileName.toString(), is);
+        LOGGER.info("上传自动入账文件成功,文件名{}", fileName.toString());
     }
 }

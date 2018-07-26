@@ -32,9 +32,10 @@ public interface NonDeductionRepaymentInfoService {
      * @param endDate      还款结束时间
      * @param customerName 客户名称
      * @param contractNo   合同号
+     * @param isIntegrated 是否完整
      * @return 返回根据条件查询到的记录
      */
-    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, Date startDate, Date endDate, String customerName, String contractNo);
+    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, Date startDate, Date endDate, String customerName, String contractNo, String isIntegrated);
 
     /**
      * 保存记录
@@ -53,8 +54,18 @@ public interface NonDeductionRepaymentInfoService {
     /**
      * 上传自动入账文件
      *
-     * @param ids 一条记录或多条记录id
+     * @param ids     一条记录或多条记录id
+     * @param session 会话session
      * @throws IOException
      */
-    void uploadAutoAccountingFile(String ids) throws IOException;
+    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException;
+
+
+    /**
+     * 拆分非代扣还款信息
+     *
+     * @param nonDeductionRepaymentInfo           由页面传入的非代扣还款信息
+     * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
+     */
+    void splitNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, Long originalNonDeductionRepaymentInfoId);
 }

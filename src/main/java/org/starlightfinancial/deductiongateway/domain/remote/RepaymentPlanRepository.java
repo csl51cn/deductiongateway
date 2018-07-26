@@ -13,9 +13,10 @@ public interface RepaymentPlanRepository extends JpaRepository<RepaymentPlan, Lo
 
     /**
      * 根据还款类别和还款状态查询最后一条记录
+     * @param dateId 业务流水号
      * @param planTypeId 还款类别
      * @param status 还款状态
      * @return
      */
-    RepaymentPlan findFirstByPlanTypeIdAndStatusOrderByIdAsc(Integer planTypeId, String status);
+    RepaymentPlan findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(Long dateId,Integer planTypeId, String status);
 }

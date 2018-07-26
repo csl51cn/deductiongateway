@@ -19,6 +19,7 @@ public final class CacheService {
     private static CacheService cacheService = null ;
     public  static void refresh(){
         cacheService = new CacheService();
+        LOGGER.info("CacheService 刷新完成");
     }
 
     public  static CacheService getInstance(){

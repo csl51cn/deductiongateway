@@ -10,7 +10,7 @@ import java.util.Objects;
  * @date: Created in 2018/7/20 14:39
  * @Modified By:
  */
-public class BusinessTransaction {
+public class BusinessTransaction implements Comparable {
 
     /**
      * 业务编号
@@ -123,5 +123,16 @@ public class BusinessTransaction {
     public int hashCode() {
 
         return Objects.hash(dateId, contractNo);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        BusinessTransaction another = (BusinessTransaction) o;
+        if (this.dateId > another.dateId) {
+            return 1;
+        } else if (this.dateId.equals(another.dateId)) {
+            return 0;
+        }
+        return -1;
     }
 }

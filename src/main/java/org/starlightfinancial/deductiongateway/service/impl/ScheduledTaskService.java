@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
 import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
+import org.starlightfinancial.deductiongateway.service.CacheService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
 import java.time.LocalDate;
@@ -94,19 +95,29 @@ public class ScheduledTaskService {
     public String isHoliday(LocalDate localDate) {
         Holiday holiday = holidayRepository.findByNonOverTime(localDate.toString());
         String autoSwitch = "0";
-        //holiday为空表示非节假日,开启付易贷自动代扣
+        //holiday为空表示非节假日,开启付易贷日扣自动代扣
         if (holiday == null) {
             autoSwitch = "1";
         }
         return autoSwitch;
     }
 
-//    @Scheduled(cron = "0 0/48 8-20 * * ? ")
+    /**
+     * 自动上传代扣成功的记录:从13点-21点每小时处理一次
+     */
+//    @Scheduled(cron = "0 0 13-21 * * ? ")
     @Scheduled(cron = "0 13 17 * * ? ")
     public void uploadAutoAccountingFile(){
         LOGGER.info("开始处理自动入账excel文档");
         mortgageDeductionService.uploadAutoAccountingFile();
     }
 
+    /**
+     * 每天上午5点刷新缓存服务
+     */
+    @Scheduled(cron = "0 0 5 * * ? ")
+    public void refreshCacheService(){
+        CacheService.refresh();
+    }
 
 }

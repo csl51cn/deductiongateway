@@ -7,6 +7,12 @@
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-editable.css" rel="stylesheet">
     <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <style>
+        mark {
+            background-color: #00ff90;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 <!-- start: Header -->
@@ -49,7 +55,7 @@
                         <div>
                             <form class="form-horizontal" id="form">
                                 <table class="table-bordered">
-                                    <tr with="33%">
+                                    <tr>
                                         <td>还款开始日期</td>
                                         <td><input size="16" type="text" id="startDate" class="form_datetime"
                                                    name="startDate" style="width: 150px;"/></td>
@@ -62,10 +68,21 @@
                                             <input type="text" class="" id="customerName" name="customerName"
                                                    style="width: 150px;"/>
                                         </td>
+                                    </tr>
+                                    <tr>
                                         <td>合同号</td>
                                         <td>
                                             <input type="text" class="" id="contractNo" name="contractNo"
                                                    style="width: 150px;"/></td>
+                                        <td>是否有合同号</td>
+                                        <td>
+                                            <select id="select_isIntegrated" style="width: 150px;" name="isIntegrated">
+                                                <option value="0,1" selected>全部</option>
+                                                <option value="1">有</option>
+                                                <option value="0">没有</option>
+                                            </select>
+                                        </td>
+                                        <td>操作</td>
                                         <td>
                                             <input type="button" class="btn btn-info" id="queryBtn" value="查询"/>
                                             <input type="button" class="btn " id="addBtn" value="新增"/>
@@ -95,12 +112,14 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                            <button type="button" class="btn btn-success" id="confirmdobtn" data-dismiss="modal">确定</button>
+                            <button type="button" class="btn btn-success" id="confirmdobtn" data-dismiss="modal">确定
+                            </button>
                         </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
-            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: none;">
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 style="display: none;">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -124,10 +143,14 @@
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                     aria-hidden="true">×</span></button>
-                            <h4 class="modal-title" id="modalTitle">新增还款信息</h4>
+                            <h4 class="modal-title" id="editModalTitle">新增还款信息</h4>
                         </div>
                         <div class="modal-body">
+                            <!-- 模态框的角色:新增非代扣还款信息模态框,拆分非代扣还款信息模态框 -->
+                            <input type="text" id="modalRole" style="display: none">
                             <form id="editForm" class="modal-form">
+                                <input type="text" id="txt_originalNonDeductionRepaymentInfoId"
+                                       name="originalNonDeductionRepaymentInfoId" style="display: none">
                                 <table class="table">
                                     <tbody>
                                     <tr>
@@ -152,13 +175,12 @@
                                     <tr>
                                         <td><label class="control-label" for="txt_repayment_method">还款方式</label></td>
                                         <td><select id="txt_repayment_method" name="repaymentMethod">
-                                            <option value="银行转账">银行转账</option>
-                                            <option value="微信">微信</option>
-                                            <option value="现金">现金</option>
-                                            <option value="POS机刷卡">POS机刷卡</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_bank_name">入账银行</label></td>
-                                        <td><input type="text" name="bankName" id="txt_bank_name" placeholder="入账银行">
+                                        <td><select id="txt_bank_name" name="bankName">
+                                            <option value="招行0366">招行0366</option>
+                                            <option value="建行3504">建行3504</option>
+                                        </select>
                                         </td>
                                     </tr>
                                     <tr>
@@ -189,7 +211,6 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
-
         </div><!--/.fluid-container-->
 
         <!-- end: Content -->
@@ -212,12 +233,41 @@
 
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
-    if (staffId == 1 || staffId == 3384 || staffId ==3390){
+    if (staffId == 1 || staffId == 3384 || staffId == 3390) {
         $("#uploadBtn").show();
-    }else{
+    } else {
         $("#uploadBtn").hide();
     }
-    var columns = [{
+    <!-- 入账公司对应入账银行 -->
+    var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
+        {"chargeCompany": "铠岳", "bankNameList": ["建行0334"]},
+        {"chargeCompany": "润坤", "bankNameList": ["招行0901"]}
+    ];
+    var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
+    <!-- 还款方式 -->
+    var repaymentMethod = ["银行转账", "现金", "微信", "POS机刷卡"];
+
+
+    <!-- 改变入账银行名 -->
+    function changeBankName(chargeCompany) {
+        for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+            if (chargeCompanyAndBankName[i].chargeCompany == chargeCompany) {
+                var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                var tempBankNameLength = tempBankNameList.length;
+                var bankNameNode = $("#txt_bank_name");
+                bankNameNode.empty();
+                for (var j = 0; j < tempBankNameLength; j++) {
+                    var bankName = tempBankNameList[j];
+                    bankNameNode.append("<option value='" + bankName + "'>" + bankName + "</option>");
+                }
+                break;
+            }
+        }
+    }
+
+
+    var columns;
+    columns = [{
         field: 'state',
         checkbox: true
     }, {
@@ -248,7 +298,11 @@
         }
     }, {
         field: 'repaymentTermDate',
-        title: '还款日期'
+        title: '还款日期',
+        formatter: function (value, row, index) {
+            return formatDate(value);
+        }
+
     }, {
         field: 'repaymentOriginalInfo',
         title: '还款原始信息'
@@ -286,13 +340,35 @@
         editable: {
             type: 'select',
             title: '银行转账入账银行编辑',
-            source: [{value: "招行", text: "招商银行"}, {value: "建行", text: "中国建设银行"}, {value: "工行", text: "中国工商银行"}],
+            source: function () {
+                var sourceInfo = [];
+                var $this = $(this).parent();
+                <!-- 如果要增加或者减少前面的字段,这里的$this.prevAll()[7].innerHTML 7 需要相应的修改 -->
+                var chargeCompany = $this.prevAll()[7].innerHTML;
+                for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+                    if (chargeCompanyAndBankName[i].chargeCompany == chargeCompany) {
+                        var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                        var tempBankNameLength = tempBankNameList.length;
+                        for (var j = 0; j < tempBankNameLength; j++) {
+                            sourceInfo.push({"value": tempBankNameList[j], text: tempBankNameList[j]});
+                        }
+                        break;
+                    }
+                }
+                if (sourceInfo.length > 0) {
+                    return sourceInfo;
+                }
+                return [{value: "招行0366", text: "建行3504"}, {value: "建行3504", text: "建行3504"}, {
+                    value: "建行0334",
+                    text: "建行0334"
+                }, {value: "招行0901", text: "招行0901"}];
+            },
             emptytext: "无",
             validate: function (v) {
                 if (!v) return '入账银行不能为空';
             }
         }
-    },{
+    }, {
         field: 'isUploaded',
         title: '是否自动入账上传',
         formatter: function (value, row, index) {
@@ -305,6 +381,14 @@
             }
         }
     }];
+
+    function setDisabledFalse() {
+        $("#txt_charge_company").attr("disabled", false);
+        $("#txt_repayment_method").attr("disabled", false);
+        $("#txt_bank_name").attr("disabled", false);
+        $("#txt_repayment_type").attr("disabled", false);
+    }
+
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
@@ -365,38 +449,32 @@
                     ;
                 },
                 onDblClickRow: function (row, value, field) {
+                    //双击后弹出拆分非代扣还款信息模态框,按确认后会新增一条非代扣还款信息,假设此条非代扣还款信息还款金额为X元,
+                    // 然后会将原始的非代扣还款信息的还款金额相应减少X元并更新数据库记录.
                     $("#editForm")[0].reset();
-                    $("#txt_charge_company").val(row.chargeCompany);
+                    //设置模态框角色
+                    $("#modalRole").val("split");
+                    //设置模态框标题
+                    $("#editModalTitle").html("<mark>拆分</mark>非代扣还款信息");
+                    $("#txt_originalNonDeductionRepaymentInfoId").val(row.id);
+                    var txt_charge_company = $("#txt_charge_company");
+                    txt_charge_company.val(row.chargeCompany);
+                    txt_charge_company.attr("disabled", true);
+                    changeBankName(row.chargeCompany);
                     $("#txt_repayment_term_date").val(row.repaymentTermDate);
                     $("#txt_repayment_original_info").val(row.repaymentOriginalInfo);
-                    $("#txt_repayment_method").val(row.repaymentMethod);
-                    $("#txt_bank_name").val(row.bankName);
-                    $("#txt_repayment_type").val(row.repaymentType);
+                    var txt_repayment_method = $("#txt_repayment_method");
+                    txt_repayment_method.val(row.repaymentMethod);
+                    txt_repayment_method.attr("disabled", true);
+                    var txt_bank_name = $("#txt_bank_name");
+                    txt_bank_name.select(row.bankName);
+                    txt_bank_name.attr("disabled", true);
+                    var txt_repayment_type = $("#txt_repayment_type");
+                    txt_repayment_type.val(row.repaymentType);
+                    txt_repayment_type.attr("disabled", true);
                     $("#editModal").modal();
                 }
             });
-        };
-        initTable();
-        $('#table').bootstrapTable('hideColumn', 'id');
-
-        function queryParams() {
-            var date = formatDate(new Date())
-            var starDate = $("#startDate").val();
-            var endDate = $("#endDate").val();
-            if (starDate == "") {
-                starDate = date;
-            }
-            if (endDate == "") {
-                endDate = date;
-            }
-            return {
-                pageNumber: this.pageNumber,
-                pageSize: this.pageSize,
-                startDate: starDate,
-                endDate: endDate,
-                customerName: $("#customerName").val(),
-                contractNo: $("#contractNo").val()
-            }
         };
         $("#startDate").datetimepicker({
             format: 'yyyy-mm-dd',
@@ -418,22 +496,63 @@
         }).on("click", function () {
             $("#endDate").datetimepicker("setStartDate", $("#startDate").val())
         });
-        <!--设置默认时间_当天-->
-        $('#startDate').datetimepicker("setValue");
+        <!--设置默认时间-->
+        var preDate = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+        <!--设置开始日期默认时间为昨天-->
+        $('#startDate').datetimepicker('update', preDate);
+        <!--设置结束日期默认时间为当天-->
         $('#endDate').datetimepicker("setValue");
+
+
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+
+        function queryParams() {
+            var date = formatDate(new Date())
+            var starDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+            if (starDate == "") {
+                starDate = date;
+            }
+            if (endDate == "") {
+                endDate = date;
+            }
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                startDate: starDate,
+                endDate: endDate,
+                customerName: $("#customerName").val(),
+                contractNo: $("#contractNo").val(),
+                isIntegrated: $("#select_isIntegrated").val()
+            }
+        };
+
         <!--查询按钮功能-->
         $("#queryBtn").click(function () {
+            query()
+        });
+        <!--是否有合同编号选择变化重新加载数据-->
+        $("#select_isIntegrated").change(function () {
+            query();
+        });
+
+        function query() {
             $('#table').bootstrapTable('removeAll');
             $('#table').bootstrapTable('refresh', {
                 url: '/nonDeductionController/queryNonDeductionRepaymentInfo.do',
                 query: queryParams()
             })
-        });
-
+        }
 
         <!--新增按钮功能-->
         $("#addBtn").click(function () {
             $("#editForm")[0].reset();
+            //设置模态框角色
+            $("#modalRole").val("add");
+            //设置模态框标题
+            $("#editModalTitle").html("<mark>新增</mark>非代扣还款信息");
+            setDisabledFalse();
             $("#editModal").modal();
         });
         $("#txt_repayment_term_date").datetimepicker({
@@ -445,11 +564,19 @@
             startDate: new Date('1900-01-01')
         });
 
-        <!--新增还款信息模态框中的确认按钮功能-->
+        <!--新增模态框中的确认按钮功能-->
         $("#editModal .btn-success").click(function () {
+            setDisabledFalse();
+            var modalRole = $("#modalRole").val();
+            var url;
+            if (modalRole == "split") {
+                url = "/nonDeductionController/splitNonDeduction.do";
+            } else {
+                url = "/nonDeductionController/saveNonDeduction.do";
+            }
             $.ajax({
                 type: "post",
-                url: "/nonDeductionController/saveNonDeduction.do",
+                url: url,
                 data: $("#editForm").serialize(),
                 dataType: 'JSON',
                 success: function (data) {
@@ -465,16 +592,20 @@
             });
         });
 
-        <!--新增还款信息模态框中的确认按钮功能-->
+        <!--上传态框中的确认按钮功能-->
         $("#uploadBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录上传', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
             $('#confirmModal').modal();
             $("#confirmdobtn").click(function () {
-                var ids = [];
-                var rows = $('#table').bootstrapTable('getSelections');
-                for (var i = 0; i < rows.length; i++) {
-                    ids.push(rows[i].id);
-                }
-                value=0;
+                value = 0;
                 increment();
                 $('#myModal').modal('show');
 
@@ -484,7 +615,7 @@
                     method: "POST",
                     data: {"ids": ids.toString()},
                     success: function (data) {
-                        value=0;
+                        value = 0;
                         $('#myModal').modal('hide');
                         if ("1" == data) {
                             setTimeout("location.reload();", 4020);
@@ -506,6 +637,21 @@
                 })
             })
         });
+
+        <!-- 新增模态框中入账公司变化时,同时修改入账银行名称-->
+        $("#txt_charge_company").change(function () {
+            var chargeCompany = $(this).val();
+            changeBankName(chargeCompany);
+        });
+
+
+        <!-- 新增模态框中还款方式初始化-->
+        var repaymentMethodNode = $("#txt_repayment_method");
+        repaymentMethodNode.empty();
+        for (var i = 0; i < repaymentMethod.length; i++) {
+            repaymentMethodNode.append("<option value='" + repaymentMethod[i] + "'>" + repaymentMethod[i] + "</option>");
+        }
+
 
     })
 </script>

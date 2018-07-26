@@ -205,6 +205,18 @@ public class Utility {
         return Integer.parseInt(loginUser.getStaffId());
     }
 
+    /**
+     * 获取登录用户login_name
+     *
+     * @param session 会话session
+     * @return 用户login_name
+     */
+    public static String getLoginUserName(HttpSession session) {
+        SysUser loginUser = (SysUser) session.getAttribute("loginUser");
+        return loginUser.getLoginName();
+    }
+
+
 
     /**
      * Date 转换为 LocalDate

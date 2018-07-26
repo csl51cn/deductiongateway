@@ -249,4 +249,28 @@ public class AutoAccountingExcelRow {
     public void setRepaymentMethod(String repaymentMethod) {
         this.repaymentMethod = repaymentMethod;
     }
+
+    @Override
+    public String toString() {
+        return "AutoAccountingExcelRow{" +
+                "customerId=" + customerId +
+                ", customerName='" + customerName + '\'' +
+                ", contractNo='" + contractNo + '\'' +
+                ", repaymentTermDate='" + repaymentTermDate + '\'' +
+                ", accountingDate='" + accountingDate + '\'' +
+                ", bankName='" + bankName + '\'' +
+                ", bankCardNo='" + bankCardNo + '\'' +
+                ", principalAndInterest=" + principalAndInterest +
+                ", serviceFee=" + serviceFee +
+                ", evaluationFee=" + evaluationFee +
+                ", serviceFeeChargeCompany='" + serviceFeeChargeCompany + '\'' +
+                ", evaluationFeeChargeCompany='" + evaluationFeeChargeCompany + '\'' +
+                ", bankCardOwner='" + bankCardOwner + '\'' +
+                ", certificateNo='" + certificateNo + '\'' +
+                ", status='" + status + '\'' +
+                ", reason='" + reason + '\'' +
+                ", isDeduction='" + isDeduction + '\'' +
+                ", repaymentMethod='" + repaymentMethod + '\'' +
+                '}';
+    }
 }

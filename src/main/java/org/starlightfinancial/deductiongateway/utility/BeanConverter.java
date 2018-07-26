@@ -440,6 +440,8 @@ public class BeanConverter {
         autoAccountingExcelRow.setPrincipalAndInterest(mortgageDeduction.getSplitData1());
         //服务费
         autoAccountingExcelRow.setServiceFee(mortgageDeduction.getSplitData2());
+        //调查评估费设置为0
+        autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
         //服务费入账公司
         //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 对接银联新无卡重构代码后保存的是公司名称(汉字)
         if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
@@ -469,7 +471,7 @@ public class BeanConverter {
      * 将非代扣还款数据转换为自动入账excel表格行元素对应实体类
      *
      * @param nonDeductionRepaymentInfo 非代扣还款数据
-     * @return  自动入账excel表格行元素对应实体类
+     * @return 自动入账excel表格行元素对应实体类
      */
     public AutoAccountingExcelRow transToAutoAccountingExcelRow(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
         AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
@@ -486,18 +488,26 @@ public class BeanConverter {
         if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
             //本息
             autoAccountingExcelRow.setPrincipalAndInterest(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
+            autoAccountingExcelRow.setServiceFee(BigDecimal.ZERO);
+            autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
         }
 
-        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+        if (RepaymentTypeEnum.SERVICE_FEE.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
             //服务费
             autoAccountingExcelRow.setServiceFee(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
             autoAccountingExcelRow.setServiceFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+
+            autoAccountingExcelRow.setPrincipalAndInterest(BigDecimal.ZERO);
+            autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
         }
 
-        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+        if (RepaymentTypeEnum.EVALUATION_FEE.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
             //服务费
             autoAccountingExcelRow.setEvaluationFee(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
             autoAccountingExcelRow.setEvaluationFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+
+            autoAccountingExcelRow.setPrincipalAndInterest(BigDecimal.ZERO);
+            autoAccountingExcelRow.setServiceFee(BigDecimal.ZERO);
 
         }
         //是否代扣

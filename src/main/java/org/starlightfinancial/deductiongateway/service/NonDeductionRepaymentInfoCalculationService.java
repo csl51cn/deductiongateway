@@ -38,73 +38,81 @@ public class NonDeductionRepaymentInfoCalculationService {
         //获得excel导入的客户名
         String customerName = nonDeductionRepaymentInfo.getCustomerName();
         //非代扣还款数据的可能对应业务的合同编号与业务信息的映射
-        ConcurrentHashMap<String, BusinessTransaction> tempMap = new ConcurrentHashMap<>(16);
+        ConcurrentHashMap<String, BusinessTransaction> candidateBusinessTransactionMap = new ConcurrentHashMap<>(16);
         //获取缓存中的所有业务信息
         Map<String, BusinessTransaction> businessTransactionCacheMap = CacheService.getBusinessTransactionCacheMap();
 
         //通过非代扣还款数据的客户名称对比在业务系统中的借款人名称,个人共借人担保人名称,企业共借人担保人名称,如果有相同的,将那条业务信息添加到tempMap中,以非代扣还款数据为key,业务信息为value
-        compareCoBorrowerAndGuarantor(customerName, tempMap, businessTransactionCacheMap);
+        compareCoBorrowerAndGuarantor(customerName, candidateBusinessTransactionMap, businessTransactionCacheMap);
 
         //通过非代扣还款数据的客户名称与关联还款人信息中的关联还款人1,2,3,4对比,如果有相同的,将那条业务信息添加到tempMap中,以非代扣还款数据为key,业务信息为value
         List<AssociatePayer> allAssociatePayer = Collections.synchronizedList(associatePayerService.findAll());
         allAssociatePayer.parallelStream().forEach(associatePayer -> {
             if (customerName != null) {
                 if (customerName.equals(associatePayer.getPayer1())) {
-                    putPossibleBusinessTransaction(tempMap, associatePayer);
+                    putPossibleBusinessTransaction(candidateBusinessTransactionMap, associatePayer);
                 }
                 if (customerName.equals(associatePayer.getPayer2())) {
-                    putPossibleBusinessTransaction(tempMap, associatePayer);
+                    putPossibleBusinessTransaction(candidateBusinessTransactionMap, associatePayer);
                 }
                 if (customerName.equals(associatePayer.getPayer3())) {
-                    putPossibleBusinessTransaction(tempMap, associatePayer);
+                    putPossibleBusinessTransaction(candidateBusinessTransactionMap, associatePayer);
                 }
                 if (customerName.equals(associatePayer.getPayer4())) {
-                    putPossibleBusinessTransaction(tempMap, associatePayer);
+                    putPossibleBusinessTransaction(candidateBusinessTransactionMap, associatePayer);
                 }
             }
         });
 
-        //获得了所有可能对应的业务信息,进行最后的判断,判断还款日期和还款金额是否在允许的误差范围内
-        List<BusinessTransaction> businessTransactions = Collections.synchronizedList(new ArrayList<>(tempMap.values()));
-        TreeSet<BusinessTransaction> result = new TreeSet<>();
-        compareDateAndAmount(nonDeductionRepaymentInfo, businessTransactions, result);
+        //获得了所有可能对应的业务信息即候选业务信息,判断还款日期和还款金额是否在允许的误差范围内
+        List<BusinessTransaction> candidateBusinessTransactions = Collections.synchronizedList(new ArrayList<>(candidateBusinessTransactionMap.values()));
+        TreeSet<BusinessTransaction> resultSet = new TreeSet<>();
+        compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);
 
 
-        //最后判断result中有多少业务信息,如果大小不为1,表示未查询到匹配的业务信息,不做出更改
-        if (result.size() == 1) {
-            nonDeductionRepaymentInfo.setDateId(result.first().getDateId());
-            nonDeductionRepaymentInfo.setContractNo(result.first().getContractNo());
+        //最后判断resultSet中有多少条业务信息,如果result的大小不为1,表示未精确查询到匹配的业务信息,不做出更改,如果只剩下一条对应的业务信息,将合同编号,dateId设置到非代扣还款信息中
+        if (resultSet.size() == 1) {
+            nonDeductionRepaymentInfo.setDateId(resultSet.first().getDateId());
+            nonDeductionRepaymentInfo.setContractNo(resultSet.first().getContractNo());
             nonDeductionRepaymentInfo.setIsIntegrated(String.valueOf(1));
         }
     }
 
     /**
-     * 比较还款日期和还款金额是否在允许误差范围内,如果是添加到result中
+     * 比较还款日期和还款金额是否在允许误差范围内,如果是添加到resultSet中
      *
-     * @param nonDeductionRepaymentInfo 非代扣还款信息
-     * @param businessTransactions      业务信息
-     * @param result                    可能匹配的业务信息
+     * @param nonDeductionRepaymentInfo     非代扣还款信息
+     * @param candidateBusinessTransactions 业务信息
+     * @param resultSet                     可能匹配的业务信息
      */
-    private static void compareDateAndAmount(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, List<BusinessTransaction> businessTransactions, TreeSet<BusinessTransaction> result) {
+    private static void compareDateAndAmount(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, List<BusinessTransaction> candidateBusinessTransactions, TreeSet<BusinessTransaction> resultSet) {
         //与计划还款信息中的还款日期和还款金额对比,缩小范围,还款日期±一天,还款金额±1元
-        businessTransactions.parallelStream().forEach(businessTransaction -> {
+        candidateBusinessTransactions.forEach(businessTransaction -> {
             Integer codeByDesc = RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType());
             if (codeByDesc != null) {
                 //获取还款类别代码不为null,查询对应还款类别的未结清的期数最小的还款计划信息
-                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByPlanTypeIdAndStatusOrderByIdAsc(codeByDesc, "0");
-                concreteCompareDateAndAmount(nonDeductionRepaymentInfo, result, businessTransaction, repaymentPlan);
+                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), codeByDesc, "0");
+                if (repaymentPlan != null) {
+                    concreteCompareDateAndAmount(nonDeductionRepaymentInfo, resultSet, businessTransaction, repaymentPlan);
+                }
 
             } else {
                 //获取还款类别代码为null,查询所有还款类别的计划还款信息
                 //本息
-                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByPlanTypeIdAndStatusOrderByIdAsc(RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getCode(), "0");
-                concreteCompareDateAndAmount(nonDeductionRepaymentInfo, result, businessTransaction, repaymentPlan);
+                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getCode(), "0");
+                if (repaymentPlan != null) {
+                    concreteCompareDateAndAmount(nonDeductionRepaymentInfo, resultSet, businessTransaction, repaymentPlan);
+                }
                 //服务费
-                repaymentPlan = repaymentPlanRepository.findFirstByPlanTypeIdAndStatusOrderByIdAsc(RepaymentTypeEnum.SERVICE_FEE.getCode(), "0");
-                concreteCompareDateAndAmount(nonDeductionRepaymentInfo, result, businessTransaction, repaymentPlan);
+                repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), RepaymentTypeEnum.SERVICE_FEE.getCode(), "0");
+                if (repaymentPlan != null) {
+                    concreteCompareDateAndAmount(nonDeductionRepaymentInfo, resultSet, businessTransaction, repaymentPlan);
+                }
                 //调查评估费
-                repaymentPlan = repaymentPlanRepository.findFirstByPlanTypeIdAndStatusOrderByIdAsc(RepaymentTypeEnum.EVALUATION_FEE.getCode(), "0");
-                concreteCompareDateAndAmount(nonDeductionRepaymentInfo, result, businessTransaction, repaymentPlan);
+                repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), RepaymentTypeEnum.EVALUATION_FEE.getCode(), "0");
+                if (repaymentPlan != null) {
+                    concreteCompareDateAndAmount(nonDeductionRepaymentInfo, resultSet, businessTransaction, repaymentPlan);
+                }
             }
 
         });
@@ -113,31 +121,31 @@ public class NonDeductionRepaymentInfoCalculationService {
     /**
      * 比较非代扣还款数据中的客户名称和共借人担保人以获取匹配的业务信息
      *
-     * @param customerName                客户名称
-     * @param tempMap                     可能对应业务的合同编号与业务信息的映射
-     * @param businessTransactionCacheMap 所有业务信息
+     * @param customerName                    客户名称
+     * @param candidateBusinessTransactionMap 可能对应业务的合同编号与业务信息的映射
+     * @param businessTransactionCacheMap     所有业务信息
      */
-    private static void compareCoBorrowerAndGuarantor(String customerName, ConcurrentHashMap<String, BusinessTransaction> tempMap, Map<String, BusinessTransaction> businessTransactionCacheMap) {
+    private static void compareCoBorrowerAndGuarantor(String customerName, Map<String, BusinessTransaction> candidateBusinessTransactionMap, Map<String, BusinessTransaction> businessTransactionCacheMap) {
         businessTransactionCacheMap.forEach((contractNo, businessTransaction) -> {
             if (customerName != null) {
                 //如果客户名不为null,进行以下操作
                 //如果客户名和主借人名称一致,将此条记录添加到tempMap中
                 if (customerName.equals(businessTransaction.getSubject())) {
-                    tempMap.put(businessTransaction.getContractNo(), businessTransaction);
+                    candidateBusinessTransactionMap.put(businessTransaction.getContractNo(), businessTransaction);
                 }
                 //将客户名与个人共借人和担保人对比,如果一致,将此记录添加到tempMap中
-                businessTransaction.getPersonalCoBorrowerAndGuarantor().parallelStream().forEach(
+                businessTransaction.getPersonalCoBorrowerAndGuarantor().forEach(
                         personalCoBorrowerAndGuarantor -> {
                             if (customerName.equals(personalCoBorrowerAndGuarantor)) {
-                                tempMap.put(businessTransaction.getContractNo(), businessTransaction);
+                                candidateBusinessTransactionMap.put(businessTransaction.getContractNo(), businessTransaction);
                             }
                         }
                 );
                 //将客户名与企业共借人和担保人对比,如果一致,将此记录添加到tempMap中
-                businessTransaction.getCompanyCoBorrowerAndGuarantor().parallelStream().forEach(
+                businessTransaction.getCompanyCoBorrowerAndGuarantor().forEach(
                         companyCoBorrowerAndGuarantor -> {
                             if (customerName.equals(companyCoBorrowerAndGuarantor)) {
-                                tempMap.put(businessTransaction.getContractNo(), businessTransaction);
+                                candidateBusinessTransactionMap.put(businessTransaction.getContractNo(), businessTransaction);
                             }
                         }
                 );
@@ -168,21 +176,24 @@ public class NonDeductionRepaymentInfoCalculationService {
                 //如果实际还款金额和计划还款金额的差值是否在[-1,1]范围内,添加到保存结果的result中
                 result.add(businessTransaction);
             }
+        } else {
+            //如果逾期了,也直接添加到结果中,最后判断result中是否只有一条记录
+            result.add(businessTransaction);
         }
     }
 
 
     /**
-     * 将可能对应的业务信息放入tempMap中
+     * 将可能对应的业务信息放入candidateBusinessTransactionMap中
      *
-     * @param tempMap        非代扣还款数据的可能对应业务的合同编号与业务信息的映射
-     * @param associatePayer 关联还款人信息
+     * @param candidateBusinessTransactionMap 非代扣还款数据的可能对应业务的合同编号与业务信息的映射
+     * @param associatePayer                  关联还款人信息
      */
-    private static void putPossibleBusinessTransaction(ConcurrentHashMap<String, BusinessTransaction> tempMap, AssociatePayer associatePayer) {
+    private static void putPossibleBusinessTransaction(Map<String, BusinessTransaction> candidateBusinessTransactionMap, AssociatePayer associatePayer) {
         BusinessTransaction businessTransaction = new BusinessTransaction();
         businessTransaction.setDateId(associatePayer.getDateId());
         businessTransaction.setContractNo(associatePayer.getContractNo());
-        tempMap.put(associatePayer.getContractNo(), businessTransaction);
+        candidateBusinessTransactionMap.put(associatePayer.getContractNo(), businessTransaction);
     }
 
 
