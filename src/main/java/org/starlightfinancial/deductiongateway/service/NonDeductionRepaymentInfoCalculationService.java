@@ -1,10 +1,12 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.starlightfinancial.deductiongateway.domain.local.AssociatePayer;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.domain.remote.RepaymentPlan;
 import org.starlightfinancial.deductiongateway.domain.remote.RepaymentPlanRepository;
+import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.RepaymentTypeEnum;
 import org.starlightfinancial.deductiongateway.utility.SpringContextUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -48,7 +50,7 @@ public class NonDeductionRepaymentInfoCalculationService {
         //通过非代扣还款数据的客户名称与关联还款人信息中的关联还款人1,2,3,4对比,如果有相同的,将那条业务信息添加到tempMap中,以非代扣还款数据为key,业务信息为value
         List<AssociatePayer> allAssociatePayer = Collections.synchronizedList(associatePayerService.findAll());
         allAssociatePayer.parallelStream().forEach(associatePayer -> {
-            if (customerName != null) {
+            if (StringUtils.isNotBlank(customerName)) {
                 if (customerName.equals(associatePayer.getPayer1())) {
                     putPossibleBusinessTransaction(candidateBusinessTransactionMap, associatePayer);
                 }
@@ -74,7 +76,7 @@ public class NonDeductionRepaymentInfoCalculationService {
         if (resultSet.size() == 1) {
             nonDeductionRepaymentInfo.setDateId(resultSet.first().getDateId());
             nonDeductionRepaymentInfo.setContractNo(resultSet.first().getContractNo());
-            nonDeductionRepaymentInfo.setIsIntegrated(String.valueOf(1));
+            nonDeductionRepaymentInfo.setIsIntegrated(ConstantsEnum.SUCCESS.getCode());
         }
     }
 
@@ -127,7 +129,7 @@ public class NonDeductionRepaymentInfoCalculationService {
      */
     private static void compareCoBorrowerAndGuarantor(String customerName, Map<String, BusinessTransaction> candidateBusinessTransactionMap, Map<String, BusinessTransaction> businessTransactionCacheMap) {
         businessTransactionCacheMap.forEach((contractNo, businessTransaction) -> {
-            if (customerName != null) {
+            if (StringUtils.isNotBlank(customerName)) {
                 //如果客户名不为null,进行以下操作
                 //如果客户名和主借人名称一致,将此条记录添加到tempMap中
                 if (customerName.equals(businessTransaction.getSubject())) {

@@ -105,8 +105,8 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从13点-21点每小时处理一次
      */
-//    @Scheduled(cron = "0 0 13-21 * * ? ")
-    @Scheduled(cron = "0 13 17 * * ? ")
+//    @Scheduled(cron = "0 0 13-21 * * ?")
+    @Scheduled(cron = "0 13 17 * * ?")
     public void uploadAutoAccountingFile(){
         LOGGER.info("开始处理自动入账excel文档");
         mortgageDeductionService.uploadAutoAccountingFile();

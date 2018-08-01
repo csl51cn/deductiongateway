@@ -1,12 +1,15 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
+import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author: Senlin.Deng
@@ -27,15 +30,11 @@ public interface NonDeductionRepaymentInfoService {
     /**
      * 根据条件查询记录
      *
-     * @param pageBean     页面参数对象
-     * @param startDate    还款开始时间
-     * @param endDate      还款结束时间
-     * @param customerName 客户名称
-     * @param contractNo   合同号
-     * @param isIntegrated 是否完整
+     * @param pageBean                                页面参数对象
+     * @param nonDeductionRepaymentInfoQueryCondition 查询条件
      * @return 返回根据条件查询到的记录
      */
-    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, Date startDate, Date endDate, String customerName, String contractNo, String isIntegrated);
+    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition);
 
     /**
      * 保存记录
@@ -64,10 +63,10 @@ public interface NonDeductionRepaymentInfoService {
     /**
      * 拆分非代扣还款信息
      *
-     * @param nonDeductionRepaymentInfo           由页面传入的非代扣还款信息
+     * @param nonDeductionRepaymentInfos          由页面传入的非代扣还款信息
      * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
      */
-    void splitNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, Long originalNonDeductionRepaymentInfoId);
+    void splitNonDeduction(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, Long originalNonDeductionRepaymentInfoId);
 
     /**
      * 刷新CacheService,重新尝试查找匹配的业务信息
@@ -77,4 +76,22 @@ public interface NonDeductionRepaymentInfoService {
      * @param session   会话session
      */
     void retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session);
+
+    /**
+     * 批量拆分非代扣还款信息
+     *
+     * @param uploadFile                          包含拆分信息的excel文件
+     * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
+     * @param session                             会话session
+     * @throws Exception 异常时抛出
+     */
+    void batchSplitNonDeduction(MultipartFile uploadFile, Long originalNonDeductionRepaymentInfoId, HttpSession session) throws Exception;
+
+    /**
+     * 根据条件导出非代扣还款信息
+     *
+     * @param nonDeductionRepaymentInfoQueryCondition 查询条件
+     * @return excel表格
+     */
+    Workbook exportXLS(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition);
 }

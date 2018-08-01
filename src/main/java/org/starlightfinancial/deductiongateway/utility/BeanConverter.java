@@ -483,7 +483,7 @@ public class BeanConverter {
         //还款日期
         autoAccountingExcelRow.setRepaymentTermDate(Utility.convertToString(nonDeductionRepaymentInfo.getRepaymentTermDate(), "yyyy/MM/dd"));
         //入账日期
-        autoAccountingExcelRow.setAccountingDate(autoAccountingExcelRow.getRepaymentTermDate());
+        autoAccountingExcelRow.setAccountingDate(Utility.convertToString(nonDeductionRepaymentInfo.getAccountingDate(), "yyyy/MM/dd"));
 
         if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
             //本息

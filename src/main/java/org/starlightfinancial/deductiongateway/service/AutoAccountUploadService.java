@@ -5,9 +5,10 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.starlightfinancial.deductiongateway.ChinaPayConfig;
+import org.springframework.core.env.Environment;
 import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
 import org.starlightfinancial.deductiongateway.utility.AutoAccountingFtpUtil;
+import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.SpringContextUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -33,8 +34,7 @@ public class AutoAccountUploadService {
             "证件号", "扣款结果", "原因", "银联分账数据１扣款(分)", "银联分账数据2扣款(分)", "是否已核销", "是否代扣", "收分账数据3的公司", "还款方式"
     };
 
-    private static ChinaPayConfig chinaPayConfig = SpringContextUtil.getBean(ChinaPayConfig.class);
-
+    private static  Environment environment = SpringContextUtil.getBean(Environment.class);
 
     /**
      * 生成自动入账excel文档
@@ -153,5 +153,6 @@ public class AutoAccountUploadService {
         fileName.append(Utility.convertToString(new Date(), "yyyyMMdd_HHmmss"));
         fileName.append(".xls");
         AutoAccountingFtpUtil.upload(fileName.toString(), is);
+        HttpClientUtil.httpGet(environment.getProperty("auto.accounting.execute.url"));
     }
 }

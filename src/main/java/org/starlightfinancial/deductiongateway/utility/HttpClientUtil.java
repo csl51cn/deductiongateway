@@ -2,10 +2,15 @@ package org.starlightfinancial.deductiongateway.utility;
 
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
@@ -28,7 +33,7 @@ import java.util.concurrent.CountDownLatch;
 @Component
 public class HttpClientUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpClientUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientUtil.class);
 
     public static Map send(String url, List<BasicNameValuePair> nvps) throws Exception {
         Map<String, String> map = new HashMap();
@@ -44,10 +49,10 @@ public class HttpClientUtil {
             httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             httpclient.start();
 
-            log.info("开始调用接口：" + url + " 请求参数:" + URLDecoder.decode(EntityUtils.toString(httpPost.getEntity()), "UTF-8"));
+            LOGGER.info("开始调用接口：" + url + " 请求参数:" + URLDecoder.decode(EntityUtils.toString(httpPost.getEntity()), "UTF-8"));
             // 执行postMethod
             httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
-
+                @Override
                 public void completed(final HttpResponse response) {
                     try {
                         String returnData = EntityUtils.toString(response.getEntity(), "UTF-8");
@@ -59,10 +64,12 @@ public class HttpClientUtil {
                     latch.countDown();
                 }
 
+                @Override
                 public void failed(final Exception ex) {
                     latch.countDown();
                 }
 
+                @Override
                 public void cancelled() {
                     latch.countDown();
                 }
@@ -115,4 +122,36 @@ public class HttpClientUtil {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * get 请求
+     *
+     * @param url
+     */
+    public static String httpGet(String url) {
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();
+        CloseableHttpClient client = HttpClients.createDefault();
+        // 发送get请求
+        HttpGet request = new HttpGet(url);
+        request.setConfig(requestConfig);
+        String resultString = "";
+        try {
+            CloseableHttpResponse response = client.execute(request);
+
+            // 请求发送成功，并得到响应
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                resultString = EntityUtils.toString(response.getEntity(), "UTF-8");
+                LOGGER.info("get请求提交成功:" + url);
+            } else {
+                LOGGER.error("get请求提交失败:" + url);
+            }
+        } catch (IOException e) {
+            LOGGER.error("get请求提交失败:" + url, e);
+        } finally {
+            request.releaseConnection();
+        }
+        return resultString;
+    }
+
 }

@@ -45,6 +45,16 @@ public class NonDeductionRepaymentInfo {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date repaymentTermDate;
 
+
+    /**
+     * 入账日期
+     */
+    @Column(name = "accounting_date")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date accountingDate;
+
+
     /**
      * 还款原始信息
      */
@@ -264,6 +274,14 @@ public class NonDeductionRepaymentInfo {
     }
 
 
+    public Date getAccountingDate() {
+        return accountingDate;
+    }
+
+    public void setAccountingDate(Date accountingDate) {
+        this.accountingDate = accountingDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -281,4 +299,6 @@ public class NonDeductionRepaymentInfo {
 
         return Objects.hash(id);
     }
+
+
 }

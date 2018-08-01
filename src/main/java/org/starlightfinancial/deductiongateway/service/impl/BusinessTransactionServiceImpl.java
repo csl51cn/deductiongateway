@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.dao.BusinessTransactionDao;
@@ -24,14 +25,13 @@ public class BusinessTransactionServiceImpl implements BusinessTransactionServic
     private BusinessTransactionDao businessTransactionDao;
 
 
-
     /**
      * 查询所有业务信息
      *
      * @return 所有业务信息
      */
     @Override
-    public Map<String,BusinessTransaction> findAll() {
+    public Map<String, BusinessTransaction> findAll() {
         //查找所有放款业务信息
         List<Map<String, Object>> allData = businessTransactionDao.findAll();
         //为使用并行流,将List转换为线程安全的List
@@ -41,11 +41,11 @@ public class BusinessTransactionServiceImpl implements BusinessTransactionServic
         //使用并行流处理原始的放款业务信息,如果同一个合同号有多条数据,合并成到一个BusinessTransaction对象中
         synchronizedAllData.parallelStream().forEach(map -> {
             //通过合同编号获取BusinessTransaction对象
-            BusinessTransaction businessTransaction = concurrentHashMap.getOrDefault(map.get("contractNo"),new BusinessTransaction());
-            if (businessTransaction.getContractNo() == null) {
+            BusinessTransaction businessTransaction = concurrentHashMap.getOrDefault(map.get("contractNo"), new BusinessTransaction());
+            if (StringUtils.isBlank(businessTransaction.getContractNo())) {
                 //如果businessTransaction 的 合同号为null,需要设置合同号,dateId,subject 三个属性,并将这个对象放进concurrentHashMap,以合同编号为键
                 businessTransaction.setContractNo((String) map.get("contractNo"));
-                businessTransaction.setDateId(Long.valueOf((Integer)map.get("Date_Id")));
+                businessTransaction.setDateId(Long.valueOf((Integer) map.get("Date_Id")));
                 businessTransaction.setSubject((String) map.get("subject"));
                 businessTransaction.setServiceFeeChargeCompany((String) map.get("serviceFeeChargeCompany"));
                 concurrentHashMap.put(businessTransaction.getContractNo(), businessTransaction);

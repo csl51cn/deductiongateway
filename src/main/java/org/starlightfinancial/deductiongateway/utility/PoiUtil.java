@@ -42,8 +42,8 @@ public class PoiUtil {
         //获得Workbook工作薄对象
         Workbook workbook = getWorkBook(file);
         //创建结果Map
-         Map<String, List<T>> resultMap = new LinkedHashMap<>(16);
-        ArrayList<T> list;
+        Map<String, List<T>> resultMap = new LinkedHashMap<>(16);
+        ArrayList<T> resultList;
         if (workbook != null) {
             //遍历所有的sheet
             for (int sheetNum = 0; sheetNum < workbook.getNumberOfSheets(); sheetNum++) {
@@ -71,11 +71,11 @@ public class PoiUtil {
                 }
 
                 //创建包含excel表格转java bean 结果的list
-                list = new ArrayList<T>();
+                resultList = new ArrayList<T>();
 
                 //利用反射设置java bean 属性
-                getJavaBean(targetClass, list, sheet, columnIndexAndFieldNameMap);
-                resultMap.put(sheet.getSheetName(), list);
+                getJavaBean(targetClass, resultList, sheet, columnIndexAndFieldNameMap);
+                resultMap.put(sheet.getSheetName(), resultList);
             }
             workbook.close();
         }
@@ -86,7 +86,7 @@ public class PoiUtil {
      * 利用反射从excel读取内容设置到java bean 属性中
      *
      * @param targetClass                目标 java bean 类型
-     * @param list                       包含转换后java bean 的List
+     * @param resultList                 包含转换后java bean 的List
      * @param sheet                      excel表格的当前sheet
      * @param columnIndexAndFieldNameMap 类索引和目标java bean 的字段名映射Map
      * @param <T>                        目标java bean 类型
@@ -94,7 +94,7 @@ public class PoiUtil {
      * @throws IllegalAccessException 目标类型对象字段设置值时无访问权限时抛出的异常
      * @throws NoSuchFieldException   获取目标类型某个申明的字段对象时没有这样的字段时抛出的异常
      */
-    private static <T> void getJavaBean(Class<T> targetClass, ArrayList<T> list, Sheet sheet, Map<Integer, String> columnIndexAndFieldNameMap) throws InstantiationException, IllegalAccessException, NoSuchFieldException {
+    private static <T> void getJavaBean(Class<T> targetClass, ArrayList<T> resultList, Sheet sheet, Map<Integer, String> columnIndexAndFieldNameMap) throws InstantiationException, IllegalAccessException, NoSuchFieldException {
         outerLoop:
         for (int i = sheet.getFirstRowNum() + 1; i <= sheet.getPhysicalNumberOfRows(); i++) {
             //获得当前sheet的第i行
@@ -149,7 +149,7 @@ public class PoiUtil {
                         }
                     }
                 }
-                list.add(t);
+                resultList.add(t);
             }
         }
     }
