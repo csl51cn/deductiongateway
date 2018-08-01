@@ -254,7 +254,7 @@ public class NonDeductionRepaymentInfoController {
 
         Workbook workbook = nonDeductionRepaymentInfoService.exportXLS(nonDeductionRepaymentInfoQueryCondition);
 
-        String fileName = "非代扣还款数据" + Utility.convertToString(new Date(),"yyyyMMdd_HH:mm:ss");
+        String fileName = "非代扣还款数据" + Utility.convertToString(new Date(),"yyyyMMdd_HH_mm_ss");
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=" + new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");
