@@ -11,10 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.common.SameUrlData;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
+import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
 import org.starlightfinancial.deductiongateway.service.NonDeductionRepaymentInfoService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -149,7 +149,6 @@ public class NonDeductionRepaymentInfoController {
      */
     @RequestMapping(value = "/uploadAutoAccountingFile.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    @SameUrlData
     public String uploadAutoAccountingFile(String ids, HttpSession session) {
         if (StringUtils.isEmpty(ids)) {
             return "请选择一条记录上传";
@@ -159,8 +158,12 @@ public class NonDeductionRepaymentInfoController {
             return "1";
         } catch (IOException e) {
             LOGGER.error("上传自动入账excel文件失败", e);
-            return "0";
+            return "上传自动入账excel文件失败";
+        } catch (FieldFormatCheckException e) {
+            LOGGER.error("{}", e.getMessage());
+            return e.getMessage()+",请修改后重试";
         }
+
     }
 
 
@@ -246,7 +249,7 @@ public class NonDeductionRepaymentInfoController {
      * 根据条件导出非代扣还款数据
      *
      * @param nonDeductionRepaymentInfoQueryCondition 查询条件
-     * @param response 响应
+     * @param response                                响应
      * @throws IOException 异常时抛出
      */
     @RequestMapping(value = "/exportXLS.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -254,7 +257,7 @@ public class NonDeductionRepaymentInfoController {
 
         Workbook workbook = nonDeductionRepaymentInfoService.exportXLS(nonDeductionRepaymentInfoQueryCondition);
 
-        String fileName = "非代扣还款数据" + Utility.convertToString(new Date(),"yyyyMMdd_HH_mm_ss");
+        String fileName = "非代扣还款数据" + Utility.convertToString(new Date(), "yyyyMMdd_HH_mm_ss");
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=" + new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");

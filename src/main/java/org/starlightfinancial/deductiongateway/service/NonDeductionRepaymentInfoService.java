@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
+import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import javax.servlet.http.HttpSession;
@@ -50,14 +51,16 @@ public interface NonDeductionRepaymentInfoService {
      */
     void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo);
 
+
     /**
      * 上传自动入账文件
      *
      * @param ids     一条记录或多条记录id
      * @param session 会话session
-     * @throws IOException
+     * @throws IOException               io异常时抛出
+     * @throws FieldFormatCheckException 非代扣还款数据属性格式不符合预期时抛出
      */
-    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException;
+    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException, FieldFormatCheckException;
 
 
     /**

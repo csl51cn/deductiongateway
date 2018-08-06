@@ -187,7 +187,11 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         }
 
                         //处理服务费管理公司
-                        if (StringUtils.isBlank(mortgageDeduction.getTarget())) {
+                        if (StringUtils.equals(mortgageDeduction.getTarget(), "铠岳")) {
+                            mortgageDeduction.setTarget("铠岳");
+                        } else if (StringUtils.equals(mortgageDeduction.getTarget(), "润坤")) {
+                            mortgageDeduction.setTarget("润坤");
+                        } else {
                             mortgageDeduction.setTarget("润坤");
                         }
 

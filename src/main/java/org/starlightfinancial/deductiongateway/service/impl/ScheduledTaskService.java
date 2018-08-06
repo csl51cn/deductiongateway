@@ -47,9 +47,14 @@ public class ScheduledTaskService {
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
 
+    /**
+     * 自动代扣
+     *
+     * @throws Exception
+     */
     @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
-        System.out.println("执行了吗");
+        LOGGER.info("开始执行自动代扣,[{}]", LocalDate.now().toString());
 
         //轧账后的月底节假日不进行代扣,下面是判断是否当天在不进行代扣的时间段内:从当月最后一天开始判断是否是节假日,如果是节假日将最后一天保存到firstDay中,
         // 往前推算一天判断是否是节假日,如果是就保存到firstDay中,依次类推直到不是节假日,获取到了轧账后不代扣的第一天.通过
@@ -67,14 +72,14 @@ public class ScheduledTaskService {
             }
             tempDay = tempDay.minusDays(1);
         }
-        boolean afterOrEqual =false;
+        boolean afterOrEqual = false;
 
-        if (firstDay != null){
+        if (firstDay != null) {
             afterOrEqual = now.isAfter(firstDay) || now.isEqual(firstDay);
         }
         if (afterOrEqual) {
             //如果是轧账后的月底节假日,不执行自动代扣
-            LOGGER.info("今天{} 处于轧账后的月底节假日内不自动代扣",now.toString());
+            LOGGER.info("今天{} 处于轧账后的月底节假日内不自动代扣", now.toString());
         } else {
             //如果是在轧账时间前,执行自动代扣
             String autoSwitch = isHoliday(now);
@@ -84,9 +89,14 @@ public class ScheduledTaskService {
     }
 
 
+    /**
+     * 自动导入当天代扣模板
+     *
+     * @throws Exception 异常时抛出
+     */
     @Scheduled(cron = "00 30 08 * * ? ")
     public void deductionTemplateImport() throws Exception {
-        System.out.println("自动导入当天代扣模板");
+        LOGGER.info("自动导入当天代扣模板,[{}]", LocalDate.now().toString());
         String autoSwitch = isHoliday(LocalDate.now());
         jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
         jobLauncher.run(deductionTemplatBatchImport, jobParameters);
@@ -105,9 +115,8 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从13点-21点每小时处理一次
      */
-//    @Scheduled(cron = "0 0 13-21 * * ?")
-    @Scheduled(cron = "0 13 17 * * ?")
-    public void uploadAutoAccountingFile(){
+    @Scheduled(cron = "0 0 13-21 * * ?")
+    public void uploadAutoAccountingFile() {
         LOGGER.info("开始处理自动入账excel文档");
         mortgageDeductionService.uploadAutoAccountingFile();
     }
@@ -116,7 +125,7 @@ public class ScheduledTaskService {
      * 每天上午5点刷新缓存服务
      */
     @Scheduled(cron = "0 0 5 * * ? ")
-    public void refreshCacheService(){
+    public void refreshCacheService() {
         CacheService.refresh();
     }
 

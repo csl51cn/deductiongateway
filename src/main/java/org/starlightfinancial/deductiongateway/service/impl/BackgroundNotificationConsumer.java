@@ -41,11 +41,11 @@ public class BackgroundNotificationConsumer {
     public void receiveChinaPayQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
-            logger.info("收到银联后台通知消息:{}",text);
+            logger.info("收到银联后台通知消息:{}", text);
             JSONObject jsonObject = (JSONObject) JSONObject.parse(text);
             //获取订单号
             String merOrderNo = jsonObject.getString("MerOrderNo");
-            if (StringUtils.isBlank(merOrderNo)){
+            if (StringUtils.isBlank(merOrderNo)) {
                 //如果获取到的消息中订单号为空,签收消息
                 textMessage.acknowledge();
                 return;
@@ -90,11 +90,11 @@ public class BackgroundNotificationConsumer {
     public void receiveBaoFuQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
-            logger.info("收到宝付后台通知消息:{}",text);
+            logger.info("收到宝付后台通知消息:{}", text);
             JSONObject jsonObject = (JSONObject) JSONObject.parse(text);
             //获取订单号
             String transId = jsonObject.getString("trans_id");
-            if (StringUtils.isBlank(transId)){
+            if (StringUtils.isBlank(transId)) {
                 //如果获取到的消息中订单号为空,签收消息
                 textMessage.acknowledge();
                 return;

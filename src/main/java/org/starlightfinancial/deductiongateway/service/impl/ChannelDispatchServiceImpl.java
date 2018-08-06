@@ -111,7 +111,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         if (StringUtils.equals(mortgageDeduction.getType(), "1")) {
             message = Message.fail("请先进行代扣操作,再查询代扣结果");
             return message;
-        }else{
+        } else {
             String channel = mortgageDeduction.getChannel();
             OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
             if (operationStrategy != null) {

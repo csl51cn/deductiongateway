@@ -27,12 +27,13 @@ public class LimitManagerServiceImpl implements LimitManagerService {
 
     /**
      * 查询所有数据
+     *
      * @param pageBean
      * @return
      */
     @Override
     public PageBean queryAllLimit(PageBean pageBean) {
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean,1);
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 1);
         Page<LimitManager> limitManagers = limitManagerRepository.findAll(new Specification<LimitManager>() {
             @Override
             public Predicate toPredicate(Root<LimitManager> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
@@ -49,6 +50,7 @@ public class LimitManagerServiceImpl implements LimitManagerService {
 
     /**
      * 保存或更新限额
+     *
      * @param limitManager
      */
     @Override

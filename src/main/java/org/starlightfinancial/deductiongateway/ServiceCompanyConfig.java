@@ -29,16 +29,16 @@ public class ServiceCompanyConfig {
      * 根据服务费公司和渠道返回服务费公司商户号
      *
      * @param serviceCompany 服务费公司中文名
-     * @param channel 渠道
+     * @param channel        渠道
      * @return 对应条件的服务费公司商户号
      */
     public String getServiceCompanyCode(String serviceCompany, String channel) {
 
         Map<String, String> channelCodeMap = serviceCompanyMap.getOrDefault(serviceCompany, serviceCompanyMap.get("铠岳"));
-        if (channelCodeMap.containsKey(channel)){
+        if (channelCodeMap.containsKey(channel)) {
             return channelCodeMap.get(channel);
-        }else{
-            return  null;
+        } else {
+            return null;
         }
     }
 

@@ -129,8 +129,8 @@ public class HttpClientUtil {
      *
      * @param url
      */
-    public static String httpGet(String url) {
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();
+    public static String httpGet(String url) throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(300000).setConnectTimeout(300000).build();
         CloseableHttpClient client = HttpClients.createDefault();
         // 发送get请求
         HttpGet request = new HttpGet(url);
@@ -145,9 +145,11 @@ public class HttpClientUtil {
                 LOGGER.info("get请求提交成功:" + url);
             } else {
                 LOGGER.error("get请求提交失败:" + url);
+                throw new IOException("get请求提交失败:"+url);
             }
         } catch (IOException e) {
             LOGGER.error("get请求提交失败:" + url, e);
+            throw new IOException("get请求提交失败:"+url);
         } finally {
             request.releaseConnection();
         }

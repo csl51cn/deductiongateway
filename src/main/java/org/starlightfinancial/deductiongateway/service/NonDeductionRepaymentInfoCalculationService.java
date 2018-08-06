@@ -66,10 +66,32 @@ public class NonDeductionRepaymentInfoCalculationService {
             }
         });
 
-        //获得了所有可能对应的业务信息即候选业务信息,判断还款日期和还款金额是否在允许的误差范围内
         List<BusinessTransaction> candidateBusinessTransactions = Collections.synchronizedList(new ArrayList<>(candidateBusinessTransactionMap.values()));
+
+        //业务结清判断,如果结清了从candidateBusinessTransactions中移除当前业务信息.
+        Iterator<BusinessTransaction> iterator = candidateBusinessTransactions.iterator();
+        while (iterator.hasNext()) {
+            BusinessTransaction next = iterator.next();
+            //查询未结清期数
+            Long count = repaymentPlanRepository.countByDateIdAndStatus(next.getDateId(), "0");
+            if (count == 0) {
+                //如果业务已经结清了,移除
+                iterator.remove();
+            }
+        }
+
+
+        //获得了所有可能对应的业务信息即候选业务信息,判断还款日期和还款金额是否在允许的误差范围内
         TreeSet<BusinessTransaction> resultSet = new TreeSet<>();
-        compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);
+        if (candidateBusinessTransactions.size() == 1) {
+            //如果候选的业务信息只有一条,直接加入到resultSet中
+            resultSet.add(candidateBusinessTransactions.get(0));
+        } else {
+            //如果候选的业务信息不止一条,继续用还款日期和还款金额去匹配
+            compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);
+
+        }
+
 
 
         //最后判断resultSet中有多少条业务信息,如果result的大小不为1,表示未精确查询到匹配的业务信息,不做出更改,如果只剩下一条对应的业务信息,将合同编号,dateId设置到非代扣还款信息中

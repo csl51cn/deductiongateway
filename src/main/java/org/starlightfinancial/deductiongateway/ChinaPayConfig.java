@@ -118,7 +118,7 @@ public class ChinaPayConfig {
     private String classicRunTongMemberId;
 
     /**
-     *白名单代扣铠岳分账商户号
+     * 白名单代扣铠岳分账商户号
      */
     @Value("${chinapay.classic.api.kaiyue.service.member.id}")
     private String classicKaiYueMemberId;

@@ -45,8 +45,8 @@ public class AutoBatchAssembler extends Assembler {
     }
 
     private void assembleUNIONPAY(List<AutoBatchDeduction> list) throws Exception {
-        for (AutoBatchDeduction autoBatchDeduction : list ) {
-            MortgageDeduction mortgageDeduction =beanConverter.transToMortgageDeduction(autoBatchDeduction);
+        for (AutoBatchDeduction autoBatchDeduction : list) {
+            MortgageDeduction mortgageDeduction = beanConverter.transToMortgageDeduction(autoBatchDeduction);
             getResult().add(mortgageDeduction);
         }
 

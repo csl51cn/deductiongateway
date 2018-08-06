@@ -134,8 +134,7 @@ public class MortgageDeduction {
      * 是否上传自动入账文件:0-否,1-是
      */
     @Column(name = "is_uploaded")
-    private String  isUploaded;
-
+    private String isUploaded;
 
 
     public MortgageDeduction() {

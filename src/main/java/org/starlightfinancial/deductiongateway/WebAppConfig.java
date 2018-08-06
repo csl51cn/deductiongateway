@@ -25,6 +25,7 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
 
     /**
      * 页面跳转
+     *
      * @param registry
      */
     @Override

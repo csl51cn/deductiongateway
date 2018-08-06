@@ -107,9 +107,9 @@ public class Delivery extends Decorator {
             mortgageDeduction.setPayTime(new Date());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode());
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer(),chinaPayConfig.getClassicPfxFile());
+            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer(), chinaPayConfig.getClassicPfxFile());
             if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-                LOGGER.debug("银联报文签名异常,订单号:{},合同号:{}",mortgageDeduction.getOrdId(),mortgageDeduction.getContractNo() );
+                LOGGER.debug("银联报文签名异常,订单号:{},合同号:{}", mortgageDeduction.getOrdId(), mortgageDeduction.getContractNo());
                 mortgageDeduction.setErrorResult("银联报文签名异常");
                 result.add(mortgageDeduction);
                 continue;
@@ -136,7 +136,7 @@ public class Delivery extends Decorator {
         }
     }
 
-    private void deliveryBaoFu(List<MortgageDeduction> list)  {
+    private void deliveryBaoFu(List<MortgageDeduction> list) {
         for (MortgageDeduction mortgageDeduction : list) {
             BaoFuRequestParams baoFuRequestParams = beanConverter.transToBaoFuRequestParams(mortgageDeduction);
 
@@ -146,7 +146,7 @@ public class Delivery extends Decorator {
             mortgageDeduction.setPlanNo(0);
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
-            mortgageDeduction.setPayTime(Utility.convertToDate(baoFuRequestParams.getSendTime(),"yyyy-MM-dd HH:mm:ss"));
+            mortgageDeduction.setPayTime(Utility.convertToDate(baoFuRequestParams.getSendTime(), "yyyy-MM-dd HH:mm:ss"));
             mortgageDeduction.setSplitType("");
             mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode());
             try {

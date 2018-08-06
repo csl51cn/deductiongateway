@@ -96,7 +96,7 @@ public class AutoAccountUploadService {
             cell.setCellValue(autoAccountingExcelRow.getServiceFee().toString());
             //分账数据3金额（元）
             cell = row.createCell(9);
-            cell.setCellValue("");
+            cell.setCellValue(autoAccountingExcelRow.getEvaluationFee().toString());
             //分账数据4金额（元）
             cell = row.createCell(10);
             cell.setCellValue("");

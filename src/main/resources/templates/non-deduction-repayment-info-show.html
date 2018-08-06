@@ -314,7 +314,7 @@
     ];
     var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
     <!-- 还款方式 -->
-    var repaymentMethod = ["银行转账", "现金", "微信", "POS机刷卡"];
+    var repaymentMethod = ["银行转账", "现金", "收银宝", "POS机刷卡"];
 
 
     <!-- 改变入账银行名 -->
@@ -471,7 +471,7 @@
         }
     }, {
         field: 'bankName',
-        title: '银行转账入账银行',
+        title: '入账银行',
         editable: {
             type: 'select',
             title: '银行转账入账银行编辑',
@@ -506,7 +506,7 @@
         }
     }, {
         field: 'isUploaded',
-        title: '是否自动入账上传',
+        title: '入账文件',
         formatter: function (value, row, index) {
             if (value == '1') {
                 return '已上传';
@@ -515,6 +515,12 @@
             } else {
                 return '未知状态'
             }
+        }
+    }, {
+        field: 'gmtCreate',
+        title: '导入时间',
+        formatter: function (value, row, index) {
+            return formatDate(value);
         }
     }];
 
@@ -527,8 +533,8 @@
                 url: "/nonDeductionController/queryNonDeductionRepaymentInfo.do",
                 queryParams: queryParams,
                 sidePagination: "server",
-                pageSize: 30,
-                pageList: [10, 20, 30, 100, 200, 500],
+                pageSize: 40,
+                pageList: [10, 20, 30, 40, 100, 200, 500],
                 smartDisplay: true,
                 cache: false,
                 height: $(window).height() - 300,
@@ -784,7 +790,7 @@
             });
         });
 
-        <!--上传态框中的确认按钮功能-->
+        <!--上传入账文件模态框中的确认按钮功能-->
         $("#uploadBtn").click(function () {
             var ids = [];
             var rows = $('#table').bootstrapTable('getSelections');
@@ -806,25 +812,32 @@
                     timeout: 1800000,
                     method: "POST",
                     data: {"ids": ids.toString()},
+                    dataType: 'JSON',
                     success: function (data) {
                         value = 0;
                         $('#myModal').modal('hide');
                         if ("1" == data) {
                             setTimeout(query(), 4020);
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
                         } else {
-                            if (data.length > 5) {
-                                noty({
-                                    'text': '执行失败,' + data,
-                                    'layout': 'center',
-                                    'type': 'error',
-                                    "timeout": "4000"
-                                });
-
-                            } else {
-                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                            }
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
                         }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
                     }
                 })
             })

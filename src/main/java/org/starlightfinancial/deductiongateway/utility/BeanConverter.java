@@ -502,7 +502,7 @@ public class BeanConverter {
         }
 
         if (RepaymentTypeEnum.EVALUATION_FEE.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
-            //服务费
+            //调查评估费
             autoAccountingExcelRow.setEvaluationFee(new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount()));
             autoAccountingExcelRow.setEvaluationFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
 
