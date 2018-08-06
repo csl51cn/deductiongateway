@@ -57,6 +57,22 @@ public class NonDeductionRepaymentInfoQueryCondition {
     private String isIntegrated;
 
 
+    /**
+     * 入账公司
+     */
+    private String chargeCompany;
+
+    /**
+     * 还款方式
+     */
+    private String repaymentMethod;
+
+    /**
+     * 入账银行
+     */
+    private String bankName;
+
+
     public Date getRepaymentStartDate() {
         return repaymentStartDate;
     }
@@ -114,12 +130,35 @@ public class NonDeductionRepaymentInfoQueryCondition {
     }
 
 
-
     public String getIsIntegrated() {
         return isIntegrated;
     }
 
     public void setIsIntegrated(String isIntegrated) {
         this.isIntegrated = isIntegrated;
+    }
+
+    public String getChargeCompany() {
+        return chargeCompany;
+    }
+
+    public void setChargeCompany(String chargeCompany) {
+        this.chargeCompany = chargeCompany;
+    }
+
+    public String getRepaymentMethod() {
+        return repaymentMethod;
+    }
+
+    public void setRepaymentMethod(String repaymentMethod) {
+        this.repaymentMethod = repaymentMethod;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
     }
 }

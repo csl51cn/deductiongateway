@@ -111,5 +111,16 @@ public class AssociatePayerServiceImpl implements AssociatePayerService {
         LOGGER.info("更新非代扣还款信息操作,操作人:{},非代扣还款记录id:{}", associatePayer.getCreateId(), associatePayer.getId());
     }
 
+    /**
+     * 根据合同编号查询记录
+     *
+     * @param contractNo 合同编号
+     * @return 查询到的记录
+     */
+    @Override
+    public AssociatePayer queryByContractNo(String contractNo) {
+        return  associatePayerRepository.findByContractNo(contractNo);
+    }
+
 
 }

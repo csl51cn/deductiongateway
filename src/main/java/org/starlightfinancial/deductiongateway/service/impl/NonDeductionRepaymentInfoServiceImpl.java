@@ -143,12 +143,19 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      *
      * @param pageBean                                页面参数对象
      * @param nonDeductionRepaymentInfoQueryCondition 查询条件
+     * @param session                                 会话session
      * @return 返回根据条件查询到的记录
      */
     @Override
-    public PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition) {
+    public PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session) {
         PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
-        Page<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findAll(getSpecification(nonDeductionRepaymentInfoQueryCondition), pageRequest);
+        Specification<NonDeductionRepaymentInfo> specification = getSpecification(nonDeductionRepaymentInfoQueryCondition);
+        //不分页查询所有数据,获得根据条件查询出来还款总额
+        List<NonDeductionRepaymentInfo> allNoPaging = nonDeductionRepaymentInfoRepository.findAll(specification);
+        String totalRepaymentAmount = allNoPaging.stream().map(nonDeductionRepaymentInfo -> new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount())).reduce(BigDecimal.ZERO, (a, b) -> a.add(b)).toString();
+        session.setAttribute("totalRepaymentAmount",totalRepaymentAmount);
+        //分页查询所有数据
+        Page<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findAll(specification, pageRequest);
         if (nonDeductionRepaymentInfos.hasContent()) {
             pageBean.setTotal(nonDeductionRepaymentInfos.getTotalElements());
             pageBean.setRows(nonDeductionRepaymentInfos.getContent());
@@ -190,6 +197,21 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 //合同号非空判断。不为空则加此条件
                 if (StringUtils.isNotBlank(nonDeductionRepaymentInfoQueryCondition.getContractNo())) {
                     predicates.add(cb.equal(root.get("contractNo"), nonDeductionRepaymentInfoQueryCondition.getContractNo().trim()));
+                }
+
+                //入账公司判断是否是全部,如果是0是全部入账公司不加限制,如果不是0,根据传入的条件查询
+                if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getChargeCompany())) {
+                    predicates.add(cb.equal(root.get("chargeCompany"), nonDeductionRepaymentInfoQueryCondition.getChargeCompany().trim()));
+                }
+
+                //还款方式判断是否是全部,如果是0是全部还款方式不加限制,如果不是0,根据传入的条件查询
+                if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod())) {
+                    predicates.add(cb.equal(root.get("repaymentMethod"), nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod().trim()));
+                }
+
+                //入账银行判断是否是全部,如果是0是全部入账银行不加限制,如果不是0,根据传入的条件查询
+                if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getBankName())) {
+                    predicates.add(cb.equal(root.get("bankName"), nonDeductionRepaymentInfoQueryCondition.getBankName().trim()));
                 }
 
                 return cb.and(predicates.toArray(new Predicate[]{}));

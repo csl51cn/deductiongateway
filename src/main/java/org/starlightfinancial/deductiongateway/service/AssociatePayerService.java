@@ -42,4 +42,11 @@ public interface AssociatePayerService {
      * @param associatePayer 关联还款人
      */
     void updateAssociatePayer(AssociatePayer associatePayer);
+
+    /**
+     * 根据合同编号查询记录
+     * @param contractNo 合同编号
+     * @return 查询到的记录
+     */
+    AssociatePayer queryByContractNo(String contractNo);
 }

@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AssociatePayer;
 import org.starlightfinancial.deductiongateway.service.AssociatePayerService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -54,8 +56,12 @@ public class AssociatePayerController {
      */
     @RequestMapping(value = "/saveAssociatePayer.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public String saveAssociatePayer(AssociatePayer associatePayer, HttpSession session) {
+    public Message saveAssociatePayer(AssociatePayer associatePayer, HttpSession session) {
 
+        AssociatePayer existedAssociatePayer = associatePayerService.queryByContractNo(associatePayer.getContractNo().trim());
+        if (existedAssociatePayer != null) {
+            return Message.fail("此合同编号已经存在,请查询后编辑关联还款人");
+        }
         //设置创建时间
         associatePayer.setGmtCreate(new Date());
         //设置修改时间
@@ -64,12 +70,35 @@ public class AssociatePayerController {
         associatePayer.setCreateId(Utility.getLoginUserId(session));
         //设置修改人id
         associatePayer.setModifiedId(associatePayer.getCreateId());
+        //去除空格
+        trim(associatePayer);
         try {
             associatePayerService.saveAssociatePayer(associatePayer);
-            return "1";
+            return Message.success();
         } catch (Exception e) {
             LOGGER.debug("保存关联还款人信息失败", e);
-            return "0";
+            return Message.fail("保存关联还款人信息失败");
+        }
+    }
+
+    /**
+     * 清除空格
+     *
+     * @param associatePayer 关联还款人记录
+     */
+    private void trim(AssociatePayer associatePayer) {
+        associatePayer.setContractNo(associatePayer.getContractNo().trim());
+        if (StringUtils.isNotBlank(associatePayer.getPayer1())) {
+            associatePayer.setPayer1(associatePayer.getPayer1().trim());
+        }
+        if (StringUtils.isNotBlank(associatePayer.getPayer2())) {
+            associatePayer.setPayer2(associatePayer.getPayer2().trim());
+        }
+        if (StringUtils.isNotBlank(associatePayer.getPayer3())) {
+            associatePayer.setPayer3(associatePayer.getPayer3().trim());
+        }
+        if (StringUtils.isNotBlank(associatePayer.getPayer4())) {
+            associatePayer.setPayer4(associatePayer.getPayer4().trim());
         }
     }
 
@@ -88,6 +117,8 @@ public class AssociatePayerController {
         associatePayer.setGmtModified(new Date());
         //设置修改人id
         associatePayer.setModifiedId(Utility.getLoginUserId(session));
+        //去除空格
+        trim(associatePayer);
         try {
             associatePayerService.updateAssociatePayer(associatePayer);
             return "1";

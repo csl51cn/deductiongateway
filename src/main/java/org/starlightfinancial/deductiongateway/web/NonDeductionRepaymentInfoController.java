@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
@@ -76,8 +77,8 @@ public class NonDeductionRepaymentInfoController {
      */
     @RequestMapping(value = "/queryNonDeductionRepaymentInfo.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Map<String, Object> queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition) {
-        PageBean result = nonDeductionRepaymentInfoService.queryNonDeductionRepaymentInfo(pageBean, nonDeductionRepaymentInfoQueryCondition);
+    public Map<String, Object> queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session) {
+        PageBean result = nonDeductionRepaymentInfoService.queryNonDeductionRepaymentInfo(pageBean, nonDeductionRepaymentInfoQueryCondition, session);
         return Utility.pageBean2Map(result);
     }
 
@@ -161,7 +162,7 @@ public class NonDeductionRepaymentInfoController {
             return "上传自动入账excel文件失败";
         } catch (FieldFormatCheckException e) {
             LOGGER.error("{}", e.getMessage());
-            return e.getMessage()+",请修改后重试";
+            return e.getMessage() + ",请修改后重试";
         }
 
     }
@@ -264,6 +265,23 @@ public class NonDeductionRepaymentInfoController {
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
         IOUtils.closeQuietly(outputStream);
+    }
+
+    /**
+     * 获取非代扣还款数据的总额,此处session保存的最近一次请求的总额
+     */
+    @RequestMapping(value = "/queryTotalRepaymentAmount.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public Message queryTotalRepaymentAmount(HttpSession session) {
+        try {
+            String totalRepaymentAmount = (String) session.getAttribute("totalRepaymentAmount");
+            return Message.success(totalRepaymentAmount);
+        }catch (Exception e){
+            e.printStackTrace();
+            return Message.fail();
+        }
+
+
     }
 
 }

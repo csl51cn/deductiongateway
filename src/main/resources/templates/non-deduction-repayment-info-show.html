@@ -102,6 +102,35 @@
                                             </select>
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><label for="chargeCompany">入账公司</label></td>
+                                        <td>
+                                            <select id="chargeCompany" style="width: 164px;" name="isIntegrated">
+                                                <option value="0" selected>全部</option>
+                                                <option value="润通">润通</option>
+                                                <option value="铠岳">铠岳</option>
+                                                <option value="润坤">润坤</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="repaymentMethod">还款方式</label></td>
+                                        <td>
+                                            <select id="repaymentMethod" style="width: 164px;" name="isIntegrated">
+                                                <option value="0" selected>全部</option>
+                                                <option value="银行转账">银行转账</option>
+                                                <option value="现金">现金</option>
+                                                <option value="收银宝">收银宝</option>
+                                                <option value="POS机刷卡">POS机刷卡</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="bankName">入账银行</label></td>
+                                        <td>
+                                            <select id="bankName" style="width: 164px;" name="isIntegrated">
+                                                <option value="0" selected>全部</option>
+                                                <option value="招行0366">招行0366</option>
+                                                <option value="建行3504">建行3504</option>
+                                            </select>
+                                        </td>
+                                    </tr>
                                 </table>
                             </form>
 
@@ -121,6 +150,9 @@
                             </table>
                         </div>
                         <table id="table"></table>
+                        <div>
+                            <span>总还款额(元):</span><span id="totalRepaymentAmount"></span>
+                        </div>
                     </div>
                 </div><!--/span-->
 
@@ -247,6 +279,7 @@
                                             <option value="本息">本息</option>
                                             <option value="服务费">服务费</option>
                                             <option value="调查评估费">调查评估费</option>
+                                            <option value="调查评估费">其他</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_repayment_amount">还款金额</label></td>
                                         <td><input type="text" name="repaymentAmount" id="txt_repayment_amount"
@@ -600,6 +633,9 @@
                     $("#txt_bank_name").select(row.bankName);
                     $("#txt_repayment_type").val(row.repaymentType);
                     $("#editModal").modal();
+                },
+                onLoadSuccess: function (data) {
+                   queryTotalAmount();
                 }
             });
         }
@@ -696,8 +732,10 @@
                 isIntegrated: $("#select_isIntegrated").val(),
                 isUploaded: $("#isUploaded").val(),
                 importStartDate: importStartDate,
-                importEndDate: importEndDate
-
+                importEndDate: importEndDate,
+                chargeCompany: $("#chargeCompany").val(),
+                repaymentMethod: $("#repaymentMethod").val(),
+                bankName: $("#bankName").val()
             }
         }
 
@@ -713,13 +751,41 @@
         $("#isUploaded").change(function () {
             query();
         });
+        <!--入账公司选择变化重新加载数据-->
+        $("#chargeCompany").change(function () {
+            query();
+        });
+        <!--还款方式选择变化重新加载数据-->
+        $("#repaymentMethod").change(function () {
+            query();
+        });
+        <!--入账银行选择变化重新加载数据-->
+        $("#bankName").change(function () {
+            query();
+        });
 
         function query() {
             $('#table').bootstrapTable('removeAll');
             $('#table').bootstrapTable('refresh', {
                 url: '/nonDeductionController/queryNonDeductionRepaymentInfo.do',
                 query: queryParams()
-            })
+            });
+        }
+
+        function queryTotalAmount() {
+            $.ajax({
+                type: "post",
+                url: "/nonDeductionController/queryTotalRepaymentAmount.do",
+                data: "",
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data.code == "0000") {
+                        $("#totalRepaymentAmount").html(data.message);
+                    } else {
+                        $("#totalRepaymentAmount").html(0);
+                    }
+                }
+            });
         }
 
         <!--新增按钮功能-->
@@ -780,12 +846,9 @@
                 success: function (data) {
                     if (data == "1") {
                         setTimeout(query, 4000);
-                        if (data == "1") {
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                     }
+                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                 }
             });
         });
@@ -940,6 +1003,24 @@
             location.href = "/nonDeductionController/exportXLS.do?repaymentStartDate=" + repaymentStartDate + "&repaymentEndDate=" + repaymentEndDate +
                 "&contractNo=" + contractNo + "&customerName=" + customerName + "&isIntegrated=" + isIntegrated + "&isUploaded=" + isUploaded + "&importStartDate=" + importStartDate + "&importEndDate=" + importEndDate;
         });
+        <!--查询条件入账公司变更与入账银行联动-->
+        $("#chargeCompany").click(function () {
+            for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+                if (chargeCompanyAndBankName[i].chargeCompany == $(this).val()) {
+                    var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                    var tempBankNameLength = tempBankNameList.length;
+                    var bankNameNode = $("#bankName");
+                    bankNameNode.empty();
+                    bankNameNode.append("<option value='0' selected>全部</option>");
+                    for (var j = 0; j < tempBankNameLength; j++) {
+                        var bankName = tempBankNameList[j];
+                        bankNameNode.append("<option value='" + bankName + "'>" + bankName + "</option>");
+                    }
+                    break;
+                }
+            }
+        })
+
     })
 </script>
 <!-- end: JavaScript-->

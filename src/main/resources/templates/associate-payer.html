@@ -66,12 +66,13 @@
                             <h4 class="modal-title" id="modalTitle">新增关联还款人</h4>
                         </div>
                         <div class="modal-body">
-                            <form id="editForm"  class="form-horizontal">
+                            <form id="editForm" class="form-horizontal">
                                 <table class="table">
                                     <tbody>
                                     <tr>
                                         <td><label class="control-label" for="txt_contract_no">合同编号</label></td>
-                                        <td><input type="text" name="contractNo" id="txt_contract_no" placeholder="合同编号">
+                                        <td><input type="text" name="contractNo" id="txt_contract_no"
+                                                   placeholder="合同编号">
                                         </td>
                                     </tr>
                                     <tr>
@@ -304,19 +305,23 @@
         });
         <!--新增限额模态框中的确认按钮功能-->
         $(".btn-success").click(function () {
+
+            var contractNo = $("#txt_contract_no").val();
+            if (!contractNo) {
+                noty({'text': '合同编号不能为空', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
             $.ajax({
                 type: "post",
                 url: "/associatePayerController/saveAssociatePayer.do",
                 data: $("#editForm").serialize(),
                 dataType: 'JSON',
                 success: function (data) {
-                    if (data == "1") {
+                    if (data.code == "0000") {
                         setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                        if (data == "1") {
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
+                        noty({'text': '执行成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     }
                 }
             });

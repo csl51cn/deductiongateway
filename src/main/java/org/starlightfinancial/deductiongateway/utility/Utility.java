@@ -43,7 +43,7 @@ public class Utility {
      */
     public static Map<String, Object> pageBean2Map(PageBean pageBean) {
 
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<String, Object>(2);
         if (pageBean != null) {
             map.put("total", pageBean.getTotal());
             map.put("rows", pageBean.getRows());
@@ -60,7 +60,7 @@ public class Utility {
      * @param date
      * @return
      */
-    public static String convertToString(Date date,String pattern) {
+    public static String convertToString(Date date, String pattern) {
         try {
             if (date != null) {
                 return new SimpleDateFormat(pattern).format(date);
@@ -79,7 +79,7 @@ public class Utility {
      * @param date
      * @return
      */
-    public static Date convertToDate(String date,String pattern) {
+    public static Date convertToDate(String date, String pattern) {
         try {
             if (date != null) {
                 return new SimpleDateFormat(pattern).parse(date);
@@ -92,16 +92,13 @@ public class Utility {
     }
 
 
-
-
     /**
      * @param checkValue
      * @return
      */
-    public static boolean checkBigDecimal2(BigDecimal checkValue)
-    {   // 判断大于0
+    public static boolean checkBigDecimal2(BigDecimal checkValue) {   // 判断大于0
         if (checkValue != null
-                && checkValue.compareTo(new BigDecimal("0.00")) == 1){
+                && checkValue.compareTo(new BigDecimal("0.00")) == 1) {
             return true;
         }
 
@@ -165,7 +162,7 @@ public class Utility {
     /**
      * 获取访问用户的客户端IP（适用于公网与局域网）.
      */
-    public static  String getIpAddress(final HttpServletRequest request)
+    public static String getIpAddress(final HttpServletRequest request)
             throws Exception {
         if (request == null) {
             throw (new Exception("getIpAddress method HttpServletRequest Object is null"));
@@ -215,7 +212,6 @@ public class Utility {
         SysUser loginUser = (SysUser) session.getAttribute("loginUser");
         return loginUser.getLoginName();
     }
-
 
 
     /**

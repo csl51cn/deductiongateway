@@ -33,9 +33,10 @@ public interface NonDeductionRepaymentInfoService {
      *
      * @param pageBean                                页面参数对象
      * @param nonDeductionRepaymentInfoQueryCondition 查询条件
+     * @param session                                 会话session
      * @return 返回根据条件查询到的记录
      */
-    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition);
+    PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session);
 
     /**
      * 保存记录
