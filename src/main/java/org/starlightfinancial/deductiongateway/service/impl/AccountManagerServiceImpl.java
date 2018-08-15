@@ -74,6 +74,10 @@ public class AccountManagerServiceImpl implements AccountManagerService {
             }
         };
         long count = accountManagerRepository.count(specification);
+        if (count == 0) {
+            //如果查询出来的总记录数为0,直接返回null,避免后续查询代码执行
+            return null;
+        }
         double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
         double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
         if (totalPageCount < pageBean.getPageNumber()) {

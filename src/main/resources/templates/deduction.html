@@ -275,7 +275,7 @@
                 query: queryParams()
             })
         });
-
+        var value;
         <!--执行代扣功能-->
         function executeDeduct(deductionMethod) {
             $('#confirmModal').modal();
@@ -286,7 +286,7 @@
                     ids.push(rows[i].id);
                 }
                 value=0;
-                increment();
+                increment(value);
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -354,7 +354,8 @@
                 for (var i = 0; i < rows.length; i++) {
                     ids.push(rows[i].id);
                 }
-                increment();
+                value=0
+                increment(value);
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -386,7 +387,16 @@
         })
         //进度条初始值
         var value = 0;
-
+        <!--进度条自动增长-->
+        function increment(value) {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
 
     })
 </script>

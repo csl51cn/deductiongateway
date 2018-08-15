@@ -153,6 +153,11 @@ public class AutoAccountUploadService {
         fileName.append(Utility.convertToString(new Date(), "yyyyMMdd_HHmmss"));
         fileName.append(".xls");
         AutoAccountingFtpUtil.upload(fileName.toString(), is);
-        HttpClientUtil.httpGet(environment.getProperty("auto.accounting.execute.url"));
+        try {
+            HttpClientUtil.httpGet(environment.getProperty("auto.accounting.execute.url"));
+        } catch (IOException e) {
+            LOGGER.error("上传入账excel文档[{}]失败",fileName.toString());
+            throw e;
+        }
     }
 }

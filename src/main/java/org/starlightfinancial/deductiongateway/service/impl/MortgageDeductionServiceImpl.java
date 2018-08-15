@@ -130,8 +130,9 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         MortgageDeduction mortgageDeduction = new MortgageDeduction();
                         for (int j = hssfRow.getFirstCellNum(); j < hssfRow.getLastCellNum(); j++) {
                             HSSFCell hssfCell = hssfRow.getCell(j);
-                            if (StringUtils.isEmpty(ExcelReader.getCellFormatValue(hssfCell)))
+                            if (StringUtils.isEmpty(ExcelReader.getCellFormatValue(hssfCell))) {
                                 continue outterloop;
+                            }
                             if (colIndexMap.containsKey(j)) {
                                 String fieldName = colIndexMap.get(j);
                                 Field field = MortgageDeduction.class.getDeclaredField(fieldName);
@@ -310,6 +311,10 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         };
 
         long count = mortgageDeductionRepository.count(specification);
+        if (count == 0) {
+            //如果查询出来的总记录数为0,直接返回null,避免后续查询代码执行
+            return null;
+        }
         double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
         double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
         if (totalPageCount < pageBean.getPageNumber()) {
@@ -569,15 +574,16 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * 自动上传代扣成功的记录
      */
     @Override
-    public void uploadAutoAccountingFile() {
+    public void uploadAutoAccountingFile() throws IOException, ClassNotFoundException {
         Date yesterday = Utility.toMidNight(Utility.addDay(new Date(), -1));
-        List<MortgageDeduction> mortgageDeductions = mortgageDeductionRepository.findByIsUploadedAndIssuccessAndCreateDateAfter(String.valueOf(0), String.valueOf(1), yesterday);
+        List<MortgageDeduction> original = mortgageDeductionRepository.findByIsUploadedAndIssuccessAndCreateDateAfterOrderByPayTimeDesc(String.valueOf(0), String.valueOf(1), yesterday);
+        List<MortgageDeduction> mortgageDeductions = Utility.deepCopy(original);
         if (mortgageDeductions.size() <= 0) {
             log.info("暂无需要上传的代扣记录");
             return;
         }
         //合并同一个合同号的多条代扣记录
-        HashMap<String, MortgageDeduction> contractNoMortgageDeductionMap = new HashMap<>(32);
+        HashMap<String, MortgageDeduction> contractNoMortgageDeductionMap = new LinkedHashMap<>(32);
         mortgageDeductions.forEach(
                 mortgageDeduction -> {
                     MortgageDeduction value = contractNoMortgageDeductionMap.get(mortgageDeduction.getContractNo());
@@ -603,7 +609,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         }
 
         //设置为已上传,并更新
-        mortgageDeductions.forEach(
+        original.forEach(
                 mortgageDeduction -> {
                     mortgageDeduction.setIsUploaded(String.valueOf("1"));
                     mortgageDeductionRepository.saveAndFlush(mortgageDeduction);

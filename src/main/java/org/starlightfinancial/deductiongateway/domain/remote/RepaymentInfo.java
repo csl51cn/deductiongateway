@@ -1,25 +1,21 @@
-package org.starlightfinancial.deductiongateway.domain.local;
+package org.starlightfinancial.deductiongateway.domain.remote;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * @author: Senlin.Deng
- * @Description: 非代扣还款信息
- * @date: Created in 2018/7/17 16:25
+ * @Description: 还款信息:包含了代扣和非代扣还款
+ * @date: Created in 2018/8/13 11:57
  * @Modified By:
  */
-@Entity(name = "BU_NON_DEDUCTION_REPAYMENT_INFO")
-public class NonDeductionRepaymentInfo implements Serializable {
-
-
-    private static final long serialVersionUID = -8070620086463748397L;
+@Entity(name = "DATA_REPAYMENT_INFO")
+public class RepaymentInfo {
 
     /**
      * 主键
@@ -40,30 +36,11 @@ public class NonDeductionRepaymentInfo implements Serializable {
     @Column(name = "contract_no")
     private String contractNo;
 
-
     /**
      * 还款日期
      */
     @Column(name = "repayment_term_date")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date repaymentTermDate;
-
-
-    /**
-     * 入账日期
-     */
-    @Column(name = "accounting_date")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date accountingDate;
-
-
-    /**
-     * 还款原始信息
-     */
-    @Column(name = "repayment_original_info")
-    private String repaymentOriginalInfo;
 
     /**
      * 客户名称
@@ -78,17 +55,10 @@ public class NonDeductionRepaymentInfo implements Serializable {
     private String repaymentMethod;
 
     /**
-     * 还款类别
-     */
-    @Column(name = "repayment_type")
-    private String repaymentType;
-
-    /**
      * 还款金额
      */
     @Column(name = "repayment_amount")
     private BigDecimal repaymentAmount;
-
 
     /**
      * 入账银行
@@ -97,20 +67,36 @@ public class NonDeductionRepaymentInfo implements Serializable {
     private String bankName;
 
     /**
+     * 手续费
+     */
+    @Column(name = "handling_charge")
+    private BigDecimal handlingCharge;
+
+
+    /**
      * 入账公司
      */
     @Column(name = "charge_company")
     private String chargeCompany;
 
+    /**
+     * 还款类别
+     */
+    @Column(name = "repayment_type")
+    private String repaymentType;
 
     /**
-     * 信息是否完整:判断标准是否有对应的合同号
+     * 是否是代扣
      */
-    @Column(name = "is_integrated")
-    private String isIntegrated;
+    @Column(name = "is_deduction")
+    private String isDeduction;
 
-    @Column(name = "is_uploaded")
-    private String isUploaded;
+    /**
+     * 在原始表中的id,也就是在代扣信息表和非代扣信息表中的原始id
+     */
+    @Column(name = "original_id")
+    private Long originalId;
+
     /**
      * 创建时间
      */
@@ -140,24 +126,6 @@ public class NonDeductionRepaymentInfo implements Serializable {
     @Column(name = "modified_id")
     private Integer modifiedId;
 
-
-    /**
-     * 手续费
-     */
-    @Column(name = "handling_charge")
-    private BigDecimal handlingCharge;
-
-    /**
-     * 是否系统自动匹配出业务信息:0-否,1-是
-     */
-    @Column(name = "is_auto_matched")
-    private String isAutoMatched;
-
-    /**
-     * 被拆分的原始ID,如果某条记录是拆分出来的,使用这个字段保存它的来源
-     */
-    @Column(name = "original_id")
-    private Long originalId;
 
     public Long getId() {
         return id;
@@ -191,14 +159,6 @@ public class NonDeductionRepaymentInfo implements Serializable {
         this.repaymentTermDate = repaymentTermDate;
     }
 
-    public String getRepaymentOriginalInfo() {
-        return repaymentOriginalInfo;
-    }
-
-    public void setRepaymentOriginalInfo(String repaymentOriginalInfo) {
-        this.repaymentOriginalInfo = repaymentOriginalInfo;
-    }
-
     public String getCustomerName() {
         return customerName;
     }
@@ -215,28 +175,12 @@ public class NonDeductionRepaymentInfo implements Serializable {
         this.repaymentMethod = repaymentMethod;
     }
 
-    public String getRepaymentType() {
-        return repaymentType;
-    }
-
-    public void setRepaymentType(String repaymentType) {
-        this.repaymentType = repaymentType;
-    }
-
     public BigDecimal getRepaymentAmount() {
         return repaymentAmount;
     }
 
     public void setRepaymentAmount(BigDecimal repaymentAmount) {
         this.repaymentAmount = repaymentAmount;
-    }
-
-    public BigDecimal getHandlingCharge() {
-        return handlingCharge;
-    }
-
-    public void setHandlingCharge(BigDecimal handlingCharge) {
-        this.handlingCharge = handlingCharge;
     }
 
     public String getBankName() {
@@ -247,6 +191,13 @@ public class NonDeductionRepaymentInfo implements Serializable {
         this.bankName = bankName;
     }
 
+    public BigDecimal getHandlingCharge() {
+        return handlingCharge;
+    }
+
+    public void setHandlingCharge(BigDecimal handlingCharge) {
+        this.handlingCharge = handlingCharge;
+    }
 
     public Date getGmtCreate() {
         return gmtCreate;
@@ -262,14 +213,6 @@ public class NonDeductionRepaymentInfo implements Serializable {
 
     public void setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
-    }
-
-    public String getChargeCompany() {
-        return chargeCompany;
-    }
-
-    public void setChargeCompany(String chargeCompany) {
-        this.chargeCompany = chargeCompany;
     }
 
     public Integer getCreateId() {
@@ -288,39 +231,13 @@ public class NonDeductionRepaymentInfo implements Serializable {
         this.modifiedId = modifiedId;
     }
 
-    public String getIsIntegrated() {
-        return isIntegrated;
+    public String getIsDeduction() {
+        return isDeduction;
     }
 
-    public void setIsIntegrated(String isIntegrated) {
-        this.isIntegrated = isIntegrated;
+    public void setIsDeduction(String isDeduction) {
+        this.isDeduction = isDeduction;
     }
-
-    public String getIsUploaded() {
-        return isUploaded;
-    }
-
-    public void setIsUploaded(String isUploaded) {
-        this.isUploaded = isUploaded;
-    }
-
-
-    public Date getAccountingDate() {
-        return accountingDate;
-    }
-
-    public void setAccountingDate(Date accountingDate) {
-        this.accountingDate = accountingDate;
-    }
-
-    public String getIsAutoMatched() {
-        return isAutoMatched;
-    }
-
-    public void setIsAutoMatched(String isAutoMatched) {
-        this.isAutoMatched = isAutoMatched;
-    }
-
 
     public Long getOriginalId() {
         return originalId;
@@ -330,23 +247,19 @@ public class NonDeductionRepaymentInfo implements Serializable {
         this.originalId = originalId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        NonDeductionRepaymentInfo that = (NonDeductionRepaymentInfo) o;
-        return Objects.equals(id, that.id);
+    public String getChargeCompany() {
+        return chargeCompany;
     }
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(id);
+    public void setChargeCompany(String chargeCompany) {
+        this.chargeCompany = chargeCompany;
     }
 
+    public String getRepaymentType() {
+        return repaymentType;
+    }
 
+    public void setRepaymentType(String repaymentType) {
+        this.repaymentType = repaymentType;
+    }
 }

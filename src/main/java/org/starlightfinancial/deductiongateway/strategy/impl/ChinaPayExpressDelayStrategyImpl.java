@@ -130,4 +130,14 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
         return operationStrategy.queryPayResult(mortgageDeduction);
     }
 
+    /**
+     * 计算并设置手续费
+     *
+     * @param mortgageDeduction 代扣记录
+     */
+    @Override
+    public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
+
+    }
+
 }

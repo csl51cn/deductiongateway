@@ -87,4 +87,14 @@ public enum DeductionChannelEnum {
         }
         return null;
     }
+    public static String getOrderDescByCode(String code) {
+        if (code != null) {
+            for (DeductionChannelEnum deductionChannelEnum : DeductionChannelEnum.values()) {
+                if (code.equals(deductionChannelEnum.getCode())) {
+                    return deductionChannelEnum.getOrderDesc();
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -336,7 +336,7 @@
         }
     }, {
         field: 'isUploaded',
-        title: '是否自动入账上传',
+        title: '入账文件',
         formatter: function (value, row, index) {
             if (value == '1') {
                 return '已上传';
@@ -508,6 +508,7 @@
             var url = "/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0005"}, url);
         });
+        var value;
         <!--查询扣款结果按钮功能-->
         $("#manualConfirmBtn").click(function () {
             value = 0;
@@ -515,7 +516,7 @@
             $('#confirmModal').modal();
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
-                increment();
+                increment(value);
                 $('#myModal').modal('show');
                 $.ajax({
                     url: "/channelDispatchController/queryPayResult.do",
@@ -542,7 +543,16 @@
             executeAction({"ids": $("#rowId").val()}, url);
         });
 
-
+        <!--进度条自动增长-->
+        function increment(value) {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
         <!--具体执行操作的函数-->
         function executeAction(data, url) {
             value = 0;
@@ -550,7 +560,7 @@
             $('#confirmModal').modal();
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
-                increment();
+                increment(value);
                 $('#myModal').modal('show');
                 $.ajax({
                     url: url,

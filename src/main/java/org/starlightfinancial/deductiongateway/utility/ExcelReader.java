@@ -59,10 +59,10 @@ public class ExcelReader {
         String cellValue = "";
         if (cell != null) {
             // 判断当前Cell的Type
-            switch (cell.getCellType()) {
+            switch (cell.getCellTypeEnum()) {
                 // 如果当前Cell的Type为NUMERIC
-                case HSSFCell.CELL_TYPE_NUMERIC:
-                case HSSFCell.CELL_TYPE_FORMULA: {
+                case NUMERIC:
+                case FORMULA: {
                     // 判断当前的cell是否为Date
                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
                         // 如果是Date类型则，转化为Data格式
@@ -84,7 +84,7 @@ public class ExcelReader {
                     break;
                 }
                 // 如果当前Cell的Type为STRIN
-                case HSSFCell.CELL_TYPE_STRING:
+                case STRING:
                     // 取得当前的Cell字符串
                     cellValue = cell.getRichStringCellValue().getString();
                     break;
@@ -152,8 +152,9 @@ public class ExcelReader {
             Map<Integer, String> map = excelReader.readExcelContent(is2);
             System.out.println("获得Excel表格的内容:");
             for (int i = 3; i <= map.size(); i++) {
-                if (StringUtils.isNotBlank(map.get(i)))
+                if (StringUtils.isNotBlank(map.get(i))) {
                     System.out.println(Double.valueOf(map.get(i).split("    ")[5]));
+                }
             }
 
         } catch (FileNotFoundException e) {

@@ -54,15 +54,26 @@ public interface MortgageDeductionRepository extends JpaRepository<MortgageDeduc
     int setLedgerStateFor(String ledgerState, String ordId);
 
 
-
     /**
      * 根据自动入账文件发送状态,是否代扣成功,创建时间查询代扣记录
      *
      * @param isUploaded 发送状态:0-未发送,1-已发送
      * @param isSuccess  代扣状态:0-失败,1-成功,其他-暂无结果
-     * @param date       查询date之后创建的记录
+     * @param startDate  查询startDate之后创建的记录
      * @return 返回查询到代扣记录
      */
-    List<MortgageDeduction> findByIsUploadedAndIssuccessAndCreateDateAfter(String isUploaded, String isSuccess, Date date);
+    List<MortgageDeduction> findByIsUploadedAndIssuccessAndCreateDateAfterOrderByPayTimeDesc(String isUploaded, String isSuccess, Date startDate);
+
+
+    /**
+     * 根据自动入账文件发送状态,是否代扣成功,创建时间查询代扣记录
+     *
+     * @param isSuccess 代扣状态:0-失败,1-成功,其他-暂无结果
+     * @param startDate 查询date之后扣款的记录
+     * @param endDate   查询date之后创建的记录
+     * @return 返回查询到代扣记录
+     */
+    List<MortgageDeduction> findByIssuccessAndPayTimeAfterAndPayTimeBefore(String isSuccess, Date startDate, Date endDate);
+
 
 }

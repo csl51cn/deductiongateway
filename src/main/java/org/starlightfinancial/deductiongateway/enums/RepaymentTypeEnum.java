@@ -21,7 +21,12 @@ public enum RepaymentTypeEnum {
     /**
      * 服务费还款类别
      */
-    SERVICE_FEE(1214, "服务费");
+    SERVICE_FEE(1214, "服务费"),
+
+    /**
+     * 其它
+     */
+    OTHER(0,"其它");
 
 
     /**

@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
 import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
 import org.starlightfinancial.deductiongateway.service.CacheService;
+import org.starlightfinancial.deductiongateway.service.FinancialVoucherService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
@@ -46,6 +48,9 @@ public class ScheduledTaskService {
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
+
+    @Autowired
+    private FinancialVoucherService financialVoucherService;
 
     /**
      * 自动代扣
@@ -115,10 +120,18 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从13点-21点每小时处理一次
      */
-    @Scheduled(cron = "0 0 13-21 * * ?")
+//    @Scheduled(cron = "0 0 13-21 * * ?")
     public void uploadAutoAccountingFile() {
-        LOGGER.info("开始处理自动入账excel文档");
-        mortgageDeductionService.uploadAutoAccountingFile();
+        LOGGER.info("**********开始处理代扣自动入账excel文档**********");
+        try {
+            mortgageDeductionService.uploadAutoAccountingFile();
+        } catch (IOException e) {
+            LOGGER.error("**********处理代扣自动入账excel文档深复制异常**********", e);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            LOGGER.error("**********处理代扣自动入账excel文档深复制异常**********", e);
+        }
+
     }
 
     /**
@@ -129,4 +142,17 @@ public class ScheduledTaskService {
         CacheService.refresh();
     }
 
+    /**
+     * 导入昨天的还款数据:成功代扣的和非代扣还款的,设置为9:30
+     */
+    @Scheduled(cron = "00 40 9 * * ? ")
+    public void importRepaymentInfo() {
+        LOGGER.info("**********开始导入昨天还款信息到业务系统**********");
+        try {
+            financialVoucherService.importRepaymentData();
+            LOGGER.info("**********导入昨天还款信息到业务系统成功**********");
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.error("**********导入还款数据到业务系统异常**********", e);
+        }
+    }
 }

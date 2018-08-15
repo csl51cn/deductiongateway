@@ -16,10 +16,19 @@ public interface NonDeductionRepaymentInfoRepository extends JpaRepository<NonDe
     /**
      * 根据条件查询记录
      *
-     * @param startDate    开始日期
-     * @param endDate      结束日期
+     * @param startDate    开始日期(包含)
+     * @param endDate      结束日期(包含)
      * @param isIntegrated 信息是否完整
      * @return 返回查询到的记录
      */
     List<NonDeductionRepaymentInfo> findByRepaymentTermDateBetweenAndIsIntegrated(Date startDate, Date endDate, String isIntegrated);
+
+    /**
+     * 根据条件查询记录
+     *
+     * @param startDate    开始日期(包含)
+     * @param endDate      结束日期(不含)
+     * @return 返回查询到的记录
+     */
+    List<NonDeductionRepaymentInfo> findByRepaymentTermDateGreaterThanEqualAndRepaymentTermDateBefore(Date startDate, Date endDate);
 }

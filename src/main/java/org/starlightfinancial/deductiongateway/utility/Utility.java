@@ -7,16 +7,14 @@ import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Utility {
 
@@ -142,9 +140,9 @@ public class Utility {
     /**
      * 创建分页请求.
      *
-     * @param pageBean
+     * @param pageBean 页面参数
      * @param sortNum  0:desc 倒序 1:asc 正序
-     * @return
+     * @return 返回PageRequest对象
      */
     public static PageRequest buildPageRequest(PageBean pageBean, Integer sortNum) {
         Sort sort = null;
@@ -236,6 +234,27 @@ public class Utility {
     public static Date getDate(LocalDate localDate) {
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
+    }
+
+    /**
+     * List深拷贝
+     *
+     * @param src 原始List
+     * @param <T> List中元素类型
+     * @return 返回深复制创建的List
+     * @throws IOException            IO异常时抛出
+     * @throws ClassNotFoundException 类型转换异常时抛出
+     */
+    public static <T> List<T> deepCopy(List<T> src) throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(byteOut);
+        out.writeObject(src);
+
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
+        ObjectInputStream in = new ObjectInputStream(byteIn);
+        @SuppressWarnings("unchecked")
+        List<T> dest = (List<T>) in.readObject();
+        return dest;
     }
 
 

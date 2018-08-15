@@ -24,16 +24,6 @@ Date.prototype.Format = function (fmt) { //author: meizz
         if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
     return fmt;
 }
-<!--进度条自动增长-->
-function increment() {
-    value += 1;
-    if (value == 80) {
-        clearTimeout(st);
-        return;
-    }
-    $("#prog").css("width", value + "%")
-    st = setTimeout(increment, 500);
-}
 /* -------------------- formatter  date  by yyyy-MM-dd --------------------- */
 function formatDate(strTime) {
     var date = new Date(strTime);

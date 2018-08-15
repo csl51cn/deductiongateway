@@ -56,8 +56,7 @@ public class AssociatePayerServiceImpl implements AssociatePayerService {
      */
     @Override
     public PageBean queryAssociatePayer(PageBean pageBean, String contractNo) {
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
-        Page<AssociatePayer> associatePayers = associatePayerRepository.findAll(new Specification<AssociatePayer>() {
+        Specification<AssociatePayer> specification = new Specification<AssociatePayer>() {
             @Override
             public Predicate toPredicate(Root<AssociatePayer> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
@@ -67,7 +66,19 @@ public class AssociatePayerServiceImpl implements AssociatePayerService {
                 }
                 return cb.and(predicates.toArray(new Predicate[]{}));
             }
-        }, pageRequest);
+        };
+        long count = associatePayerRepository.count(specification);
+        if (count == 0) {
+            //如果查询出来的总记录数为0,直接返回null,避免后续查询代码执行
+            return null;
+        }
+        double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
+        double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
+        if (totalPageCount < pageBean.getPageNumber()) {
+            pageBean.setPageNumber(1);
+        }
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
+        Page<AssociatePayer> associatePayers = associatePayerRepository.findAll(specification, pageRequest);
         if (associatePayers.hasContent()) {
             pageBean.setTotal(associatePayers.getTotalElements());
             pageBean.setRows(associatePayers.getContent());

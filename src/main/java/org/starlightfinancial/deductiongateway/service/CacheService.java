@@ -16,22 +16,23 @@ import java.util.Map;
 public final class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
-    private static CacheService cacheService = null ;
-    public  static void refresh(){
+    private volatile static CacheService cacheService = null;
+
+    public static void refresh() {
         cacheService = new CacheService();
-        LOGGER.info("CacheService 刷新完成");
+        LOGGER.info("**********CacheService 刷新完成**********");
     }
 
-    public  static CacheService getInstance(){
-        if (cacheService == null ){
-            synchronized (CacheService.class){
-                if (cacheService == null ){
+    public static CacheService getInstance() {
+        if (cacheService == null) {
+            synchronized (CacheService.class) {
+                if (cacheService == null) {
                     cacheService = new CacheService();
-                    LOGGER.info("CacheService 初始化完成");
+                    LOGGER.info("**********CacheService 初始化完成**********");
                 }
             }
         }
-        return  cacheService;
+        return cacheService;
     }
 
     private static Map<String, BusinessTransaction> businessTransactionCacheMap;
@@ -50,8 +51,6 @@ public final class CacheService {
     public static Map<String, BusinessTransaction> getBusinessTransactionCacheMap() {
         return businessTransactionCacheMap;
     }
-
-
 
 
 }

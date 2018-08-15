@@ -16,6 +16,8 @@ import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymen
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
+import org.starlightfinancial.deductiongateway.service.CacheService;
+import org.starlightfinancial.deductiongateway.service.FinancialVoucherService;
 import org.starlightfinancial.deductiongateway.service.NonDeductionRepaymentInfoService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
@@ -24,10 +26,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author: Senlin.Deng
@@ -42,14 +43,15 @@ public class NonDeductionRepaymentInfoController {
     private static final Logger LOGGER = LoggerFactory.getLogger(NonDeductionRepaymentInfoController.class);
     @Autowired
     private NonDeductionRepaymentInfoService nonDeductionRepaymentInfoService;
-
+    @Autowired
+    private FinancialVoucherService financialVoucherService;
 
     /**
      * 非代扣还款信息文件导入
      *
-     * @param uploadFile
-     * @param session
-     * @return
+     * @param uploadFile excel文档
+     * @param session    会话session
+     * @return 上传结果
      */
     @RequestMapping(value = "/upload.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
@@ -88,7 +90,7 @@ public class NonDeductionRepaymentInfoController {
      *
      * @param nonDeductionRepaymentInfo 由页面传入的非代扣还款信息
      * @param session                   会话session
-     * @return
+     * @return 返回操作结果
      */
     @RequestMapping(value = "/saveNonDeduction.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
@@ -105,8 +107,12 @@ public class NonDeductionRepaymentInfoController {
         nonDeductionRepaymentInfo.setCreateId(Utility.getLoginUserId(session));
         //设置修改人id
         nonDeductionRepaymentInfo.setModifiedId(nonDeductionRepaymentInfo.getCreateId());
+        //设置入账时间,默认是还款时间
+        nonDeductionRepaymentInfo.setAccountingDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
+        //设置是否是系统自动匹配业务信息为否
+        nonDeductionRepaymentInfo.setIsAutoMatched(ConstantsEnum.FAIL.getCode());
         try {
-            nonDeductionRepaymentInfoService.saveNonDeduction(nonDeductionRepaymentInfo);
+            nonDeductionRepaymentInfoService.saveNonDeduction(nonDeductionRepaymentInfo, session);
             return "1";
         } catch (Exception e) {
             LOGGER.error("保存非代扣还款信息失败", e);
@@ -119,7 +125,7 @@ public class NonDeductionRepaymentInfoController {
      * 更新非代扣还款信息
      *
      * @param nonDeductionRepaymentInfo 由页面传入的非代扣还款信息
-     * @return
+     * @return 返回操作结果
      */
     @RequestMapping(value = "/updateNonDeduction.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
@@ -130,7 +136,7 @@ public class NonDeductionRepaymentInfoController {
         //设置修改人id
         nonDeductionRepaymentInfo.setModifiedId(Utility.getLoginUserId(session));
         try {
-            nonDeductionRepaymentInfoService.updateNonDeduction(nonDeductionRepaymentInfo);
+            nonDeductionRepaymentInfoService.updateNonDeduction(nonDeductionRepaymentInfo, session);
             return "1";
         } catch (NumberFormatException e) {
             LOGGER.error("保存非代扣还款信息失败,数字格式化失败", e);
@@ -146,7 +152,7 @@ public class NonDeductionRepaymentInfoController {
      * 上传自动入账excel文件
      *
      * @param ids 一个或多个记录的id
-     * @return
+     * @return 返回操作结果
      */
     @RequestMapping(value = "/uploadAutoAccountingFile.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
@@ -157,14 +163,13 @@ public class NonDeductionRepaymentInfoController {
         try {
             nonDeductionRepaymentInfoService.uploadAutoAccountingFile(ids, session);
             return "1";
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("上传自动入账excel文件失败", e);
             return "上传自动入账excel文件失败";
         } catch (FieldFormatCheckException e) {
             LOGGER.error("{}", e.getMessage());
             return e.getMessage() + ",请修改后重试";
         }
-
     }
 
 
@@ -189,10 +194,12 @@ public class NonDeductionRepaymentInfoController {
         nonDeductionRepaymentInfo.setCreateId(Utility.getLoginUserId(session));
         //设置修改人id
         nonDeductionRepaymentInfo.setModifiedId(nonDeductionRepaymentInfo.getCreateId());
-        ArrayList<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = new ArrayList<>();
-        nonDeductionRepaymentInfos.add(nonDeductionRepaymentInfo);
+        //设置入账日期
+        nonDeductionRepaymentInfo.setAccountingDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
+        //设置被拆分记录的Id
+        nonDeductionRepaymentInfo.setOriginalId(originalNonDeductionRepaymentInfoId);
         try {
-            nonDeductionRepaymentInfoService.splitNonDeduction(nonDeductionRepaymentInfos, originalNonDeductionRepaymentInfoId);
+            nonDeductionRepaymentInfoService.splitNonDeduction(Stream.of(nonDeductionRepaymentInfo).collect(Collectors.toList()), originalNonDeductionRepaymentInfoId, session);
             return "1";
         } catch (Exception e) {
             LOGGER.error("拆分非代扣还款信息失败", e);
@@ -204,16 +211,15 @@ public class NonDeductionRepaymentInfoController {
     /**
      * 刷新CacheService,重新尝试查找匹配的业务信息
      *
-     * @param startDate 开始日期
-     * @param endDate   结束日期
-     * @param session   会话session
+     * @param nonDeductionRepaymentInfoQueryCondition 查询条件
+     * @param session                                 会话session
      * @return 执行结果
      */
     @RequestMapping(value = "/retrySearchBusinessTransactionInfo.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public String retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session) {
+    public String retrySearchBusinessTransactionInfo(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session) {
         try {
-            nonDeductionRepaymentInfoService.retrySearchBusinessTransactionInfo(startDate, endDate, session);
+            nonDeductionRepaymentInfoService.retrySearchBusinessTransactionInfo(nonDeductionRepaymentInfoQueryCondition, session);
             return "1";
         } catch (Exception e) {
             LOGGER.error("重新尝试查找匹配的业务信息失败", e);
@@ -276,12 +282,30 @@ public class NonDeductionRepaymentInfoController {
         try {
             String totalRepaymentAmount = (String) session.getAttribute("totalRepaymentAmount");
             return Message.success(totalRepaymentAmount);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return Message.fail();
         }
+    }
 
 
+    /**
+     * 将还款信息导入到业务系统
+     *
+     * @return 导入结果
+     */
+    @RequestMapping(value = "repaymentInfoImport.do")
+    @ResponseBody
+    public String repaymentInfoImportToBizSystem() {
+        //刷新缓存
+        CacheService.refresh();
+        try {
+            financialVoucherService.importRepaymentData();
+            return "1";
+        }catch (Exception e){
+            LOGGER.error("手动导入还款信息失败",e);
+        }
+        return "0";
     }
 
 }

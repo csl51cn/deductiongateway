@@ -11,6 +11,7 @@ import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
@@ -30,6 +31,9 @@ public class BackgroundNotificationConsumer {
 
     @Autowired
     private MortgageDeductionService mortgageDeductionService;
+
+    @Autowired
+    private OperationStrategyContext operationStrategyContext;
 
     /**
      * 银联支付结果后台通知处理
@@ -59,6 +63,8 @@ public class BackgroundNotificationConsumer {
                     mortgageDeduction.setIssuccess("1");
                     mortgageDeduction.setResult(jsonObject.getString("OrderStatus"));
                     mortgageDeduction.setErrorResult("支付成功");
+                    //计算手续费
+                    operationStrategyContext.calculateHandlingCharge(mortgageDeduction);
                 } else {
                     if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_002.getCode(), jsonObject.getString("OrderStatus"))) {
                         mortgageDeduction.setIssuccess("0");
@@ -108,6 +114,8 @@ public class BackgroundNotificationConsumer {
                     mortgageDeduction.setIssuccess("1");
                     mortgageDeduction.setResult(jsonObject.getString("biz_resp_code"));
                     mortgageDeduction.setErrorResult("支付成功");
+                    //计算手续费
+                    operationStrategyContext.calculateHandlingCharge(mortgageDeduction);
                 } else {
                     mortgageDeduction.setIssuccess("0");
                     mortgageDeduction.setResult(jsonObject.getString("biz_resp_code"));

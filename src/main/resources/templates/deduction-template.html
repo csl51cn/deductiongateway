@@ -328,12 +328,12 @@
             $("#manualImportBtn").hide();
             $("#manualBatchDeduction").hide();
         }
-
         <!--手动导入模板按钮功能-->
         $("#manualImportBtn").click(function () {
             $('#confirmModal').modal();
             $(".btn-success").click(function () {
-                increment();
+                value=0;
+                increment(value);
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -367,6 +367,7 @@
         $("#manualBatchDeduction").click(function () {
             $('#confirmModal').modal();
             $(".btn-success").click(function () {
+                value=0;
                 increment();
                 $('#myModal').modal('show');
 
@@ -395,8 +396,17 @@
                     }
                 })
             })
-        })
-
+        });
+        <!--进度条自动增长-->
+        function increment(value) {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
     })
 </script>
 <!-- end: JavaScript-->

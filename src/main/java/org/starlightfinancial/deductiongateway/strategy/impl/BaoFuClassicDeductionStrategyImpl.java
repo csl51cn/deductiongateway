@@ -18,6 +18,7 @@ import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,20 +41,25 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
 
 
     @Autowired
-    private ChinaPayConfig  chinaPayConfig;
+    private ChinaPayConfig chinaPayConfig;
 
 
     @Autowired
     private BeanConverter beanConverter;
 
+    private static final BigDecimal FIVE_THOUSAND = new BigDecimal(5000);
+
+    private static final BigDecimal FIFTY_THOUSAND = new BigDecimal(50000);
+
+
     /**
      * 查询是否签约
      *
-     * @param Id 记录id
+     * @param id 记录id
      * @return 返回包含查询结果的Message对象
      */
     @Override
-    public Message queryIsSigned(Integer Id) {
+    public Message queryIsSigned(Integer id) {
         return null;
     }
 
@@ -106,15 +112,17 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
                 returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getClassicCerFile());
                 returnData = SecurityUtil.Base64Decode(returnData);
                 JSONObject parse = (JSONObject) JSONObject.parse(returnData);
-                String resp_msg = parse.getObject("resp_msg", String.class);
-                if (StringUtils.equals("交易成功", resp_msg)) {
+                String respMsg = parse.getObject("resp_msg", String.class);
+                if (StringUtils.equals("交易成功", respMsg)) {
                     mortgageDeduction.setIssuccess("1");
+                    //计算并设置手续费
+                    calculateHandlingCharge(mortgageDeduction);
                 } else {
                     mortgageDeduction.setIssuccess("0");
                 }
-                String resp_code = parse.getObject("resp_code", String.class);
-                mortgageDeduction.setResult(resp_code);
-                mortgageDeduction.setErrorResult(resp_msg);
+                String respCode = parse.getObject("resp_code", String.class);
+                mortgageDeduction.setResult(respCode);
+                mortgageDeduction.setErrorResult(respMsg);
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -133,6 +141,26 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
     @Override
     public Message queryPayResult(MortgageDeduction mortgageDeduction) {
         return null;
+    }
+
+    /**
+     * 计算并设置手续费
+     *
+     * @param mortgageDeduction 代扣记录
+     */
+    @Override
+    public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
+        BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        if (totalAmount.compareTo(FIVE_THOUSAND) <= 0) {
+            //代扣金额≤5000
+            mortgageDeduction.setHandlingCharge(baofuConfig.getLevelOne());
+        } else if (totalAmount.compareTo(FIFTY_THOUSAND) <= 0) {
+            //代扣金额>5000 & 代扣金额 <=50000
+            mortgageDeduction.setHandlingCharge(baofuConfig.getLevelTwo());
+        } else {
+            //代扣金额>50000
+            mortgageDeduction.setHandlingCharge(baofuConfig.getLevelThree());
+        }
     }
 
 

@@ -9,7 +9,6 @@ import org.starlightfinancial.deductiongateway.utility.PageBean;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,15 +41,17 @@ public interface NonDeductionRepaymentInfoService {
      * 保存记录
      *
      * @param nonDeductionRepaymentInfo 非代扣还款信息
+     * @param session                   会话session
      */
-    void saveNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo);
+    void saveNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session);
 
     /**
      * 更新记录
      *
      * @param nonDeductionRepaymentInfo 非代扣还款信息
+     * @param session                   会话session
      */
-    void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo);
+    void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session);
 
 
     /**
@@ -60,8 +61,9 @@ public interface NonDeductionRepaymentInfoService {
      * @param session 会话session
      * @throws IOException               io异常时抛出
      * @throws FieldFormatCheckException 非代扣还款数据属性格式不符合预期时抛出
+     * @throws ClassNotFoundException    深复制异常时抛出
      */
-    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException, FieldFormatCheckException;
+    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException;
 
 
     /**
@@ -69,17 +71,17 @@ public interface NonDeductionRepaymentInfoService {
      *
      * @param nonDeductionRepaymentInfos          由页面传入的非代扣还款信息
      * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
+     * @param session                             会话session
      */
-    void splitNonDeduction(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, Long originalNonDeductionRepaymentInfoId);
+    void splitNonDeduction(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, Long originalNonDeductionRepaymentInfoId, HttpSession session);
 
     /**
      * 刷新CacheService,重新尝试查找匹配的业务信息
      *
-     * @param startDate 开始日期
-     * @param endDate   结束日期
-     * @param session   会话session
+     * @param nonDeductionRepaymentInfoQueryCondition 查询条件
+     * @param session                                 会话session
      */
-    void retrySearchBusinessTransactionInfo(Date startDate, Date endDate, HttpSession session);
+    void retrySearchBusinessTransactionInfo(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session);
 
     /**
      * 批量拆分非代扣还款信息

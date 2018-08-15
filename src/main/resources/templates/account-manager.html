@@ -38,7 +38,7 @@
                 </li>
                 <li><a href="/accountmanager.do">限额管理</a></li>
             </ul>
-            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"  style="display: none;">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -56,7 +56,7 @@
                 </div>
             </div>
 
-            <div class="modal fade" id="confirmModal">
+            <div class="modal fade" id="confirmModal"  style="display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
                         <div class="modal-header">
@@ -75,7 +75,7 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
 
-            <div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel">
+            <div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel"  style="display: none;">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -131,7 +131,7 @@
             </div>
 
 
-            <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel">
+            <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel"  style="display: none;">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -243,6 +243,7 @@
 
 
 <script type="text/javascript" th:inline="javascript">
+
     var staffId = [[${session.loginUser.staffId}]];
     window.operateEvents = {
 
@@ -604,7 +605,7 @@
 
                 //进度条
                 value=0;
-                increment();
+                increment(value);
                 $('#myModal').modal('show');
 
                 //发起签约请求
@@ -659,7 +660,7 @@
                 return;
             }
             value=0;
-            increment();
+            increment(value);
             $('#myModal').modal('show');
 
             $.ajax({
@@ -677,13 +678,14 @@
                 }
             })
         });
-
+        var value = 0;
         <!--导入按钮功能-->
         $("#importBtn").click(function () {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 value=0;
-                increment();
+                increment(value);
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -728,9 +730,17 @@
                 }, 1000)
             }
         }
+        <!--进度条自动增长-->
+        function increment(value) {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
 
-
-        var value = 0;
 
 
     })

@@ -193,7 +193,7 @@ public class NonDeductionRepaymentInfoCalculationService {
         long between = ChronoUnit.DAYS.between(repaymentTermDate, planTermDate);
         if (between >= -1 && between <= 1) {
             //如果日期差值在[-1,1]范围内,继续判断实际还款金额和计划还款金额的差值是否在[-1,1]范围内
-            BigDecimal repaymentAmount = new BigDecimal(nonDeductionRepaymentInfo.getRepaymentAmount());
+            BigDecimal repaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
             BigDecimal planTotalAmount = new BigDecimal(repaymentPlan.getPlanTotalAmount());
             BigDecimal difference = planTotalAmount.setScale(2, BigDecimal.ROUND_HALF_UP).subtract(repaymentAmount);
             if (difference.compareTo(BigDecimal.valueOf(-1)) >= 0 && difference.compareTo(BigDecimal.ONE) <= 0) {

@@ -15,9 +15,13 @@ import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sili.chen on 2018/1/3
@@ -37,9 +41,11 @@ public class Delivery extends Decorator {
     @Autowired
     BaofuConfig baofuConfig;
 
-
     @Autowired
     BeanConverter beanConverter;
+
+    @Autowired
+    private OperationStrategyContext operationStrategyContext;
 
     List<MortgageDeduction> result;
 
@@ -123,6 +129,8 @@ public class Delivery extends Decorator {
                 mortgageDeduction.setResult(payStat);
                 if (StringUtils.equals(Constant.SUCCESS, payStat)) {
                     mortgageDeduction.setIssuccess("1");
+                    //计算手续费
+                    operationStrategyContext.calculateHandlingCharge(mortgageDeduction);
                 } else {
                     mortgageDeduction.setIssuccess("0");
                 }
@@ -150,7 +158,7 @@ public class Delivery extends Decorator {
             mortgageDeduction.setSplitType("");
             mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode());
             try {
-                Map map = httpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
+                Map map = HttpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
                 String errorCodeDesc = BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code"));
