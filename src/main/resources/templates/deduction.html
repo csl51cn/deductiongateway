@@ -279,6 +279,7 @@
         <!--执行代扣功能-->
         function executeDeduct(deductionMethod) {
             $('#confirmModal').modal();
+            $("#confirmdobtn").unbind("click");
             $("#confirmdobtn").click(function () {
                 var ids = [];
                 var rows = $('#table').bootstrapTable('getSelections');
@@ -348,6 +349,7 @@
         <!--删除按钮功能-->
         $("#deleteBtn").click(function () {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 var ids = [];
                 var rows = $('#table').bootstrapTable('getSelections');

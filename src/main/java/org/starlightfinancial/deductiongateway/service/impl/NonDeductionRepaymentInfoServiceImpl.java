@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.AllInPayConfig;
-import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
+import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
+import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
+import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.enums.*;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
@@ -35,7 +38,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -61,31 +63,34 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     /**
      * 新增非代扣还款数据时的列名与字段映射
      */
-    private static final HashMap<String, String> UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP = new HashMap<String, String>(6) {
-        {
-            put("还款时间", "repaymentTermDate");
-            put("还款原始信息", "repaymentOriginalInfo");
-            put("单位/个人还款", "customerName");
-            put("还款方式", "repaymentMethod");
-            put("还款类别", "repaymentType");
-            put("还款金额", "repaymentAmount");
-        }
-    };
+    private static final HashMap<String, String> UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP =
+            new HashMap<String, String>(6) {
+                {
+                    put("还款时间", "repaymentTermDate");
+                    put("还款原始信息", "repaymentOriginalInfo");
+                    put("单位/个人还款", "customerName");
+                    put("还款方式", "repaymentMethod");
+                    put("还款类别", "repaymentType");
+                    put("还款金额", "repaymentAmount");
+                }
+            };
 
     /**
      * 拆分非代扣还款数据时的列名与字段映射
      */
-    private static final HashMap<String, String> SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP = new HashMap<String, String>(UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP) {
-        {
-            put("入账时间", "accountingDate");
-            put("合同编号", "contractNo");
-        }
-    };
+    private static final HashMap<String, String> SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP =
+            new HashMap<String, String>(UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP) {
+                {
+                    put("入账时间", "accountingDate");
+                    put("合同编号", "contractNo");
+                }
+            };
 
     /**
      * 导出非代扣还款数据表头
      */
-    private static final String[] EXPORT_COLUMN_NAME = new String[]{"入账公司", "合同编号", "还款时间", "还款原始信息", "单位/个人还款", "还款方式", "还款类别", "还款金额", "入账时间", "导入时间"};
+    private static final String[] EXPORT_COLUMN_NAME = new String[]{"入账公司", "合同编号", "还款时间", "还款原始信息", "单位/个人还款",
+            "还款方式", "还款类别", "还款金额", "入账时间", "导入时间"};
 
 
     /**
@@ -99,7 +104,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void importFile(MultipartFile uploadFile, HttpSession session) throws Exception {
         //读取Excel文件转换为NonDeductionRepaymentInfo对象
-        Map<String, List<NonDeductionRepaymentInfo>> resultMap = PoiUtil.readExcel(uploadFile, UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP, NonDeductionRepaymentInfo.class);
+        Map<String, List<NonDeductionRepaymentInfo>> resultMap = PoiUtil.readExcel(uploadFile,
+                UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP, NonDeductionRepaymentInfo.class);
         //设置NonDeductionRepaymentInfo对象的入账公司,要求上传的excel表格的sheet名是入账公司的中文名称
         resultMap.forEach((chargeCompany, list) -> list.forEach(nonDeductionRepaymentInfo -> {
             //设置入账公司
@@ -157,11 +163,15 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      * @return 返回根据条件查询到的记录
      */
     @Override
-    public PageBean queryNonDeductionRepaymentInfo(PageBean pageBean, NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session) {
-        Specification<NonDeductionRepaymentInfo> specification = getSpecification(nonDeductionRepaymentInfoQueryCondition);
+    public PageBean queryNonDeductionRepaymentInfo(PageBean pageBean,
+                                                   NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition, HttpSession session) {
+        Specification<NonDeductionRepaymentInfo> specification =
+                getSpecification(nonDeductionRepaymentInfoQueryCondition);
         //不分页查询所有数据,获得根据条件查询出来还款总额
         List<NonDeductionRepaymentInfo> allNoPaging = nonDeductionRepaymentInfoRepository.findAll(specification);
-        String totalRepaymentAmount = allNoPaging.stream().map(NonDeductionRepaymentInfo::getRepaymentAmount).reduce(BigDecimal.ZERO, BigDecimal::add).toString();
+        String totalRepaymentAmount =
+                allNoPaging.stream().map(NonDeductionRepaymentInfo::getRepaymentAmount).reduce(BigDecimal.ZERO,
+                        BigDecimal::add).toString();
         session.setAttribute("totalRepaymentAmount", totalRepaymentAmount);
         //分页查询所有数据
         long count = nonDeductionRepaymentInfoRepository.count(specification);
@@ -175,7 +185,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             pageBean.setPageNumber(1);
         }
         PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
-        Page<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findAll(specification, pageRequest);
+        Page<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos =
+                nonDeductionRepaymentInfoRepository.findAll(specification, pageRequest);
         if (nonDeductionRepaymentInfos.hasContent()) {
             pageBean.setTotal(nonDeductionRepaymentInfos.getTotalElements());
             pageBean.setRows(nonDeductionRepaymentInfos.getContent());
@@ -193,7 +204,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     private Specification<NonDeductionRepaymentInfo> getSpecification(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition) {
         return new Specification<NonDeductionRepaymentInfo>() {
             @Override
-            public Predicate toPredicate(Root<NonDeductionRepaymentInfo> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+            public Predicate toPredicate(Root<NonDeductionRepaymentInfo> root, CriteriaQuery<?> query,
+                                         CriteriaBuilder cb) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
 
                 //是否数据完整
@@ -205,33 +217,42 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 predicates.add(cb.in(root.get("isUploaded")).value(Arrays.asList(isUploadArray)));
 
                 //还款日期筛选
-                predicates.add(cb.between(root.get("repaymentTermDate"), nonDeductionRepaymentInfoQueryCondition.getRepaymentStartDate(), Utility.toMidNight(nonDeductionRepaymentInfoQueryCondition.getRepaymentEndDate())));
+                predicates.add(cb.between(root.get("repaymentTermDate"),
+                        nonDeductionRepaymentInfoQueryCondition.getRepaymentStartDate(),
+                        Utility.toMidNight(nonDeductionRepaymentInfoQueryCondition.getRepaymentEndDate())));
 
                 //生成日期筛选
-                predicates.add(cb.between(root.get("gmtCreate"), nonDeductionRepaymentInfoQueryCondition.getImportStartDate(), Utility.toMidNight(nonDeductionRepaymentInfoQueryCondition.getImportEndDate())));
+                predicates.add(cb.between(root.get("gmtCreate"),
+                        nonDeductionRepaymentInfoQueryCondition.getImportStartDate(),
+                        Utility.toMidNight(nonDeductionRepaymentInfoQueryCondition.getImportEndDate())));
 
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotBlank(nonDeductionRepaymentInfoQueryCondition.getCustomerName())) {
-                    predicates.add(cb.equal(root.get("customerName"), nonDeductionRepaymentInfoQueryCondition.getCustomerName().trim()));
+                    predicates.add(cb.equal(root.get("customerName"),
+                            nonDeductionRepaymentInfoQueryCondition.getCustomerName().trim()));
                 }
                 //合同号非空判断。不为空则加此条件
                 if (StringUtils.isNotBlank(nonDeductionRepaymentInfoQueryCondition.getContractNo())) {
-                    predicates.add(cb.equal(root.get("contractNo"), nonDeductionRepaymentInfoQueryCondition.getContractNo().trim()));
+                    predicates.add(cb.equal(root.get("contractNo"),
+                            nonDeductionRepaymentInfoQueryCondition.getContractNo().trim()));
                 }
 
                 //入账公司判断是否是全部,如果是0是全部入账公司不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getChargeCompany())) {
-                    predicates.add(cb.equal(root.get("chargeCompany"), nonDeductionRepaymentInfoQueryCondition.getChargeCompany().trim()));
+                    predicates.add(cb.equal(root.get("chargeCompany"),
+                            nonDeductionRepaymentInfoQueryCondition.getChargeCompany().trim()));
                 }
 
                 //还款方式判断是否是全部,如果是0是全部还款方式不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod())) {
-                    predicates.add(cb.equal(root.get("repaymentMethod"), nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod().trim()));
+                    predicates.add(cb.equal(root.get("repaymentMethod"),
+                            nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod().trim()));
                 }
 
                 //入账银行判断是否是全部,如果是0是全部入账银行不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getBankName())) {
-                    predicates.add(cb.equal(root.get("bankName"), nonDeductionRepaymentInfoQueryCondition.getBankName().trim()));
+                    predicates.add(cb.equal(root.get("bankName"),
+                            nonDeductionRepaymentInfoQueryCondition.getBankName().trim()));
                 }
 
                 return cb.and(predicates.toArray(new Predicate[]{}));
@@ -252,7 +273,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         trim(nonDeductionRepaymentInfo);
         supplementBusinessTransactionInfo(nonDeductionRepaymentInfo);
         nonDeductionRepaymentInfoRepository.save(nonDeductionRepaymentInfo);
-        LOGGER.info("新增非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(session), nonDeductionRepaymentInfo.getId());
+        LOGGER.info("新增非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(session),
+                nonDeductionRepaymentInfo.getId());
     }
 
     /**
@@ -274,15 +296,19 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         }
 
         supplementBusinessTransactionInfo(nonDeductionRepaymentInfo);
-        NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
+        NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase =
+                nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
         //如果修改了入账公司,并且入账银行没有修改,需要将入账银行设置为null,避免因未设置相应的入账银行错误地生成还款方式
-        if (!StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), nonDeductionRepaymentInfoInDataBase.getChargeCompany())) {
-            if (StringUtils.equals(nonDeductionRepaymentInfo.getBankName(), nonDeductionRepaymentInfoInDataBase.getBankName())) {
+        if (!StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(),
+                nonDeductionRepaymentInfoInDataBase.getChargeCompany())) {
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getBankName(),
+                    nonDeductionRepaymentInfoInDataBase.getBankName())) {
                 nonDeductionRepaymentInfo.setBankName(null);
             }
         }
         nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo);
-        LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(session), nonDeductionRepaymentInfo.getId());
+        LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(session),
+                nonDeductionRepaymentInfo.getId());
     }
 
     /**
@@ -296,44 +322,56 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException {
+    public void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException,
+            FieldFormatCheckException, ClassNotFoundException {
         //处理ids,先用逗号切割,然后转为List
-        List<Long> idsList = Arrays.stream(ids.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
+        List<Long> idsList =
+                Arrays.stream(ids.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
         //根据id查询对应的记录
         List<NonDeductionRepaymentInfo> all = nonDeductionRepaymentInfoRepository.findAll(idsList);
         //筛选信息完整和未上传自动入账文件的记录,如果其属性isIntegrated为1和isUploaded为0保留,其余舍弃
-        List<NonDeductionRepaymentInfo> afterFilter = all.stream().filter(nonDeductionRepaymentInfo -> "1".equals(nonDeductionRepaymentInfo.getIsIntegrated()) && "0".equals(nonDeductionRepaymentInfo.getIsUploaded())).collect(Collectors.toList());
+        List<NonDeductionRepaymentInfo> afterFilter =
+                all.stream().filter(nonDeductionRepaymentInfo -> "1".equals(nonDeductionRepaymentInfo.getIsIntegrated()) && "0".equals(nonDeductionRepaymentInfo.getIsUploaded())).collect(Collectors.toList());
 
         //入账公司,还款方式,还款类别,入账银行(银行转账时)格式校验
         checkFieldFormat(afterFilter);
         //深复制一份以更新数据库中记录
         List<NonDeductionRepaymentInfo> original = Utility.deepCopy(afterFilter);
         //合并同一合同号的不同渠道还款,不同的还款类别分开处理
-        HashMap<String, NonDeductionRepaymentInfo> principalAndInterestContractNoNonDeductionRepaymentInfoMap = new HashMap<>(10);
+        HashMap<String, NonDeductionRepaymentInfo> principalAndInterestContractNoNonDeductionRepaymentInfoMap =
+                new HashMap<>(10);
         HashMap<String, NonDeductionRepaymentInfo> serviceFeeContractNoNonDeductionRepaymentInfoMap = new HashMap<>(10);
-        HashMap<String, NonDeductionRepaymentInfo> evaluationFeeContractNoNonDeductionRepaymentInfoMap = new HashMap<>(10);
+        HashMap<String, NonDeductionRepaymentInfo> evaluationFeeContractNoNonDeductionRepaymentInfoMap =
+                new HashMap<>(10);
         afterFilter.forEach(
                 nonDeductionRepaymentInfo -> {
-                    if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc())) {
+                    if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(),
+                            RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc())) {
                         //还款类别为本息
-                        mergeNonDeductionRepaymentInfo(principalAndInterestContractNoNonDeductionRepaymentInfoMap, nonDeductionRepaymentInfo);
-                    } else if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.SERVICE_FEE.getDesc())) {
+                        mergeNonDeductionRepaymentInfo(principalAndInterestContractNoNonDeductionRepaymentInfoMap,
+                                nonDeductionRepaymentInfo);
+                    } else if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(),
+                            RepaymentTypeEnum.SERVICE_FEE.getDesc())) {
                         //还款类别为服务费
-                        mergeNonDeductionRepaymentInfo(serviceFeeContractNoNonDeductionRepaymentInfoMap, nonDeductionRepaymentInfo);
+                        mergeNonDeductionRepaymentInfo(serviceFeeContractNoNonDeductionRepaymentInfoMap,
+                                nonDeductionRepaymentInfo);
                     } else {
                         //还款类别为调查评估费
-                        mergeNonDeductionRepaymentInfo(evaluationFeeContractNoNonDeductionRepaymentInfoMap, nonDeductionRepaymentInfo);
+                        mergeNonDeductionRepaymentInfo(evaluationFeeContractNoNonDeductionRepaymentInfoMap,
+                                nonDeductionRepaymentInfo);
                     }
                 }
         );
 
         //将合并后的map转换为list
-        ArrayList<NonDeductionRepaymentInfo> noDuplicateList = new ArrayList<>(principalAndInterestContractNoNonDeductionRepaymentInfoMap.values());
+        ArrayList<NonDeductionRepaymentInfo> noDuplicateList =
+                new ArrayList<>(principalAndInterestContractNoNonDeductionRepaymentInfoMap.values());
         noDuplicateList.addAll(serviceFeeContractNoNonDeductionRepaymentInfoMap.values());
         noDuplicateList.addAll(evaluationFeeContractNoNonDeductionRepaymentInfoMap.values());
 
         //将非代扣还款数据转换为自动入账excel表格行元素对应实体类
-        List<AutoAccountingExcelRow> autoAccountingExcelRows = noDuplicateList.stream().map(nonDeductionRepaymentInfo -> beanConverter.transToAutoAccountingExcelRow(nonDeductionRepaymentInfo)).collect(Collectors.toList());
+        List<AutoAccountingExcelRow> autoAccountingExcelRows =
+                noDuplicateList.stream().map(nonDeductionRepaymentInfo -> beanConverter.transToAutoAccountingExcelRow(nonDeductionRepaymentInfo)).collect(Collectors.toList());
         //制作excel表格
         HSSFWorkbook workBook = AutoAccountUploadService.createWorkBook(autoAccountingExcelRows);
         //上传excel表格
@@ -344,10 +382,11 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             nonDeductionRepaymentInfo.setIsUploaded(ConstantsEnum.SUCCESS.getCode());
             nonDeductionRepaymentInfo.setGmtModified(new Date());
             nonDeductionRepaymentInfo.setModifiedId(Utility.getLoginUserId(session));
-            if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                    NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
                 //如果还款方式是通联收银宝,计算手续费,手续费四舍五入保留两位小数
                 nonDeductionRepaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getRepaymentAmount().multiply(allInPayConfig.getHandlingChargeRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-            }else{
+            } else {
                 nonDeductionRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
             }
         });
@@ -363,9 +402,11 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      * @param nonDeductionRepaymentInfo              非代扣还款信息
      */
     private void mergeNonDeductionRepaymentInfo(HashMap<String, NonDeductionRepaymentInfo> contractNoNonDeductionRepaymentInfoMap, NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
-        NonDeductionRepaymentInfo existedNonDeductionRepaymentInfo = contractNoNonDeductionRepaymentInfoMap.get(nonDeductionRepaymentInfo.getContractNo());
+        NonDeductionRepaymentInfo existedNonDeductionRepaymentInfo =
+                contractNoNonDeductionRepaymentInfoMap.get(nonDeductionRepaymentInfo.getContractNo());
         if (existedNonDeductionRepaymentInfo == null) {
-            contractNoNonDeductionRepaymentInfoMap.put(nonDeductionRepaymentInfo.getContractNo(), nonDeductionRepaymentInfo);
+            contractNoNonDeductionRepaymentInfoMap.put(nonDeductionRepaymentInfo.getContractNo(),
+                    nonDeductionRepaymentInfo);
         } else {
             BigDecimal existedRepaymentAmount = existedNonDeductionRepaymentInfo.getRepaymentAmount();
             BigDecimal newRepaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
@@ -381,54 +422,39 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      */
     private void checkFieldFormat(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos) throws FieldFormatCheckException {
         nonDeductionRepaymentInfos.forEach(nonDeductionRepaymentInfo -> {
-            //创建四个是否符合预期的布尔变量,这些布尔变量能进行原子操作
-            AtomicBoolean chargeCompanyMeetExpectation = new AtomicBoolean(false);
-            AtomicBoolean repaymentMethodMeetExpectation = new AtomicBoolean(false);
-            AtomicBoolean repaymentTypeMeetExpectation = new AtomicBoolean(false);
-            AtomicBoolean bankMeetExpectation = new AtomicBoolean(false);
-            for (ChargeCompanyEnum chargeCompany : ChargeCompanyEnum.values()) {
-                if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), chargeCompany.getValue())) {
-                    //如果入账公司名格式符合预期格式,将chargeCompanyMeetExpectation设置为true
-                    chargeCompanyMeetExpectation.set(true);
-                    break;
-                }
+
+            //判断入账公司名格式是否符合预期格式
+            boolean chargeCompanyMeetExpectation = Arrays.stream(ChargeCompanyEnum.values()).anyMatch(chargeCompany -> StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), chargeCompany.getValue()));
+            if (!chargeCompanyMeetExpectation) {
+                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "]," +
+                        "单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的入账公司格式有误");
             }
-            if (!chargeCompanyMeetExpectation.get()) {
-                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "],单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的入账公司格式有误");
-            }
-            for (NonDeductionRepaymentMethodEnum repaymentMethod : NonDeductionRepaymentMethodEnum.values()) {
-                if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), repaymentMethod.getValue())) {
-                    //如果还款方式格式符合预期格式,repaymentMethodMeetExpectation设置为true
-                    repaymentMethodMeetExpectation.set(true);
-                    break;
-                }
+            //判断还款方式格式是否符合预期格式
+            boolean repaymentMethodMeetExpectation = Arrays.stream(NonDeductionRepaymentMethodEnum.values()).anyMatch(repaymentMethod -> StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), repaymentMethod.getValue()));
+            if (!repaymentMethodMeetExpectation) {
+                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "]," +
+                        "单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的还款方式格式有误");
             }
 
-            if (!repaymentMethodMeetExpectation.get()) {
-                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "],单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的还款方式格式有误");
+            //判断还款类型格式是否符合预期格式
+            boolean repaymentTypeMeetExpectation = Arrays.stream(RepaymentTypeEnum.values()).anyMatch(repaymentType -> StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), repaymentType.getDesc()));
+            if (!repaymentTypeMeetExpectation) {
+                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "]," +
+                        "单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的还款类别格式有误");
             }
 
-            for (RepaymentTypeEnum repaymentType : RepaymentTypeEnum.values()) {
-                if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), repaymentType.getDesc())) {
-                    //如果还款类型格式符合预期格式,repaymentTypeMeetExpectation设置为true
-                    repaymentTypeMeetExpectation.set(true);
-                    break;
-                }
-            }
-            if (!repaymentTypeMeetExpectation.get()) {
-                throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "],单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的还款类别格式有误");
-            }
-
-            if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.BANK_TRANSFER.getValue())) {
-                for (AccountBankEnum bank : AccountBankEnum.values()) {
-                    if (StringUtils.equals(nonDeductionRepaymentInfo.getBankName(), bank.getValue())) {
-                        //如果入账银行名格式符合预期格式,bankMeetExpectation设置为true
-                        bankMeetExpectation.set(true);
-                        break;
-                    }
-                }
-                if (!bankMeetExpectation.get()) {
-                    throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "],单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的入账银行名格式有误");
+            //银行转行或POS机刷卡需要验证入账银行名格式
+            boolean hasAccountBank = StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                    NonDeductionRepaymentMethodEnum.BANK_TRANSFER.getValue())
+                    || StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                    NonDeductionRepaymentMethodEnum.POS.getValue());
+            if (hasAccountBank) {
+                //判断入账银行名格式是否符合预期格式
+                boolean bankMeetExpectation =
+                        Arrays.stream(AccountBankEnum.values()).anyMatch(accountBank -> StringUtils.equals(nonDeductionRepaymentInfo.getBankName(), accountBank.getValue()));
+                if (!bankMeetExpectation) {
+                    throw new FieldFormatCheckException("合同号为[" + nonDeductionRepaymentInfo.getContractNo() + "]," +
+                            "单位/个人还款为[" + nonDeductionRepaymentInfo.getCustomerName() + "]的入账银行名格式有误");
                 }
             }
         });
@@ -443,9 +469,11 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void splitNonDeduction(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, Long originalNonDeductionRepaymentInfoId, HttpSession session) {
+    public void splitNonDeduction(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos,
+                                  Long originalNonDeductionRepaymentInfoId, HttpSession session) {
         //查询原始非代扣还款信息
-        NonDeductionRepaymentInfo originalNonDeduction = nonDeductionRepaymentInfoRepository.findOne(originalNonDeductionRepaymentInfoId);
+        NonDeductionRepaymentInfo originalNonDeduction =
+                nonDeductionRepaymentInfoRepository.findOne(originalNonDeductionRepaymentInfoId);
         nonDeductionRepaymentInfos.forEach(nonDeductionRepaymentInfo -> {
             trim(nonDeductionRepaymentInfo);
             //判断是否有合同号,如果有合同号,将是否系统自动匹配业务信息设置为否
@@ -458,12 +486,14 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             //将原始非代扣还款信息中的还款金额相应减少,并更新记录
             BigDecimal originalRepaymentAmount = originalNonDeduction.getRepaymentAmount();
             BigDecimal repaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
-            BigDecimal surplusRepaymentAmount = originalRepaymentAmount.subtract(repaymentAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal surplusRepaymentAmount = originalRepaymentAmount.subtract(repaymentAmount).setScale(2,
+                    BigDecimal.ROUND_HALF_UP);
             originalNonDeduction.setRepaymentAmount(surplusRepaymentAmount);
             //设置更新时间和更新操作人
             originalNonDeduction.setGmtModified(new Date());
             originalNonDeduction.setModifiedId(nonDeductionRepaymentInfo.getCreateId());
-            LOGGER.info("拆分非代扣还款信息成功,操作人:[{}],被拆分的记录id:[{}],拆分出来的记录id:[{}]", Utility.getLoginUserName(session), originalNonDeductionRepaymentInfoId, nonDeductionRepaymentInfo.getId());
+            LOGGER.info("拆分非代扣还款信息成功,操作人:[{}],被拆分的记录id:[{}],拆分出来的记录id:[{}]", Utility.getLoginUserName(session),
+                    originalNonDeductionRepaymentInfoId, nonDeductionRepaymentInfo.getId());
         });
         nonDeductionRepaymentInfoRepository.saveAndFlush(originalNonDeduction);
 
@@ -482,7 +512,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         //首先刷新缓存服务
         CacheService.refresh();
         //查找信息不完整的非代扣还款信息
-        List<NonDeductionRepaymentInfo> notIntegratedList = nonDeductionRepaymentInfoRepository.findByRepaymentTermDateBetweenAndIsIntegrated(nonDeductionRepaymentInfoQueryCondition.getRepaymentStartDate(), nonDeductionRepaymentInfoQueryCondition.getRepaymentEndDate(), String.valueOf(0));
+        List<NonDeductionRepaymentInfo> notIntegratedList =
+                nonDeductionRepaymentInfoRepository.findByRepaymentTermDateBetweenAndIsIntegrated(nonDeductionRepaymentInfoQueryCondition.getRepaymentStartDate(), nonDeductionRepaymentInfoQueryCondition.getRepaymentEndDate(), String.valueOf(0));
         //查找匹配的业务信息
         notIntegratedList.forEach(nonDeductionRepaymentInfo -> {
             //判断是否有合同号,如果没有合同号,将是否系统自动匹配业务信息设置为否,如果通过系统自动匹配成功的,后面会设置为是
@@ -515,7 +546,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 nonDeductionRepaymentInfo.setIsAutoMatched(ConstantsEnum.SUCCESS.getCode());
             }
         } else {
-            Map<String, BusinessTransaction> businessTransactionCacheMap = CacheService.getBusinessTransactionCacheMap();
+            Map<String, BusinessTransaction> businessTransactionCacheMap =
+                    CacheService.getBusinessTransactionCacheMap();
             BusinessTransaction businessTransaction = businessTransactionCacheMap.get(contractNo);
             if (businessTransaction != null) {
                 nonDeductionRepaymentInfo.setDateId(businessTransaction.getDateId());
@@ -544,9 +576,12 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void batchSplitNonDeduction(MultipartFile uploadFile, Long originalNonDeductionRepaymentInfoId, HttpSession session) throws NoSuchFieldException, InstantiationException, IllegalAccessException, IOException {
+    public void batchSplitNonDeduction(MultipartFile uploadFile, Long originalNonDeductionRepaymentInfoId,
+                                       HttpSession session) throws NoSuchFieldException, InstantiationException,
+            IllegalAccessException, IOException {
         //首先将传入的包含拆分信息的excel文件转换为map<sheetName,List<NonDeductionRepaymentInfo>>,其中sheetName为入账公司名
-        Map<String, List<NonDeductionRepaymentInfo>> resultMap = PoiUtil.readExcel(uploadFile, SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP, NonDeductionRepaymentInfo.class);
+        Map<String, List<NonDeductionRepaymentInfo>> resultMap = PoiUtil.readExcel(uploadFile,
+                SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP, NonDeductionRepaymentInfo.class);
 
         //拆分信息
         List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = new ArrayList<>();
@@ -557,7 +592,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             //设置信息是否完整,判断标准:是否有有对应的合同号
             if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getContractNo())) {
                 //通过合同号查询缓存中的查询业务信息
-                BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
+                BusinessTransaction businessTransaction =
+                        CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
                 if (businessTransaction != null) {
                     //如果业务信息不为空,信息完整
                     nonDeductionRepaymentInfo.setIsIntegrated(ConstantsEnum.SUCCESS.getCode());
@@ -612,7 +648,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Override
     public Workbook exportXLS(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition) {
         //查询所有非代扣还款信息
-        List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findAll(getSpecification(nonDeductionRepaymentInfoQueryCondition));
+        List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos =
+                nonDeductionRepaymentInfoRepository.findAll(getSpecification(nonDeductionRepaymentInfoQueryCondition));
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
         //设置列宽

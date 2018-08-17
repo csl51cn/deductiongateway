@@ -331,6 +331,7 @@
         <!--手动导入模板按钮功能-->
         $("#manualImportBtn").click(function () {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 value=0;
                 increment(value);
@@ -366,6 +367,7 @@
 
         $("#manualBatchDeduction").click(function () {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 value=0;
                 increment();

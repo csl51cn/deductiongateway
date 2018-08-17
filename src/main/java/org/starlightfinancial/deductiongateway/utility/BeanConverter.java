@@ -162,8 +162,8 @@ public class BeanConverter {
         mortgageDeduction.setTarget(autoBatchDeduction.getFwfCompamny());
         //证件类型
         mortgageDeduction.setParam5(autoBatchDeduction.getCertificateType());
-        //证件号
-        mortgageDeduction.setParam6(autoBatchDeduction.getCertificateNo());
+        //证件号:转换为大写,一般情况白名单中的身份证号末位的x是大写,自动代扣发起时也需要转换为大写,特殊情况手动处理
+        mortgageDeduction.setParam6(autoBatchDeduction.getCertificateNo().toUpperCase());
         //设置支付状态:0:失败,1:成功,2:暂无结果
         mortgageDeduction.setIssuccess("2");
         //是否发起过交易:0:是,1:否
@@ -185,8 +185,8 @@ public class BeanConverter {
     /**
      * 将MortgageDeduction转换为BaoFuRequestParams
      *
-     * @param mortgageDeduction
-     * @return
+     * @param mortgageDeduction  代扣数据
+     * @return 宝付交易参数
      */
     public BaoFuRequestParams transToBaoFuRequestParams(MortgageDeduction mortgageDeduction) {
         BaoFuRequestParams baoFuRequestParams = new BaoFuRequestParams();
@@ -591,7 +591,7 @@ public class BeanConverter {
         //设置客户名称
         principalAndInterestRepaymentInfo.setCustomerName(businessTransaction.getSubject());
         //设置还款方式
-        principalAndInterestRepaymentInfo.setRepaymentMethod(DeductionChannelEnum.getOrderDescByCode(mortgageDeduction.getChannel())+"代扣");
+        principalAndInterestRepaymentInfo.setRepaymentMethod(DeductionChannelEnum.getOrderDescByCode(mortgageDeduction.getChannel()) + "代扣");
         //设置创建时间
         principalAndInterestRepaymentInfo.setGmtCreate(new Date());
         //设置创建人
@@ -609,7 +609,9 @@ public class BeanConverter {
         //设置本息还款金额
         principalAndInterestRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData1());
         //设置还款类别
-        principalAndInterestRepaymentInfo.setRepaymentType(RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc());
+        principalAndInterestRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getCode()));
+        //判断是否是银联代扣
+        boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
             //如果存在服务费,分两种情况处理:1.银联两个入账账户按比例扣除手续费;2.宝付是润通账户扣除手续费
             //创建服务费还款记录
@@ -619,12 +621,18 @@ public class BeanConverter {
             serviceFeeRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData2());
             //设置服务费入账公司
             serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
+            //设置服务费入账银行:铠岳和润坤的银联,宝付渠道各自都是使用的相同银行进行商户开户的
+            if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
+                //铠岳
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+            } else {
+                //润坤
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+            }
             //设置还款类别
-            serviceFeeRepaymentInfo.setRepaymentType(RepaymentTypeEnum.SERVICE_FEE.getDesc());
+            serviceFeeRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.SERVICE_FEE.getCode()));
 
-            //判断是否是银联代扣
-            boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
-            if(isChinaPay){
+            if (isChinaPay) {
                 //设置本息手续费
                 BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
                 //本息占总金额中的比例,保留五位小数,四舍五入
@@ -632,23 +640,32 @@ public class BeanConverter {
                 //本息入账方手续费,保留两位小数,四舍五入
                 BigDecimal principalAndInterestHandlingCharge = mortgageDeduction.getHandlingCharge().multiply(principalAndInterestProportion).setScale(2, BigDecimal.ROUND_HALF_UP);
                 principalAndInterestRepaymentInfo.setHandlingCharge(principalAndInterestHandlingCharge);
+                //设置本息入账银行账户
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
                 //设置服务费入账公司手续费
                 serviceFeeRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge().subtract(principalAndInterestHandlingCharge).setScale(2, BigDecimal.ROUND_HALF_UP));
-            }else{
+            } else {
                 //宝付只在润通账户扣除手续费
                 principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
+                //设置本息入账银行账户
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
                 serviceFeeRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
             }
-
             repaymentInfos.add(serviceFeeRepaymentInfo);
-
 
         } else {
             //不存在服务费,直接设置手续费
             principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
+            //设置本息入账银行账户
+            if (isChinaPay) {
+                //银联
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+            } else {
+                //宝付
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
+            }
 
         }
-
 
         repaymentInfos.add(principalAndInterestRepaymentInfo);
 
@@ -683,11 +700,31 @@ public class BeanConverter {
         //设置还款方式
         repaymentInfo.setRepaymentMethod(nonDeductionRepaymentInfo.getRepaymentMethod());
         //设置还款类别
-        repaymentInfo.setRepaymentType(nonDeductionRepaymentInfo.getRepaymentType());
-        //设置入账银行
-        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getBankName())) {
-            repaymentInfo.setBankName(nonDeductionRepaymentInfo.getBankName());
+        repaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType())));
+        //设置入账银行:现金不用设置,银行转账,收银宝,POS刷卡需要设置
+        if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.BANK_TRANSFER.getValue())
+                || StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                NonDeductionRepaymentMethodEnum.POS.getValue())) {
+            //银行转账或者POS机刷卡
+            repaymentInfo.setBankName(AccountBankEnum.getCodeByValue(nonDeductionRepaymentInfo.getBankName()));
+        } else if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
+            //收银宝,需要根据入账公司来确定入账银行
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_TONG.getValue())) {
+                //润通
+                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
+            }
+
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
+                //铠岳
+                repaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+            }
+
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())) {
+                //润坤
+                repaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+            }
         }
+
         //设置还款金额
         repaymentInfo.setRepaymentAmount(nonDeductionRepaymentInfo.getRepaymentAmount());
         //设置手续费
