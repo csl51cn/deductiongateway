@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author: Senlin.Deng
@@ -185,7 +186,7 @@ public class BeanConverter {
     /**
      * 将MortgageDeduction转换为BaoFuRequestParams
      *
-     * @param mortgageDeduction  代扣数据
+     * @param mortgageDeduction 代扣数据
      * @return 宝付交易参数
      */
     public BaoFuRequestParams transToBaoFuRequestParams(MortgageDeduction mortgageDeduction) {
@@ -490,6 +491,7 @@ public class BeanConverter {
      */
     public AutoAccountingExcelRow transToAutoAccountingExcelRow(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
         AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
+        CacheService.refresh();
         BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
         //客户名称
         autoAccountingExcelRow.setCustomerName(businessTransaction.getSubject());
@@ -666,8 +668,10 @@ public class BeanConverter {
             }
 
         }
-
-        repaymentInfos.add(principalAndInterestRepaymentInfo);
+        if (principalAndInterestRepaymentInfo.getRepaymentAmount().compareTo(BigDecimal.ZERO) > 0) {
+            //如果本息还款大于0
+            repaymentInfos.add(principalAndInterestRepaymentInfo);
+        }
 
         return repaymentInfos;
     }
@@ -728,7 +732,12 @@ public class BeanConverter {
         //设置还款金额
         repaymentInfo.setRepaymentAmount(nonDeductionRepaymentInfo.getRepaymentAmount());
         //设置手续费
-        repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
+        if(Objects.isNull(nonDeductionRepaymentInfo.getHandlingCharge())){
+            repaymentInfo.setHandlingCharge(BigDecimal.ZERO);
+        }else{
+            repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
+        }
+
         //设置创建时间
         repaymentInfo.setGmtCreate(new Date());
         //设置创建人

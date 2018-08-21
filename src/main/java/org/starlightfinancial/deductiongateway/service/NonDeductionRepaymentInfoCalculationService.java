@@ -112,10 +112,10 @@ public class NonDeductionRepaymentInfoCalculationService {
     private static void compareDateAndAmount(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, List<BusinessTransaction> candidateBusinessTransactions, TreeSet<BusinessTransaction> resultSet) {
         //与计划还款信息中的还款日期和还款金额对比,缩小范围,还款日期±一天,还款金额±1元
         candidateBusinessTransactions.forEach(businessTransaction -> {
-            Integer codeByDesc = RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType());
-            if (codeByDesc != null) {
+            Integer repaymentType = RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType());
+            if (repaymentType != null) {
                 //获取还款类别代码不为null,查询对应还款类别的未结清的期数最小的还款计划信息
-                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), codeByDesc, "0");
+                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), repaymentType, "0");
                 if (repaymentPlan != null) {
                     concreteCompareDateAndAmount(nonDeductionRepaymentInfo, resultSet, businessTransaction, repaymentPlan);
                 }

@@ -872,10 +872,19 @@
             } else {
                 url = "/nonDeductionController/saveNonDeduction.do";
             }
+            var sendData = $("#editForm").serializeObject();
+            if(!sendData.repaymentAmount || !isNumberic(sendData.repaymentAmount)){
+                noty({'text': '还款金额为空或者不是数字', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if(!sendData.repaymentTermDate){
+                noty({'text': '还款日期为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
             $.ajax({
                 type: "post",
                 url: url,
-                data: $("#editForm").serialize(),
+                data:sendData ,
                 dataType: 'JSON',
                 success: function (data) {
                     if (data == "1") {

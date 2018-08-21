@@ -169,9 +169,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 getSpecification(nonDeductionRepaymentInfoQueryCondition);
         //不分页查询所有数据,获得根据条件查询出来还款总额
         List<NonDeductionRepaymentInfo> allNoPaging = nonDeductionRepaymentInfoRepository.findAll(specification);
-        String totalRepaymentAmount =
-                allNoPaging.stream().map(NonDeductionRepaymentInfo::getRepaymentAmount).reduce(BigDecimal.ZERO,
-                        BigDecimal::add).toString();
+        String totalRepaymentAmount = allNoPaging.stream().map(NonDeductionRepaymentInfo::getRepaymentAmount).reduce(BigDecimal.ZERO, BigDecimal::add).toString();
         session.setAttribute("totalRepaymentAmount", totalRepaymentAmount);
         //分页查询所有数据
         long count = nonDeductionRepaymentInfoRepository.count(specification);
@@ -382,17 +380,26 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             nonDeductionRepaymentInfo.setIsUploaded(ConstantsEnum.SUCCESS.getCode());
             nonDeductionRepaymentInfo.setGmtModified(new Date());
             nonDeductionRepaymentInfo.setModifiedId(Utility.getLoginUserId(session));
-            if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
-                    NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
-                //如果还款方式是通联收银宝,计算手续费,手续费四舍五入保留两位小数
-                nonDeductionRepaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getRepaymentAmount().multiply(allInPayConfig.getHandlingChargeRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-            } else {
-                nonDeductionRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
-            }
+            calculateHandlingCharge(nonDeductionRepaymentInfo);
         });
 
         nonDeductionRepaymentInfoRepository.save(original);
         LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:[{}]", Utility.getLoginUserName(session), ids);
+    }
+
+    /**
+     * 计算手续费
+     *
+     * @param nonDeductionRepaymentInfo 非代扣还款信息
+     */
+    private void calculateHandlingCharge(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
+        if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
+            //如果还款方式是通联收银宝,计算手续费,手续费四舍五入保留两位小数
+            nonDeductionRepaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getRepaymentAmount().multiply(allInPayConfig.getHandlingChargeRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
+        } else {
+            nonDeductionRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
+        }
     }
 
     /**
@@ -560,6 +567,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         } else {
             nonDeductionRepaymentInfo.setIsIntegrated(ConstantsEnum.FAIL.getCode());
         }
+        //计算手续费
+        calculateHandlingCharge(nonDeductionRepaymentInfo);
 
     }
 
