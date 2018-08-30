@@ -24,9 +24,15 @@ public enum RepaymentTypeEnum {
     SERVICE_FEE(1214, "服务费"),
 
     /**
-     * 其它
+     * 取件费
      */
-    OTHER(0,"其它");
+    PICK_UP_FEE(2104,"取件费"),
+
+
+    /**
+     * 诉讼成本
+     */
+    LITIGATION_CAST(2015,"诉讼成本");
 
 
     /**

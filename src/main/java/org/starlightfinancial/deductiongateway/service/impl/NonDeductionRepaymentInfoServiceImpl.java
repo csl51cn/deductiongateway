@@ -284,18 +284,24 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
+        NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
         trim(nonDeductionRepaymentInfo);
         if (!StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), nonDeductionRepaymentInfo.getIsUploaded())) {
-            //非系统匹配成功的情况
+
             if (StringUtils.isBlank(nonDeductionRepaymentInfo.getContractNo())) {
+                //非系统匹配成功的情况
                 //判断是否有合同号,如果没有合同号,将是否系统自动匹配业务信息设置为否,如果通过系统自动匹配成功的,后面会设置为是
                 nonDeductionRepaymentInfo.setIsAutoMatched(ConstantsEnum.FAIL.getCode());
+            } else {
+                //判断数据库中的记录合同编号是否和更新记录的一致,如果不一致,设置手动匹配
+                if (!StringUtils.equals(nonDeductionRepaymentInfo.getContractNo(), nonDeductionRepaymentInfoInDataBase.getContractNo())) {
+                    nonDeductionRepaymentInfo.setIsAutoMatched(ConstantsEnum.FAIL.getCode());
+                }
             }
         }
 
         supplementBusinessTransactionInfo(nonDeductionRepaymentInfo);
-        NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase =
-                nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
+
         //如果修改了入账公司,并且入账银行没有修改,需要将入账银行设置为null,避免因未设置相应的入账银行错误地生成还款方式
         if (!StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(),
                 nonDeductionRepaymentInfoInDataBase.getChargeCompany())) {
@@ -723,6 +729,40 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             i++;
         }
         return workbook;
+    }
+
+    /**
+     * 修改上传入账文件状态:已上传修改为未上传,未上传修改为已上传
+     *
+     * @param ids     一个或多个记录的id
+     * @param session 会话session
+     */
+    @Override
+    public void modifyUploadStatus(String ids, HttpSession session) {
+        //处理ids,先用逗号切割,然后转为List
+        List<Long> idsList = Arrays.stream(ids.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
+        //根据id查询对应的记录
+        List<NonDeductionRepaymentInfo> all = nonDeductionRepaymentInfoRepository.findAll(idsList);
+
+        //设置成已上传的id
+        ArrayList<Long> setUploaded = new ArrayList<>();
+        //设置成未上传的id
+        ArrayList<Long> setNonUploaded = new ArrayList<>();
+        all.forEach(nonDeductionRepaymentInfo -> {
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getIsUploaded(), ConstantsEnum.SUCCESS.getCode())) {
+                nonDeductionRepaymentInfo.setIsUploaded(ConstantsEnum.FAIL.getCode());
+
+                setNonUploaded.add(nonDeductionRepaymentInfo.getId());
+            } else {
+                nonDeductionRepaymentInfo.setIsUploaded(ConstantsEnum.SUCCESS.getCode());
+                setUploaded.add(nonDeductionRepaymentInfo.getId());
+            }
+            nonDeductionRepaymentInfo.setGmtModified(new Date());
+            nonDeductionRepaymentInfo.setModifiedId(Utility.getLoginUserId(session));
+            nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo);
+        });
+
+        LOGGER.info("修改上传入账文件状态成功,操作人:[{}],修改为已上传记录id:{},修改为未上传记录id:{}", Utility.getLoginUserName(session), setUploaded, setNonUploaded);
     }
 
     /**

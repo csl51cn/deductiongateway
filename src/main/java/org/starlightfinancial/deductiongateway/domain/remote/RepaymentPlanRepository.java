@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface RepaymentPlanRepository extends JpaRepository<RepaymentPlan, Long>, JpaSpecificationExecutor<RepaymentPlan> {
 
     /**
-     * 根据还款类别和还款状态查询最后一条记录
+     * 根据还款类别和还款状态查询第一条记录
      *
      * @param dateId     业务流水号
      * @param planTypeId 还款类别

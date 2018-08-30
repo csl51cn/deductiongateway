@@ -100,4 +100,12 @@ public interface NonDeductionRepaymentInfoService {
      * @return excel表格
      */
     Workbook exportXLS(NonDeductionRepaymentInfoQueryCondition nonDeductionRepaymentInfoQueryCondition);
+
+    /**
+     * 修改上传入账文件状态
+     *
+     * @param ids     一个或多个记录的id
+     * @param session 会话session
+     */
+    void modifyUploadStatus(String ids, HttpSession session);
 }

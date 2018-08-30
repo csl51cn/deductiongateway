@@ -1,3 +1,4 @@
+<!--判断是否是数字-->
 function isNumberic(obj) {
     //非负浮点数
     var regPos = /^\d+(\.\d+)?$/;
@@ -20,17 +21,8 @@ $.fn.serializeObject = function() {
         }
     });
     return o;
-}
-<!--判断是否是数字-->
-function isNumber(val){
-    var regPos = /^\d+(\.\d+)?$/; //非负浮点数
-    var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
-    if(regPos.test(val) || regNeg.test(val)){
-        return true;
-    }else{
-        return false;
-    }
-}
+};
+
 <!--date的Format函数扩展-->
 Date.prototype.Format = function (fmt) { //author: meizz
     var o = {
@@ -46,7 +38,7 @@ Date.prototype.Format = function (fmt) { //author: meizz
     for (var k in o)
         if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
     return fmt;
-}
+};
 /* -------------------- formatter  date  by yyyy-MM-dd --------------------- */
 function formatDate(strTime) {
     var date = new Date(strTime);

@@ -145,6 +145,7 @@
                                         <input type="button" class="btn " id="freshBtn" value="重新尝试匹配"/>
                                         <input type="button" class="btn " id="splitBtn" value="批量拆分还款记录"/>
                                         <input type="button" class="btn " id="importRepaymentBtn" value="导入昨日还款"/>
+                                        <input type="button" class="btn " id="modifyUploadStatusBtn" value="更改上传状态"/>
                                     </td>
 
                                 </tr>
@@ -281,7 +282,8 @@
                                             <option value="本息">本息</option>
                                             <option value="服务费">服务费</option>
                                             <option value="调查评估费">调查评估费</option>
-                                            <option value="其它">其它</option>
+                                            <option value="取件费">取件费</option>
+                                            <option value="诉讼成本">诉讼成本</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_repayment_amount">还款金额</label></td>
                                         <td><input type="text" name="repaymentAmount" id="txt_repayment_amount"
@@ -337,10 +339,12 @@
         $("#uploadBtn").show();
         $("#freshBtn").show();
         $("#splitBtn").show();
+        $("#modifyUploadStatusBtn").show();
     } else {
         $("#uploadBtn").hide();
         $("#freshBtn").hide();
         $("#splitBtn").hide();
+        $("#modifyUploadStatusBtn").hide();
     }
 
     if (staffId == 1 ) {
@@ -494,7 +498,7 @@
             source: [{value: "本息", text: "本息"}, {value: "服务费", text: "服务费"}, {
                 value: "调查评估费",
                 text: "调查评估费"
-            }, {value: "其它", text: "其它"}],
+            }, {value: "取件费", text: "取件费"}, {value: "诉讼成本", text: "诉讼成本"}],
             emptytext: "无",
             validate: function (v) {
                 if (!v) return '还款类别不能为空';
@@ -545,10 +549,7 @@
                     text: "建行0334"
                 }, {value: "招行0901", text: "招行0901"}];
             },
-            emptytext: "无",
-            validate: function (v) {
-                if (!v) return '入账银行不能为空';
-            }
+            emptytext: "无"
         }
     }, {
         field: 'isUploaded',
@@ -1003,7 +1004,7 @@
                     noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                 }
             })
-        })
+        });
 
         //拆分的id
         var idData;
@@ -1131,6 +1132,62 @@
             })
         });
 
+        <!--更改上传状态-->
+        $("#modifyUploadStatusBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录更新上传状态', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn =  $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment(value);
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/nonDeductionController/modifyUploadStatus.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout(query(), 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
+                    }
+                })
+            });
+
+
+        })
 
     })
 </script>

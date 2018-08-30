@@ -3,9 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 import org.apache.commons.lang.StringUtils;
 import org.starlightfinancial.deductiongateway.domain.local.AssociatePayer;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
-import org.starlightfinancial.deductiongateway.domain.remote.RepaymentPlan;
-import org.starlightfinancial.deductiongateway.domain.remote.RepaymentPlanRepository;
+import org.starlightfinancial.deductiongateway.domain.remote.*;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.RepaymentTypeEnum;
 import org.starlightfinancial.deductiongateway.utility.SpringContextUtil;
@@ -29,6 +27,7 @@ public class NonDeductionRepaymentInfoCalculationService {
 
     private static AssociatePayerService associatePayerService = SpringContextUtil.getBean(AssociatePayerService.class);
     private static RepaymentPlanRepository repaymentPlanRepository = SpringContextUtil.getBean(RepaymentPlanRepository.class);
+    private static RepaymentActualRepository repaymentActualRepository = SpringContextUtil.getBean(RepaymentActualRepository.class);
 
     /**
      * 尝试查找非代扣还款信息对应的业务信息
@@ -91,7 +90,6 @@ public class NonDeductionRepaymentInfoCalculationService {
             compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);
 
         }
-
 
 
         //最后判断resultSet中有多少条业务信息,如果result的大小不为1,表示未精确查询到匹配的业务信息,不做出更改,如果只剩下一条对应的业务信息,将合同编号,dateId设置到非代扣还款信息中
@@ -182,28 +180,37 @@ public class NonDeductionRepaymentInfoCalculationService {
      *
      * @param nonDeductionRepaymentInfo 非代扣还款信息
      * @param result                    非代扣还款信息可能对应的业务信息
-     * @param businessTransaction       业务信息
+     * @param businessTransaction       候选的业务信息
      * @param repaymentPlan             还款计划
      */
     private static void concreteCompareDateAndAmount(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, TreeSet<BusinessTransaction> result, BusinessTransaction businessTransaction, RepaymentPlan repaymentPlan) {
         //实际还款日与计划还款日对比
         LocalDate repaymentTermDate = Utility.getLocalDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
         LocalDate planTermDate = Utility.getLocalDate(repaymentPlan.getPlanTermDate());
-        //两个日期的差值
+        //两个日期的差值:planTermDate - repaymentTermDate
         long between = ChronoUnit.DAYS.between(repaymentTermDate, planTermDate);
         if (between >= -1 && between <= 1) {
-            //如果日期差值在[-1,1]范围内,继续判断实际还款金额和计划还款金额的差值是否在[-1,1]范围内
+            //如果日期差值在[-1,1]范围内,继续判断实际还款金额和计划还款金额的差值是否在[-2,2]范围内
             BigDecimal repaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
             BigDecimal planTotalAmount = new BigDecimal(repaymentPlan.getPlanTotalAmount());
+            //获取挂账金额
+            RepaymentActual repaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(repaymentPlan.getDateId(), repaymentPlan.getPlanTypeId());
+            BigDecimal totalHangingAmount = BigDecimal.ZERO;
+            if (Objects.nonNull(repaymentActual)) {
+                totalHangingAmount = new BigDecimal(repaymentActual.getTotalHangingAmount());
+            }
+            //计划还款金额减去挂账金额
+            planTotalAmount = planTotalAmount.subtract(totalHangingAmount);
             BigDecimal difference = planTotalAmount.setScale(2, BigDecimal.ROUND_HALF_UP).subtract(repaymentAmount);
-            if (difference.compareTo(BigDecimal.valueOf(-1)) >= 0 && difference.compareTo(BigDecimal.ONE) <= 0) {
-                //如果实际还款金额和计划还款金额的差值是否在[-1,1]范围内,添加到保存结果的result中
+            if (difference.compareTo(BigDecimal.valueOf(-2)) >= 0 && difference.compareTo(BigDecimal.valueOf(2)) <= 0) {
+                //如果实际还款金额和计划还款金额的差值是否在[-2,2]范围内,添加到保存结果的result中
                 result.add(businessTransaction);
             }
-        } else {
-            //如果逾期了,也直接添加到结果中,最后判断result中是否只有一条记录
+        }else{
+            //如果逾期或者提前还款,也直接添加到结果中,最后判断result中是否只有一条记录
             result.add(businessTransaction);
         }
+
     }
 
 

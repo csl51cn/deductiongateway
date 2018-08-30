@@ -584,14 +584,21 @@ public class BeanConverter {
         ArrayList<RepaymentInfo> repaymentInfos = new ArrayList<>();
         RepaymentInfo principalAndInterestRepaymentInfo = new RepaymentInfo();
         BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(mortgageDeduction.getContractNo());
-        //设置dateId
-        principalAndInterestRepaymentInfo.setDateId(businessTransaction.getDateId());
+        if (Objects.nonNull(businessTransaction)) {
+            //设置dateId
+            principalAndInterestRepaymentInfo.setDateId(businessTransaction.getDateId());
+            //设置客户名称
+            principalAndInterestRepaymentInfo.setCustomerName(businessTransaction.getSubject());
+        }else{
+            //设置客户名称
+            principalAndInterestRepaymentInfo.setCustomerName("客户");
+        }
+
         //设置合同号
         principalAndInterestRepaymentInfo.setContractNo(mortgageDeduction.getContractNo());
         //设置还款日期
         principalAndInterestRepaymentInfo.setRepaymentTermDate(Utility.convertToDate(mortgageDeduction.getPayTime().toString(), "yyyy-MM-dd"));
-        //设置客户名称
-        principalAndInterestRepaymentInfo.setCustomerName(businessTransaction.getSubject());
+
         //设置还款方式
         principalAndInterestRepaymentInfo.setRepaymentMethod(DeductionChannelEnum.getOrderDescByCode(mortgageDeduction.getChannel()) + "代扣");
         //设置创建时间
@@ -732,9 +739,9 @@ public class BeanConverter {
         //设置还款金额
         repaymentInfo.setRepaymentAmount(nonDeductionRepaymentInfo.getRepaymentAmount());
         //设置手续费
-        if(Objects.isNull(nonDeductionRepaymentInfo.getHandlingCharge())){
+        if (Objects.isNull(nonDeductionRepaymentInfo.getHandlingCharge())) {
             repaymentInfo.setHandlingCharge(BigDecimal.ZERO);
-        }else{
+        } else {
             repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
         }
 
