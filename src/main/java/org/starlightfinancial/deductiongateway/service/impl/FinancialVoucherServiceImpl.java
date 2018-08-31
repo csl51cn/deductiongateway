@@ -11,11 +11,13 @@ import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymen
 import org.starlightfinancial.deductiongateway.domain.remote.RepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.remote.RepaymentInfoRepository;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
+import org.starlightfinancial.deductiongateway.enums.RepaymentTypeEnum;
 import org.starlightfinancial.deductiongateway.service.FinancialVoucherService;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
@@ -76,10 +78,21 @@ public class FinancialVoucherServiceImpl implements FinancialVoucherService {
             //将拆分出来的记录的还款金额加到被拆分的记录的还款金额中
             originalNonDeductionRepaymentInfo.setRepaymentAmount(originalNonDeductionRepaymentInfo.getRepaymentAmount().add(nonDeductionRepaymentInfo.getRepaymentAmount()));
         });
+
+
         //将非代扣还款信息转换为还款信息,并添加到repaymentInfos中
         beSplitedNonDeductionRepaymentInfoMap.forEach((id, nonDeductionRepaymentInfo) -> {
             repaymentInfos.add(beanConverter.transToRepaymentInfo(nonDeductionRepaymentInfo));
         });
+        //单独处理还款类别是诉讼成本的还款,生成一条还款金额为负数的记录
+        List<NonDeductionRepaymentInfo> litigationNonDeductionRepaymentInfoSrc = nonDeductionRepaymentInfos.stream().filter(nonDeductionRepaymentInfo -> StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.LITIGATION_CAST.getDesc())).collect(Collectors.toList());
+        //深度复制,脱离JPA管理,避免更新数据库中的数据
+        List<NonDeductionRepaymentInfo> litigationNonDeductionRepaymentInfo = Utility.deepCopy(litigationNonDeductionRepaymentInfoSrc);
+        litigationNonDeductionRepaymentInfo.forEach(nonDeductionRepaymentInfo -> {
+            nonDeductionRepaymentInfo.setRepaymentAmount(nonDeductionRepaymentInfo.getRepaymentAmount().multiply(new BigDecimal(-1)));
+            repaymentInfos.add(beanConverter.transToRepaymentInfo(nonDeductionRepaymentInfo));
+        });
+
 
         //去重,首先从数据中查询所有昨天的还款数据
         List<RepaymentInfo> existedRepaymentInfos = repaymentInfoRepository.findByRepaymentTermDateGreaterThanEqualAndRepaymentTermDateBefore(yesterday, today);

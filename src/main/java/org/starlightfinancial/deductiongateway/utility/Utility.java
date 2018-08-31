@@ -144,12 +144,15 @@ public class Utility {
      * @param sortNum  0:desc 倒序 1:asc 正序
      * @return 返回PageRequest对象
      */
-    public static PageRequest buildPageRequest(PageBean pageBean, Integer sortNum) {
+    public static PageRequest buildPageRequest(PageBean pageBean, Integer sortNum,String... properties) {
         Sort sort = null;
+        if (properties.length == 0 ){
+            properties = new String[]{"id"};
+        }
         if (sortNum == 1) {
-            sort = new Sort(Sort.Direction.ASC, "id");
+            sort = new Sort(Sort.Direction.ASC, properties);
         } else {
-            sort = new Sort(Sort.Direction.DESC, "id");
+            sort = new Sort(Sort.Direction.DESC, properties);
         }
         Integer pageNumber = pageBean.getPageNumber();
         Integer pageSize = pageBean.getPageSize();

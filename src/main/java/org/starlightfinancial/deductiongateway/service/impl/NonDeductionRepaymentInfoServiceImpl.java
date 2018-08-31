@@ -61,10 +61,12 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     private AllInPayConfig allInPayConfig;
 
     /**
-     * 新增非代扣还款数据时的列名与字段映射
+     * 新增非代扣还款数据时的Excel列名与字段映射
      */
     private static final HashMap<String, String> UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP =
             new HashMap<String, String>(6) {
+                private static final long serialVersionUID = -7538782664536862677L;
+
                 {
                     put("还款时间", "repaymentTermDate");
                     put("还款原始信息", "repaymentOriginalInfo");
@@ -76,10 +78,12 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             };
 
     /**
-     * 拆分非代扣还款数据时的列名与字段映射
+     * 拆分非代扣还款数据时的Excel列名与字段映射
      */
     private static final HashMap<String, String> SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP =
             new HashMap<String, String>(UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP) {
+                private static final long serialVersionUID = -4103996416358302239L;
+
                 {
                     put("入账时间", "accountingDate");
                     put("合同编号", "contractNo");
@@ -182,7 +186,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         if (totalPageCount < pageBean.getPageNumber()) {
             pageBean.setPageNumber(1);
         }
-        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0);
+        PageRequest pageRequest = Utility.buildPageRequest(pageBean, 0, "gmtModified");
         Page<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos =
                 nonDeductionRepaymentInfoRepository.findAll(specification, pageRequest);
         if (nonDeductionRepaymentInfos.hasContent()) {
@@ -238,19 +242,25 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 //入账公司判断是否是全部,如果是0是全部入账公司不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getChargeCompany())) {
                     predicates.add(cb.equal(root.get("chargeCompany"),
-                            nonDeductionRepaymentInfoQueryCondition.getChargeCompany().trim()));
+                            nonDeductionRepaymentInfoQueryCondition.getChargeCompany()));
                 }
 
                 //还款方式判断是否是全部,如果是0是全部还款方式不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod())) {
                     predicates.add(cb.equal(root.get("repaymentMethod"),
-                            nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod().trim()));
+                            nonDeductionRepaymentInfoQueryCondition.getRepaymentMethod()));
                 }
 
                 //入账银行判断是否是全部,如果是0是全部入账银行不加限制,如果不是0,根据传入的条件查询
                 if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getBankName())) {
                     predicates.add(cb.equal(root.get("bankName"),
-                            nonDeductionRepaymentInfoQueryCondition.getBankName().trim()));
+                            nonDeductionRepaymentInfoQueryCondition.getBankName()));
+                }
+
+                //入账银行判断是否是全部,如果是0是全部入账银行不加限制,如果不是0,根据传入的条件查询
+                if (!ConstantsEnum.FAIL.getCode().equals(nonDeductionRepaymentInfoQueryCondition.getRepaymentType())) {
+                    predicates.add(cb.equal(root.get("repaymentType"),
+                            nonDeductionRepaymentInfoQueryCondition.getRepaymentType()));
                 }
 
                 return cb.and(predicates.toArray(new Predicate[]{}));

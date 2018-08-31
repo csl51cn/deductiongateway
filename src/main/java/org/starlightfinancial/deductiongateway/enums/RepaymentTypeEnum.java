@@ -32,7 +32,7 @@ public enum RepaymentTypeEnum {
     /**
      * 诉讼成本
      */
-    LITIGATION_CAST(2015,"诉讼成本");
+    LITIGATION_CAST(2105,"诉讼成本");
 
 
     /**

@@ -130,6 +130,17 @@
                                                 <option value="建行3504">建行3504</option>
                                             </select>
                                         </td>
+                                        <td><label for="select_repayment_type">还款类别</label></td>
+                                        <td>
+                                            <select id="select_repayment_type" style="width: 164px;" name="repaymentType">
+                                                <option value="0" selected>全部</option>
+                                                <option value="本息">本息</option>
+                                                <option value="服务费">服务费</option>
+                                                <option value="调查评估费">调查评估费</option>
+                                                <option value="取件费">取件费</option>
+                                                <option value="诉讼成本">诉讼成本</option>
+                                            </select>
+                                        </td>
                                     </tr>
                                 </table>
                             </form>
@@ -513,7 +524,7 @@
             validate: function (v) {
                 if (!v) {
                     return '还款金额不能为空';
-                } else if (!isNumber(v)) {
+                } else if (!isNumberic(v)) {
                     return "只能输入数字";
                 }
             }
@@ -767,6 +778,7 @@
                 importEndDate: importEndDate,
                 chargeCompany: $("#select_chargeCompany").val(),
                 repaymentMethod: $("#select_repaymentMethod").val(),
+                repaymentType:$("#select_repayment_type").val(),
                 bankName: $("#bankName").val()
             }
         }
@@ -793,6 +805,10 @@
         });
         <!--入账银行选择变化重新加载数据-->
         $("#bankName").change(function () {
+            query();
+        });
+        <!--还款类别选择变化重新加载数据-->
+        $("#select_repayment_type").change(function () {
             query();
         });
 
@@ -1066,9 +1082,10 @@
             var chargeCompany = $("#select_chargeCompany").val();
             var repaymentMethod = $("#select_repaymentMethod").val();
             var bankName = $("#bankName").val();
+            var repaymentType =   $("#select_repayment_type").val();
             location.href = "/nonDeductionController/exportXLS.do?repaymentStartDate=" + repaymentStartDate + "&repaymentEndDate=" + repaymentEndDate +
                 "&contractNo=" + contractNo + "&customerName=" + customerName + "&isIntegrated=" + isIntegrated + "&isUploaded=" + isUploaded + "&importStartDate=" + importStartDate + "&importEndDate=" + importEndDate
-                +"&chargeCompany="+chargeCompany+"&repaymentMethod="+repaymentMethod+"&bankName="+bankName;
+                +"&chargeCompany="+chargeCompany+"&repaymentMethod="+repaymentMethod+"&bankName="+bankName+"&repaymentType="+repaymentType;
         });
         <!--查询条件入账公司变更与入账银行联动-->
         $("#chargeCompany").click(function () {

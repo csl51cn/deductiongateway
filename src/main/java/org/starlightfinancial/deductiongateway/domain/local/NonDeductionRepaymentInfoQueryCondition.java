@@ -72,6 +72,11 @@ public class NonDeductionRepaymentInfoQueryCondition {
      */
     private String bankName;
 
+    /**
+     * 还款类别
+     */
+    private String repaymentType;
+
 
     public Date getRepaymentStartDate() {
         return repaymentStartDate;
@@ -160,5 +165,13 @@ public class NonDeductionRepaymentInfoQueryCondition {
 
     public void setBankName(String bankName) {
         this.bankName = bankName;
+    }
+
+    public String getRepaymentType() {
+        return repaymentType;
+    }
+
+    public void setRepaymentType(String repaymentType) {
+        this.repaymentType = repaymentType;
     }
 }
