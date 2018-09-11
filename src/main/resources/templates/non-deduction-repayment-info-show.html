@@ -583,6 +583,19 @@
     },{
         field:"isAutoMatched",
         title:"是否系统自动匹配到业务信息"
+    },{
+        field:"remark",
+        title:"入账备注",
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        },
+        editable: {
+            type: 'text',
+            title: '入账备注编辑'
+        }
     }];
 
 
@@ -1034,8 +1047,9 @@
             browseClass: "btn btn-primary", //按钮样式
             maxFileCount: 1,//最大上传文件数限制
             uploadAsync: true,
+            dropZoneEnabled: true,
             maxFileSize: 10240,
-            showPreview: false,
+            showPreview: true,
             uploadExtraData: function (previewId, index) {           //传参
                 return idData;
             }
@@ -1205,6 +1219,11 @@
 
 
         })
+
+        $(document).ready(function (){
+            $("#kvFileinputModal").css('display','none');
+
+        });
 
     })
 </script>

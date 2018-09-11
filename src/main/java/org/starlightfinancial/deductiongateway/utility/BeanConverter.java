@@ -535,6 +535,7 @@ public class BeanConverter {
             repaymentMethod.append("-").append(nonDeductionRepaymentInfo.getBankName());
         }
         autoAccountingExcelRow.setRepaymentMethod(repaymentMethod.toString());
+        autoAccountingExcelRow.setReason(nonDeductionRepaymentInfo.getRemark());
         return autoAccountingExcelRow;
 
 

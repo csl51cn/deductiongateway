@@ -159,6 +159,12 @@ public class NonDeductionRepaymentInfo implements Serializable {
     @Column(name = "original_id")
     private Long originalId;
 
+    /**
+     * 备注
+     */
+    @Column(name = "remark")
+    private String remark;
+
     public Long getId() {
         return id;
     }
@@ -328,6 +334,15 @@ public class NonDeductionRepaymentInfo implements Serializable {
 
     public void setOriginalId(Long originalId) {
         this.originalId = originalId;
+    }
+
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     @Override

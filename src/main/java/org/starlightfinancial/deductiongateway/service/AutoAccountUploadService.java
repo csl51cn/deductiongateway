@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -114,7 +115,12 @@ public class AutoAccountUploadService {
             cell.setCellValue("");
             //原因
             cell = row.createCell(15);
-            cell.setCellValue("自动入账");
+            if (StringUtils.isNotBlank(autoAccountingExcelRow.getReason())){
+                cell.setCellValue("自动入账."+autoAccountingExcelRow.getReason());
+            }else{
+                cell.setCellValue("自动入账.");
+            }
+
             //银联分账数据１扣款(分)
             cell = row.createCell(16);
             cell.setCellValue("");
@@ -160,4 +166,6 @@ public class AutoAccountUploadService {
             throw e;
         }
     }
+
+
 }
