@@ -76,6 +76,14 @@ public class NonDeductionRepaymentInfoCalculationService {
             if (count == 0) {
                 //如果业务已经结清了,移除
                 iterator.remove();
+                continue;
+            }
+
+            //查询是否已经坏账核销
+            Long isWriteOffBadLoanCount = repaymentPlanRepository.countByDateIdAndIsWriteOffBadLoan(next.getDateId(), 1);
+            if (isWriteOffBadLoanCount > 0 ){
+                //如果已经坏账核销,移除
+                iterator.remove();
             }
         }
 

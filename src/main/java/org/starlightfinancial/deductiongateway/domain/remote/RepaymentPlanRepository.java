@@ -30,4 +30,14 @@ public interface RepaymentPlanRepository extends JpaRepository<RepaymentPlan, Lo
      */
     Long countByDateIdAndStatus(Long dateId, String status);
 
+    /**
+     * 根据条件查询记录数据
+     *
+     * @param dateId            业务流水号
+     * @param isWriteOffBadLoan 是否坏账核销
+     * @return 符合条件的记录数
+     */
+    Long countByDateIdAndIsWriteOffBadLoan(Long dateId, Integer isWriteOffBadLoan);
+
+
 }

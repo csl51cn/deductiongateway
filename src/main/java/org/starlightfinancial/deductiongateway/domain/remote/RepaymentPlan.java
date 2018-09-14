@@ -80,7 +80,7 @@ public class RepaymentPlan {
     @Column(name = "还款计划类别")
     private Integer planTypeId;
     /**
-     * 是否坏账核销
+     * 是否坏账核销:0-否,1:是
      */
     @Column(name = "坏账核销")
     private Integer isWriteOffBadLoan;

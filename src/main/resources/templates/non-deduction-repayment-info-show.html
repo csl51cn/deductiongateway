@@ -368,7 +368,7 @@
 
     <!-- 入账公司对应入账银行 -->
     var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
-        {"chargeCompany": "铠岳", "bankNameList": ["建行0334"]},
+        {"chargeCompany": "铠岳", "bankNameList": ["建行0334","招行0202"]},
         {"chargeCompany": "润坤", "bankNameList": ["招行0901","招行0702"]}
     ];
     var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
@@ -474,7 +474,8 @@
         editable: {
             type: 'text',
             title: '还款原始信息编辑'
-        }
+        },
+        class: "W120"
     }, {
         field: 'customerName',
         title: '单位/个人还款',
@@ -485,6 +486,7 @@
                 if (!v) return '单位/个人还款不能为空';
             }
         }
+
     }, {
         field: 'repaymentMethod',
         title: '还款方式',
