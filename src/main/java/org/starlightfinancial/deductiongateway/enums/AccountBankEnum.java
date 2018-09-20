@@ -27,7 +27,12 @@ public enum AccountBankEnum {
     /**
      * 润坤入账银行:招行0702
      */
-    RUN_KUN_CMBC_0702("2098", "招行0702");
+    RUN_KUN_CMBC_0702("2098", "招行0702"),
+
+    /**
+     * 铠岳入账银行:招行0202
+     */
+    KAI_YUE_CMBC_0202("2106", "招行0202");
 
 
     private String code;
