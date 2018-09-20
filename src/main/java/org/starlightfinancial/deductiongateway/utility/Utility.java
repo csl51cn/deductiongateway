@@ -10,10 +10,8 @@ import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Utility {
@@ -31,6 +29,12 @@ public class Utility {
     public static final String SEND_BANK_GATEID = "7008";//网关
     public static final String SEND_BANK_CURYID = "156";//交易币种
     public static final String SEND_BANK_TYPE = "0001";//分账类型
+    /**
+     * 14位时间戳格式
+     */
+    public static final String PATTERN = "yyyyMMddHHmmss";
+
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(PATTERN);
 
 
     /**
@@ -144,9 +148,9 @@ public class Utility {
      * @param sortNum  0:desc 倒序 1:asc 正序
      * @return 返回PageRequest对象
      */
-    public static PageRequest buildPageRequest(PageBean pageBean, Integer sortNum,String... properties) {
+    public static PageRequest buildPageRequest(PageBean pageBean, Integer sortNum, String... properties) {
         Sort sort = null;
-        if (properties.length == 0 ){
+        if (properties.length == 0) {
             properties = new String[]{"id"};
         }
         if (sortNum == 1) {
@@ -260,5 +264,52 @@ public class Utility {
         return dest;
     }
 
+    /**
+     * 获取14位时间戳:yyyyMMddHHmmss 样式
+     *
+     * @return 返回时间戳
+     */
+    public static String getTimestamp() {
+        return LocalDateTime.now(ZoneOffset.of("+8")).format(DATE_TIME_FORMATTER);
+    }
+
+
+    /**
+     * 随机指定范围内N个不重复的数
+     * 在初始化的无重复待选数组中随机产生一个数放入结果集中，使用随机数 %  范围长度的余数确定待选数组下标,
+     * 范围长度自减1,将待选数组被随机到的数，用待选数组最后一个 (len-1下标)对应的数替换
+     * 然后从0 到 len-2 下标里随机产生下一个随机数，放入结果集中, 待选数组如此类推
+     *
+     * @param max 指定范围最大值
+     * @param min 指定范围最小值
+     * @param n   随机数个数
+     * @return int[] 随机数结果集
+     */
+    public static int[] randomArray(int min, int max, int n) {
+        int len = max - min + 1;
+
+        if (max < min || n > len) {
+            return null;
+        }
+
+        //初始化给定范围的待选数组
+        int[] source = new int[len];
+        for (int i = min; i < min + len; i++) {
+            source[i - min] = i;
+        }
+
+        int[] result = new int[n];
+        Random rd = new Random();
+        int index = 0;
+        for (int i = 0; i < result.length; i++) {
+            //待选数组0到(len-2)随机一个下标
+            index = Math.abs(rd.nextInt() % len--);
+            //将随机到的数放入结果集
+            result[i] = source[index];
+            //将待选数组中被随机到的数，用待选数组(len-1)下标对应的数替换
+            source[index] = source[len];
+        }
+        return result;
+    }
 
 }

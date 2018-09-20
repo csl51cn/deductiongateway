@@ -175,6 +175,18 @@ public class BaofuConfig {
     @Value("${baofu.classic.api.over_and_50000.handling.charge}")
     private BigDecimal levelThree;
 
+    /**
+     * 宝付代付 商户号
+     */
+    @Value("${baofu.classic.api.pay.member.id}")
+    private String classicPayMemberId;
+
+    /**
+     * 宝付代付 终端号
+     */
+    @Value("${baofu.classic.api.pay.terminal.id}")
+    private String classicPayTerminalId;
+
     public String getClassicVersion() {
         return classicVersion;
     }
@@ -389,5 +401,22 @@ public class BaofuConfig {
 
     public void setLevelThree(BigDecimal levelThree) {
         this.levelThree = levelThree;
+    }
+
+
+    public String getClassicPayMemberId() {
+        return classicPayMemberId;
+    }
+
+    public void setClassicPayMemberId(String classicPayMemberId) {
+        this.classicPayMemberId = classicPayMemberId;
+    }
+
+    public String getClassicPayTerminalId() {
+        return classicPayTerminalId;
+    }
+
+    public void setClassicPayTerminalId(String classicPayTerminalId) {
+        this.classicPayTerminalId = classicPayTerminalId;
     }
 }
