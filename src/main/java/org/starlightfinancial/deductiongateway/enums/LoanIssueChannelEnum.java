@@ -10,7 +10,7 @@ public enum LoanIssueChannelEnum {
     /**
      * 宝付渠道
      */
-    BAO_FU("0001","宝付");
+    BAO_FU("1001","宝付");
 
 
 

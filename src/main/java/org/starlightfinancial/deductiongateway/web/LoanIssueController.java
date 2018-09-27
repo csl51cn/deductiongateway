@@ -7,14 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
 import org.starlightfinancial.deductiongateway.service.impl.BackgroundNotificationConsumer;
+import org.starlightfinancial.deductiongateway.utility.PageBean;
+import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.servlet.http.HttpSession;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -32,26 +39,62 @@ public class LoanIssueController {
 
 
     /**
-     * 放款操作
-     * @return
+     * 监听业务系统发出的放款消息,入库
+     *
+     * @param textMessage 消息
+     * @param session     会话session
+     * @throws JMSException 获取消息异常时抛出
      */
     @JmsListener(destination = "loanIssueQueueDev", containerFactory = "jmsQueueListener")
-    public  void loanIssue(TextMessage textMessage, Session session) throws JMSException {
+    public void saveLoanIssueFromMq(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
             LOGGER.info("收到放款消息:{}", text);
             List<LoanIssueBasicInfo> loanIssueBasicInfos = JSON.parseArray(text, LoanIssueBasicInfo.class);
-            loanIssueService.loanIssue(loanIssueBasicInfos);
+            loanIssueBasicInfos = loanIssueService.saveLoanIssueBasicInfo(loanIssueBasicInfos);
             textMessage.acknowledge();
-        }catch (JMSException e) {
-            e.printStackTrace();
+            //目前不自动放款
+//            loanIssueService.loanIssue(loanIssueBasicInfos);
+//            LOGGER.info("代付交易请求完成");
+        } catch (JMSException e) {
+            LOGGER.error("自动放款操作异常", e);
             session.recover();
         }
-
-
     }
 
+    /**
+     * 根据条件查询记录
+     *
+     * @param pageBean                分页信息
+     * @param loanIssueQueryCondition 查询条件
+     * @return 查询到的记录
+     */
+    @RequestMapping("/queryLoanIssue.do")
+    @ResponseBody
+    public Map<String, Object> queryLoanIssue(PageBean pageBean, LoanIssueQueryCondition loanIssueQueryCondition) {
+        PageBean result = loanIssueService.queryLoanIssue(pageBean, loanIssueQueryCondition);
+        return Utility.pageBean2Map(result);
+    }
 
+    /**
+     * 保存记录
+     *
+     * @param loanIssueBasicInfo 贷款发放信息
+     * @param session            会话session
+     * @return 保存情况
+     */
+    @RequestMapping("/saveLoanIssue.do")
+    @ResponseBody
+    public String saveLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo, HttpSession session) {
+        try {
+            loanIssueBasicInfo.setCreateId(Utility.getLoginUserId(session));
+            loanIssueService.saveLoanIssueBasicInfo(Collections.singletonList(loanIssueBasicInfo));
+            return "1";
+        } catch (Exception e) {
+            LOGGER.error("保存贷款发放信息失败", e);
+            return "0";
+        }
+    }
 
 
 }

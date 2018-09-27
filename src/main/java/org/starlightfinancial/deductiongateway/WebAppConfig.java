@@ -44,6 +44,7 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
         registry.addViewController("/non-deduction-upload.do").setViewName("non-deduction-repayment-info-upload");
         registry.addViewController("/non-deduction-show.do").setViewName("non-deduction-repayment-info-show");
         registry.addViewController("/associate-payer.do").setViewName("associate-payer");
+        registry.addViewController("/loan-issue-page.do").setViewName("loan-issue");
     }
 }
 

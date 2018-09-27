@@ -312,4 +312,33 @@ public class Utility {
         return result;
     }
 
+    /**
+     * 按固定数量分组.例如,list中有23个元素,按照5个元素一组,将分为5组
+     *
+     * @param list     源数据
+     * @param quantity 每组大小
+     * @param <T>      类型
+     * @return 返回分组后的结果
+     */
+    public static <T> List<List<T>> groupListByQuantity(List<T> list, int quantity) {
+        ArrayList<List<T>> wrapList = new ArrayList<>();
+        if (list == null || list.size() == 0) {
+            wrapList.add(list);
+            return wrapList;
+        }
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Wrong quantity.");
+        }
+
+        int count = 0;
+        while (count < list.size()) {
+            wrapList.add(list.subList(count, (count + quantity) > list.size() ? list.size() : count + quantity));
+            count += quantity;
+        }
+
+        return wrapList;
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Date;
  * @date: Created in 2018/9/17 16:26
  * @Modified By:
  */
+@NamedEntityGraph(name = "LoanIssueBasicInfo.loanIssue",attributeNodes={@NamedAttributeNode("loanIssue")})
 @Entity(name = "BU_LOAN_BASIC_INFO")
 public class LoanIssueBasicInfo {
 
@@ -42,7 +44,7 @@ public class LoanIssueBasicInfo {
     private String businessNo;
 
     /**
-     * 收款人类型
+     * 收款人类型:1-个人,2-企业
      */
     @Column(name = "to_account_type")
     private String toAccountType;
@@ -60,11 +62,18 @@ public class LoanIssueBasicInfo {
     @Column(name = "to_account_name")
     private String toAccountName;
 
+
     /**
-     * 收款人姓名
+     * 收款人银行帐号
      */
-    @Column(name = "to_bank_name")
-    private String toBankName;
+    @Column(name = "to_acc_no")
+    private String toAccountNo;
+
+    /**
+     * 收款人开户行名称
+     */
+    @Column(name = "to_bank_name_id")
+    private Integer toBankNameId;
 
 
     /**
@@ -105,19 +114,18 @@ public class LoanIssueBasicInfo {
     @Column(name = "channel")
     private String channel;
 
-
     /**
-     * 是否进行过放款操作
+     * 备注
      */
-    @Column(name = "is_issue")
-    private String isIssue;
-
+    @Column(name = "remark")
+    private String remark;
 
     /**
      * 交易记录
      */
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "loan_issue_id",referencedColumnName = "id")
+    @JsonManagedReference
+    @OneToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="loan_issue_id",referencedColumnName = "id")
     private LoanIssue loanIssue;
 
     /**
@@ -206,12 +214,12 @@ public class LoanIssueBasicInfo {
         this.toAccountName = toAccountName;
     }
 
-    public String getToBankName() {
-        return toBankName;
+    public Integer getToBankNameId() {
+        return toBankNameId;
     }
 
-    public void setToBankName(String toBankName) {
-        this.toBankName = toBankName;
+    public void setToBankNameId(Integer toBankNameId) {
+        this.toBankNameId = toBankNameId;
     }
 
     public String getToBankProvince() {
@@ -252,14 +260,6 @@ public class LoanIssueBasicInfo {
 
     public void setMobileNo(String mobileNo) {
         this.mobileNo = mobileNo;
-    }
-
-    public String getIsIssue() {
-        return isIssue;
-    }
-
-    public void setIsIssue(String isIssue) {
-        this.isIssue = isIssue;
     }
 
     public LoanIssue getLoanIssue() {
@@ -307,5 +307,22 @@ public class LoanIssueBasicInfo {
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+
+    public String getToAccountNo() {
+        return toAccountNo;
+    }
+
+    public void setToAccountNo(String toAccountNo) {
+        this.toAccountNo = toAccountNo;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

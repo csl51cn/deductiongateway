@@ -81,7 +81,7 @@ public class NonDeductionRepaymentInfoCalculationService {
 
             //查询是否已经坏账核销
             Long isWriteOffBadLoanCount = repaymentPlanRepository.countByDateIdAndIsWriteOffBadLoan(next.getDateId(), 1);
-            if (isWriteOffBadLoanCount > 0 ){
+            if (isWriteOffBadLoanCount > 0) {
                 //如果已经坏账核销,移除
                 iterator.remove();
             }
@@ -214,9 +214,13 @@ public class NonDeductionRepaymentInfoCalculationService {
                 //如果实际还款金额和计划还款金额的差值是否在[-2,2]范围内,添加到保存结果的result中
                 result.add(businessTransaction);
             }
-        }else{
+        } else {
             //如果逾期或者提前还款,也直接添加到结果中,最后判断result中是否只有一条记录
-            result.add(businessTransaction);
+            //如果还款类别是调查评估费,逾期不添加到候选业务信息中
+            if (RepaymentTypeEnum.EVALUATION_FEE.getCode() != repaymentPlan.getPlanTypeId()){
+                result.add(businessTransaction);
+            }
+
         }
 
     }

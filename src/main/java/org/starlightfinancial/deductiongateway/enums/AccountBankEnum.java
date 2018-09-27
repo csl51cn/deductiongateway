@@ -32,7 +32,14 @@ public enum AccountBankEnum {
     /**
      * 铠岳入账银行:招行0202
      */
-    KAI_YUE_CMBC_0202("2106", "招行0202");
+    KAI_YUE_CMBC_0202("2106", "招行0202"),
+
+    /**
+     * 第三方咨询服务公司:重庆银行6559
+     */
+    THIRD_PARTY_CONSULT_BCQ_6559("2108","重庆银行6559");
+
+
 
 
     private String code;

@@ -2,19 +2,79 @@ package org.starlightfinancial.deductiongateway.enums;
 
 /**
  * @author: Senlin.Deng
- * @Description:
- * @date: Created in 2018/9/20 9:21
+ * @Description: 转账状态枚举, 后期有其他渠道继续添加code
+ * @date: Created in 2018/9/25 16:12
  * @Modified By:
  */
-public class LoanIssueStatusEnum {
+public enum LoanIssueStatusEnum {
 
 
 
+    /**
+     * 转账处理中
+     */
+    STATUS0("0", "0", "转账处理中"),
+
+    /**
+     * 转账成功
+     */
+    STATUS1("1", "1", "转账成功"),
+
+    /**
+     * 转账成功
+     */
+    STATUS2("2", "-1", "转账失败"),
 
 
+    /**
+     * 退款
+     */
+    STATUS3("3", "2", "转账退款");
 
 
+    private String code;
+    private String baoFuCode;
+    private String desc;
 
+    LoanIssueStatusEnum(String code, String baoFuCode, String desc) {
+        this.code = code;
+        this.baoFuCode = baoFuCode;
+        this.desc = desc;
+    }
+
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getBaoFuCode() {
+        return baoFuCode;
+    }
+
+    public void setBaoFuCode(String baoFuCode) {
+        this.baoFuCode = baoFuCode;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getCodeByBaoFuCode(String baoFuCode) {
+        for (LoanIssueStatusEnum loanIssueStatusEnum : LoanIssueStatusEnum.values()) {
+            if (baoFuCode.equals(loanIssueStatusEnum.getBaoFuCode())) {
+                return loanIssueStatusEnum.getCode();
+            }
+        }
+        return null;
+    }
 
 
 }

@@ -77,12 +77,23 @@
     <script src="/js/retina.js"></script>
 
     <script src="/js/custom.js"></script>
-    <script type="text/javascript">
-       $('.collapse').collapse();
+    <script type="text/javascript" th:inline="javascript" >
+        $('.collapse').collapse();
         $(function () {
+            //自动计算页脚中的年份
             var now = new Date();
             var year = now.getFullYear();
-            $("#footer").html("版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ")
+            $("#footer").html("版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ");
+
+            //贷款放款指定人可见
+            var session = [[${session}]];
+            if (session.loginUser){
+                var  staffId =session.loginUser.staffId;
+                if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211) {
+                    $("#loanIssueLi").css("display","block")
+                }
+            }
+
         });
     </script>
 </div>
@@ -111,6 +122,8 @@
                         class="hidden-tablet"> 非代扣还款数据</span></a></li>
                 <li><a href="/associate-payer.do"><i class="icon-tasks"></i><span
                         class="hidden-tablet">关联还款人</span></a></li>
+                <li id="loanIssueLi" style="display: none;"><a href="/loan-issue-page.do"><i class="icon-tasks"></i><span
+                        class="hidden-tablet">贷款发放</span></a></li>
             </ul>
         </div>
     </div>

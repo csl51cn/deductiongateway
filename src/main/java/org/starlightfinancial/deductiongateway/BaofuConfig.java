@@ -187,6 +187,9 @@ public class BaofuConfig {
     @Value("${baofu.classic.api.pay.terminal.id}")
     private String classicPayTerminalId;
 
+    @Value("${baofu.classic.api.pay.loan-issue.url}")
+    private  String  classicPayLoanIssueUrl;
+
     public String getClassicVersion() {
         return classicVersion;
     }
@@ -418,5 +421,13 @@ public class BaofuConfig {
 
     public void setClassicPayTerminalId(String classicPayTerminalId) {
         this.classicPayTerminalId = classicPayTerminalId;
+    }
+
+    public String getClassicPayLoanIssueUrl() {
+        return classicPayLoanIssueUrl;
+    }
+
+    public void setClassicPayLoanIssueUrl(String classicPayLoanIssueUrl) {
+        this.classicPayLoanIssueUrl = classicPayLoanIssueUrl;
     }
 }

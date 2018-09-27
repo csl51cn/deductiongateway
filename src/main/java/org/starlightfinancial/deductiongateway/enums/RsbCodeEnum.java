@@ -19,7 +19,12 @@ public enum RsbCodeEnum {
     ERROR_CODE_09("300007", ""),
     ERROR_CODE_10("300008", "缺少必要参数"),
     ERROR_CODE_11("300009", ""),
-    ERROR_CODE_12("300010", "URL不存在");
+    ERROR_CODE_12("300010", "URL不存在"),
+    ERROR_CODE_13("300011", "缺少resp_code参数"),
+    ERROR_CODE_14("300012", "缺少dgtl_envlp参数"),
+    ERROR_CODE_15("300013", "json字符串解析失败"),
+    ERROR_CODE_16("300014", "Base64编码异常"),
+    ERROR_CODE_17("300015", "代付交易宝付明文返回结果");
 
     private String code;
 

@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -23,6 +24,12 @@ public class LoanIssue {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * 代付服务提供商订单号
+     */
+    @Column(name = "service_transaction_no")
+    private String serviceTransactionNo;
+
 
     /**
      * 订单号
@@ -30,31 +37,27 @@ public class LoanIssue {
     @Column(name = "transaction_no")
     private String transactionNo;
 
-     /**
-     * 宝付批次号
-      *
+    /**
+     * 代付服务提供商批次号
      */
     @Column(name = "batch_id")
     private String batchId;
 
-   /**
+    /**
      * 交易状态
-      *
      */
     @Column(name = "transaction_status")
     private String transactionStatus;
 
     /**
      * 交易摘要
-      *
      */
     @Column(name = "transaction_summary")
     private String transactionSummary;
-    
-    
+
+
     /**
      * 交易备注
-      *
      */
     @Column(name = "transaction_remark")
     private String transactionRemark;
@@ -66,6 +69,10 @@ public class LoanIssue {
     @Column(name = "transaction_fee")
     private BigDecimal transactionFee;
 
+
+    /**
+     * 收单状态
+     */
     @Column(name = "accept_transaction_status")
     private String acceptTransactionStatus;
 
@@ -110,6 +117,13 @@ public class LoanIssue {
      */
     @Column(name = "modified_id")
     private Integer modifiedId;
+
+    /**
+     * 贷款发放基本信息
+     */
+    @JsonBackReference
+    @OneToOne(mappedBy = "loanIssue", cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false)
+    private LoanIssueBasicInfo loanIssueBasicInfo;
 
     public Long getId() {
         return id;
@@ -223,5 +237,21 @@ public class LoanIssue {
 
     public void setAcceptTransactionStatus(String acceptTransactionStatus) {
         this.acceptTransactionStatus = acceptTransactionStatus;
+    }
+
+    public String getServiceTransactionNo() {
+        return serviceTransactionNo;
+    }
+
+    public void setServiceTransactionNo(String serviceTransactionNo) {
+        this.serviceTransactionNo = serviceTransactionNo;
+    }
+
+    public LoanIssueBasicInfo getLoanIssueBasicInfo() {
+        return loanIssueBasicInfo;
+    }
+
+    public void setLoanIssueBasicInfo(LoanIssueBasicInfo loanIssueBasicInfo) {
+        this.loanIssueBasicInfo = loanIssueBasicInfo;
     }
 }
