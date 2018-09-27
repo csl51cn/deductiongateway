@@ -110,6 +110,7 @@
                                                 <option value="润通">润通</option>
                                                 <option value="铠岳">铠岳</option>
                                                 <option value="润坤">润坤</option>
+                                                <option value="第三方咨询公司">第三方咨询公司</option>
                                             </select>
                                         </td>
                                         <td><label for="select_repaymentMethod">还款方式</label></td>
@@ -262,6 +263,7 @@
                                             <option value="润通">润通</option>
                                             <option value="铠岳">铠岳</option>
                                             <option value="润坤">润坤</option>
+                                            <option value="第三方咨询公司">第三方咨询公司</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_contract_no">合同编号</label></td>
                                         <td><input type="text" name="contractNo" id="txt_contract_no"
@@ -369,7 +371,8 @@
     <!-- 入账公司对应入账银行 -->
     var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
         {"chargeCompany": "铠岳", "bankNameList": ["建行0334","招行0202"]},
-        {"chargeCompany": "润坤", "bankNameList": ["招行0901","招行0702"]}
+        {"chargeCompany": "润坤", "bankNameList": ["招行0901","招行0702"]},
+        {"chargeCompany": "第三方咨询公司", "bankNameList": ["重庆银行6559"]}
     ];
     var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
     <!-- 还款方式 -->
@@ -414,7 +417,7 @@
         editable: {
             type: 'select',
             title: '入账公司编辑',
-            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"}],
+            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"},{value: "第三方咨询公司", text: "第三方咨询公司"}],
             validate: function (v) {
                 noty({'text': '如果有入账银行,请注意修改入账银行', 'layout': 'center', 'type': 'warning', "timeout": "3000"});
             }

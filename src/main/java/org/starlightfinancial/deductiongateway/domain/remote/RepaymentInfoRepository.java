@@ -15,7 +15,7 @@ import java.util.List;
 public interface RepaymentInfoRepository extends JpaRepository<RepaymentInfo, Long>, JpaSpecificationExecutor<RepaymentInfo> {
 
     /**
-     * 根据还款时间用传入的两个时间查询记录,[startDate,endDate)
+     * 根据传入的两个时间查询记录,[startDate,endDate)
      *
      * @param startDate 开始时间
      * @param endDate   结束时间

@@ -20,7 +20,12 @@ public enum ChargeCompanyEnum {
     /**
      * 润坤
      */
-    RUN_KUN("润坤");
+    RUN_KUN("润坤"),
+
+    /**
+     * 第三方咨询公司
+     */
+    THIRD_PARTY_CONSULT("第三方咨询公司");
 
     private String value;
 
