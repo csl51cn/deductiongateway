@@ -125,7 +125,7 @@
                                         </td>
                                         <td><label for="bankName">入账银行</label></td>
                                         <td>
-                                            <select id="bankName" style="width: 164px;" name="isIntegrated">
+                                            <select id="bankName" style="width: 164px;" name="bankName">
                                                 <option value="0" selected>全部</option>
                                                 <option value="招行0366">招行0366</option>
                                                 <option value="建行3504">建行3504</option>
@@ -1105,7 +1105,7 @@
                 +"&chargeCompany="+chargeCompany+"&repaymentMethod="+repaymentMethod+"&bankName="+bankName+"&repaymentType="+repaymentType;
         });
         <!--查询条件入账公司变更与入账银行联动-->
-        $("#chargeCompany").click(function () {
+        $("#select_chargeCompany").click(function () {
             for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
                 if (chargeCompanyAndBankName[i].chargeCompany == $(this).val()) {
                     var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
