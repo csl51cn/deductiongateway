@@ -33,9 +33,18 @@ public interface LoanIssueService {
     /**
      * 查询数据库中的记录
      *
-     * @param pageBean 分页信息
+     * @param pageBean                分页信息
      * @param loanIssueQueryCondition
      * @return 返回查询到的数据
      */
     PageBean queryLoanIssue(PageBean pageBean, LoanIssueQueryCondition loanIssueQueryCondition);
+
+
+    /**
+     * 通过id查询记录
+     *
+     * @param ids 记录id,比如:1,2,3,使用时切割出来
+     * @return 返回查询到的记录
+     */
+    List<LoanIssueBasicInfo> queryLoanIssueListByIds(String ids);
 }

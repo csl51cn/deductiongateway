@@ -87,8 +87,7 @@ public class ScheduledTaskService {
             LOGGER.info("今天{} 处于轧账后的月底节假日内不自动代扣", now.toString());
         } else {
             //如果是在轧账时间前,执行自动代扣
-            String autoSwitch = isHoliday(now);
-            jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("autoSwitch", autoSwitch).toJobParameters();
+            jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
             jobLauncher.run(autoDeduction, jobParameters);
         }
     }

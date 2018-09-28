@@ -1,6 +1,8 @@
 package org.starlightfinancial.deductiongateway.web;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
+import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
 import org.starlightfinancial.deductiongateway.service.impl.BackgroundNotificationConsumer;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -19,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +50,7 @@ public class LoanIssueController {
      * @throws JMSException 获取消息异常时抛出
      */
     @JmsListener(destination = "loanIssueQueueDev", containerFactory = "jmsQueueListener")
-    public void saveLoanIssueFromMq(TextMessage textMessage, Session session) throws JMSException {
+    public void saveLoanIssueFromMessageQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
             LOGGER.info("收到放款消息:{}", text);
@@ -96,5 +100,38 @@ public class LoanIssueController {
         }
     }
 
+
+    /**
+     * 获取所有收款银行id和名称
+     *
+     * @return 收款银行id和名称
+     */
+    @RequestMapping("/getAllBankNameId.do")
+    @ResponseBody
+    public String getAllBankNameId() {
+        JSONArray jsonArray = new JSONArray();
+        LoanIssueBankEnum[] values = LoanIssueBankEnum.values();
+        Arrays.stream(values).forEach(loanIssueBankEnum -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code", loanIssueBankEnum.getCode());
+            jsonObject.put("name", loanIssueBankEnum.getBaoFuBank());
+            jsonArray.add(jsonObject);
+        });
+        return jsonArray.toJSONString();
+    }
+
+
+    @RequestMapping("/loanIssue.do")
+    @ResponseBody
+    public String loanIssue(String ids) {
+        try{
+            List<LoanIssueBasicInfo> loanIssueBasicInfos = loanIssueService.queryLoanIssueListByIds(ids);
+            loanIssueService.loanIssue(loanIssueBasicInfos);
+            return  "1";
+        }catch (Exception e){
+            LOGGER.error("代扣");
+        }
+        return  "0";
+    }
 
 }

@@ -90,7 +90,7 @@ public class LoanIssueBasicInfo {
     private String toBankCity;
 
     /**
-     * 收款人开户行支行
+     * 收款人开户行支行名,不包含省市名
      */
     @Column(name = "to_bank_branch")
     private String toBankBranch;

@@ -590,7 +590,7 @@ public class BeanConverter {
             principalAndInterestRepaymentInfo.setDateId(businessTransaction.getDateId());
             //设置客户名称
             principalAndInterestRepaymentInfo.setCustomerName(businessTransaction.getSubject());
-        }else{
+        } else {
             //设置客户名称
             principalAndInterestRepaymentInfo.setCustomerName("客户");
         }
@@ -734,6 +734,10 @@ public class BeanConverter {
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())) {
                 //润坤
                 repaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+            }
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.THIRD_PARTY_CONSULT.getValue())) {
+                //第三方咨询公司
+                repaymentInfo.setBankName(AccountBankEnum.THIRD_PARTY_CONSULT_BCQ_6559.getCode());
             }
         }
 

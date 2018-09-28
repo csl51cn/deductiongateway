@@ -8,14 +8,21 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
-import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.dao.BusinessTransactionDao;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssue;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfoRepository;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategy;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +39,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     private LoanIssueBasicInfoRepository loanIssueBasicInfoRepository;
 
     @Autowired
-    private LoanIssueRepository loanIssueRepository;
+    private BusinessTransactionDao businessTransactionDao;
 
     @Autowired
     private BaofuConfig baofuConfig;
@@ -61,6 +68,13 @@ public class LoanIssueServiceImpl implements LoanIssueService {
 
         for (int i = 0; i < loanIssueBasicInfos.size(); i++) {
             LoanIssueBasicInfo loanIssueBasicInfo = loanIssueBasicInfos.get(i);
+            if (Objects.isNull(loanIssueBasicInfo.getDateId())) {
+                //判断dateId是否为空,如果是,补齐数据
+                loanIssueBasicInfo.setDateId(businessTransactionDao.findDateIdByContractNo(loanIssueBasicInfo.getContractNo()));
+            }
+            if (StringUtils.isBlank(loanIssueBasicInfo.getBusinessNo())) {
+                loanIssueBasicInfo.setBusinessNo(businessTransactionDao.findBusinessNoByContractNo(loanIssueBasicInfo.getContractNo()));
+            }
             loanIssueBasicInfo.setGmtCreate(new Date());
             loanIssueBasicInfo.setGmtModified(loanIssueBasicInfo.getGmtCreate());
             loanIssueBasicInfo.setModifiedId(loanIssueBasicInfo.getCreateId());
@@ -132,7 +146,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
                 if (StringUtils.isNotBlank(loanIssueQueryCondition.getBusinessNo().trim())) {
                     predicates.add(cb.equal(root.<String>get("businessNo"), loanIssueQueryCondition.getBusinessNo().trim()));
                 }
-                return  cb.and(predicates.toArray(new Predicate[]{}));
+                return cb.and(predicates.toArray(new Predicate[]{}));
             }
         };
         long count = loanIssueBasicInfoRepository.count(specification);
@@ -154,5 +168,18 @@ public class LoanIssueServiceImpl implements LoanIssueService {
         }
         return null;
 
+    }
+
+    /**
+     * 通过id查询记录
+     *
+     * @param ids 记录id,比如:1,2,3,使用时切割出来
+     * @return 返回查询到的记录
+     */
+    @Override
+    public List<LoanIssueBasicInfo> queryLoanIssueListByIds(String ids) {
+        //将ids切割出来,转换为Long型集合
+        List<Long> idsList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        return loanIssueBasicInfoRepository.findAll(idsList);
     }
 }
