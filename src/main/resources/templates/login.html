@@ -48,7 +48,7 @@
                 <hr>
                 <!--<h3>Forgot Password?</h3>-->
                 <!--<p>-->
-                    <!--No problem, <a href="#">click here</a> to get a new password.-->
+                <!--No problem, <a href="#">click here</a> to get a new password.-->
                 <!--</p>-->
             </div><!--/span-->
         </div><!--/row-->
@@ -59,12 +59,25 @@
 </div><!--/fluid-row-->
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
-<script  type="text/javascript" th:inline="javascript">
+<script type="text/javascript" th:inline="javascript">
     $(function () {
         var msg = [[${session.msg}]];
         if (msg != null) {
-            noty({'text':msg, 'layout': 'center', 'type': 'error',"timeout":"3000"});
+            noty({'text': msg, 'layout': 'center', 'type': 'error', "timeout": "3000"});
         }
+
+        // web socket here
+        var socket = new WebSocket("ws://localhost:8080/websocket");
+        // 打开事件
+        socket.onmessage = function (msg) {
+            Lobibox.notify('info', {
+                delay: 10000,
+                showAfterPrevious: true,
+                msg: msg.data,
+                closable: false
+            });
+        };
+
     })
 </script>
 <!--end : JavaScript-->

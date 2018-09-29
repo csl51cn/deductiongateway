@@ -1,6 +1,5 @@
 package org.starlightfinancial.deductiongateway.web;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -10,6 +9,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.starlightfinancial.deductiongateway.common.WebSocketServer;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
@@ -22,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,8 +55,13 @@ public class LoanIssueController {
         try {
             String text = textMessage.getText();
             LOGGER.info("收到放款消息:{}", text);
-            List<LoanIssueBasicInfo> loanIssueBasicInfos = JSON.parseArray(text, LoanIssueBasicInfo.class);
-            loanIssueBasicInfos = loanIssueService.saveLoanIssueBasicInfo(loanIssueBasicInfos);
+//            List<LoanIssueBasicInfo> loanIssueBasicInfos = JSON.parseArray(text, LoanIssueBasicInfo.class);
+//            loanIssueBasicInfos = loanIssueService.saveLoanIssueBasicInfo(loanIssueBasicInfos);
+            try {
+                WebSocketServer.sendInfo(text);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             textMessage.acknowledge();
             //目前不自动放款
 //            loanIssueService.loanIssue(loanIssueBasicInfos);
@@ -124,14 +130,14 @@ public class LoanIssueController {
     @RequestMapping("/loanIssue.do")
     @ResponseBody
     public String loanIssue(String ids) {
-        try{
+        try {
             List<LoanIssueBasicInfo> loanIssueBasicInfos = loanIssueService.queryLoanIssueListByIds(ids);
             loanIssueService.loanIssue(loanIssueBasicInfos);
-            return  "1";
-        }catch (Exception e){
+            return "1";
+        } catch (Exception e) {
             LOGGER.error("代扣");
         }
-        return  "0";
+        return "0";
     }
 
 }
