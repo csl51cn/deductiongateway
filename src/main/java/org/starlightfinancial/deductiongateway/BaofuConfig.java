@@ -187,8 +187,24 @@ public class BaofuConfig {
     @Value("${baofu.classic.api.pay.terminal.id}")
     private String classicPayTerminalId;
 
+    /**
+     * 宝付代付接口
+     */
     @Value("${baofu.classic.api.pay.loan-issue.url}")
-    private  String  classicPayLoanIssueUrl;
+    private String classicPayLoanIssueUrl;
+
+    /**
+     * 宝付代付结果查询接口
+     */
+    @Value("${baofu.classic.api.pay.loan-issue-query.url}")
+    private String classicPayLoanIssueQueryUrl;
+
+
+    /**
+     * 宝付代付退款查询接口
+     */
+    @Value("${baofu.classic.api.pay.loan-issue-refund.url}")
+    private String classicPayLoanIssueRefundUrl;
 
     public String getClassicVersion() {
         return classicVersion;
@@ -429,5 +445,22 @@ public class BaofuConfig {
 
     public void setClassicPayLoanIssueUrl(String classicPayLoanIssueUrl) {
         this.classicPayLoanIssueUrl = classicPayLoanIssueUrl;
+    }
+
+
+    public String getClassicPayLoanIssueQueryUrl() {
+        return classicPayLoanIssueQueryUrl;
+    }
+
+    public void setClassicPayLoanIssueQueryUrl(String classicPayLoanIssueQueryUrl) {
+        this.classicPayLoanIssueQueryUrl = classicPayLoanIssueQueryUrl;
+    }
+
+    public String getClassicPayLoanIssueRefundUrl() {
+        return classicPayLoanIssueRefundUrl;
+    }
+
+    public void setClassicPayLoanIssueRefundUrl(String classicPayLoanIssueRefundUrl) {
+        this.classicPayLoanIssueRefundUrl = classicPayLoanIssueRefundUrl;
     }
 }

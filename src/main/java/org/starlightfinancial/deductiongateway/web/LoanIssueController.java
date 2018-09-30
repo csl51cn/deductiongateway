@@ -2,13 +2,17 @@ package org.starlightfinancial.deductiongateway.web;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.common.WebSocketServer;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
@@ -21,12 +25,11 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: Senlin.Deng
@@ -50,7 +53,7 @@ public class LoanIssueController {
      * @param session     会话session
      * @throws JMSException 获取消息异常时抛出
      */
-    @JmsListener(destination = "loanIssueQueueDev", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "loanIssueQueueDev1", containerFactory = "jmsQueueListener")
     public void saveLoanIssueFromMessageQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -127,6 +130,12 @@ public class LoanIssueController {
     }
 
 
+    /**
+     * 贷款发放操作
+     *
+     * @param ids 记录id
+     * @return 返回操作结果
+     */
     @RequestMapping("/loanIssue.do")
     @ResponseBody
     public String loanIssue(String ids) {
@@ -135,9 +144,56 @@ public class LoanIssueController {
             loanIssueService.loanIssue(loanIssueBasicInfos);
             return "1";
         } catch (Exception e) {
-            LOGGER.error("代扣");
+            LOGGER.error("贷款发放操作失败");
         }
         return "0";
     }
+
+
+    /**
+     * 查询贷款发放结果
+     *
+     * @param ids 记录id
+     * @return 操作结果
+     */
+    @RequestMapping("/queryLoanIssueResult.do")
+    @ResponseBody
+    public Message queryLoanIssueResult(String ids) {
+        return loanIssueService.queryLoanIssueResult(ids);
+    }
+
+
+    /**
+     * 查询贷款退款结果
+     *
+     * @param queryDate 查询日期,只允许查询某一天内的记录
+     * @return 操作结果
+     */
+    @RequestMapping("/queryLoanIssueRefund.do")
+    @ResponseBody
+    public Message queryLoanIssueRefund(Date queryDate) {
+        return loanIssueService.queryLoanIssueRefund(queryDate);
+    }
+
+    /**
+     * 根据条件导出数据
+     *
+     * @param loanIssueQueryCondition 查询条件
+     * @param response                响应
+     * @throws IOException 异常时抛出
+     */
+    @RequestMapping(value = "/exportXLS.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public void exportXLS(LoanIssueQueryCondition loanIssueQueryCondition, HttpServletResponse response) throws IOException {
+
+        Workbook workbook = loanIssueService.exportXLS(loanIssueQueryCondition);
+        String fileName = "资金代付数据" + Utility.convertToString(new Date(), "yyyyMMdd_HH_mm_ss");
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=" + new String(fileName.getBytes("gb2312"), "iso8859-1") + ".xls");
+        ServletOutputStream outputStream = response.getOutputStream();
+        workbook.write(outputStream);
+        IOUtils.closeQuietly(outputStream);
+    }
+
 
 }

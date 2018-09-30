@@ -2,7 +2,7 @@ package org.starlightfinancial.deductiongateway.enums;
 
 /**
  * @author: Senlin.Deng
- * @Description: 转账状态枚举, 后期有其他渠道继续添加code
+ * @Description: 转账状态枚举, 后期有其他渠道继续添加其他的code
  * @date: Created in 2018/9/25 16:12
  * @Modified By:
  */
@@ -67,10 +67,18 @@ public enum LoanIssueStatusEnum {
         this.desc = desc;
     }
 
-    public String getCodeByBaoFuCode(String baoFuCode) {
+    public static String getCodeByBaoFuCode(String baoFuCode) {
         for (LoanIssueStatusEnum loanIssueStatusEnum : LoanIssueStatusEnum.values()) {
             if (baoFuCode.equals(loanIssueStatusEnum.getBaoFuCode())) {
                 return loanIssueStatusEnum.getCode();
+            }
+        }
+        return null;
+    }
+    public static String getDescByCode(String code) {
+        for (LoanIssueStatusEnum loanIssueStatusEnum : LoanIssueStatusEnum.values()) {
+            if (code.equals(loanIssueStatusEnum.getCode())) {
+                return loanIssueStatusEnum.getDesc();
             }
         }
         return null;

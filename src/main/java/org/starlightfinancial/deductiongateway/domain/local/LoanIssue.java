@@ -80,6 +80,8 @@ public class LoanIssue {
      * 交易发起时间
      */
     @Column(name = "transaction_start_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date transactionStartTime;
 
 
@@ -87,6 +89,8 @@ public class LoanIssue {
      * 交易完成时间
      */
     @Column(name = "transaction_end_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date transactionEndTime;
 
     /**

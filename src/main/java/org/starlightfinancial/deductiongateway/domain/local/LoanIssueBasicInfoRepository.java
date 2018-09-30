@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 /**
  * @author: Senlin.Deng
  * @Description: 贷款发放基本信息Repository
@@ -26,4 +28,27 @@ public interface LoanIssueBasicInfoRepository extends JpaRepository<LoanIssueBas
     @Override
     @EntityGraph("LoanIssueBasicInfo.loanIssue")
     Page<LoanIssueBasicInfo> findAll(Specification<LoanIssueBasicInfo> spec, Pageable pageable);
+
+    /**
+     * 根据id查询记录
+     *
+     * @param ids id
+     * @return 返回查询到的记录
+     */
+    @Override
+    @EntityGraph("LoanIssueBasicInfo.loanIssue")
+    List<LoanIssueBasicInfo> findAll(Iterable<Long> ids);
+
+
+    /**
+     * 根据条件查询记录
+     *
+     * @param spec 条件
+     * @return 查询到的记录
+     */
+    @EntityGraph("LoanIssueBasicInfo.loanIssue")
+    @Override
+    LoanIssueBasicInfo findOne(Specification<LoanIssueBasicInfo> spec);
+
+
 }

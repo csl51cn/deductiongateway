@@ -1,9 +1,12 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.apache.poi.ss.usermodel.Workbook;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,4 +50,29 @@ public interface LoanIssueService {
      * @return 返回查询到的记录
      */
     List<LoanIssueBasicInfo> queryLoanIssueListByIds(String ids);
+
+    /**
+     * 查询放款结果
+     *
+     * @param ids 记录id
+     */
+    Message queryLoanIssueResult(String ids);
+
+
+    /**
+     * 查询贷款退款结果
+     *
+     * @param queryDate 查询日期,只允许查询某一天内的记录
+     */
+    Message queryLoanIssueRefund(Date queryDate);
+
+
+
+    /**
+     * 根据条件导出数据
+     *
+     * @param loanIssueQueryCondition 查询条件
+     * @return excel表格
+     */
+    Workbook exportXLS(LoanIssueQueryCondition loanIssueQueryCondition);
 }

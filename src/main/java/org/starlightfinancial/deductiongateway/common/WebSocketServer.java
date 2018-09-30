@@ -3,7 +3,6 @@ package org.starlightfinancial.deductiongateway.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.starlightfinancial.deductiongateway.service.impl.BackgroundNotificationConsumer;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -15,13 +14,19 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 public class WebSocketServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BackgroundNotificationConsumer.class);
-    //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketServer.class);
+    /**
+     * 静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+     */
     private static int onlineCount = 0;
-    //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
+    /**
+     * concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
+     */
     private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();
 
-    //与某个客户端的连接会话，需要通过它来给客户端发送数据
+    /**
+     * 与某个客户端的连接会话，需要通过它来给客户端发送数据
+     */
     private Session session;
 
     /**
