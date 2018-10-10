@@ -65,19 +65,6 @@
         if (msg != null) {
             noty({'text': msg, 'layout': 'center', 'type': 'error', "timeout": "3000"});
         }
-
-        // web socket here
-        var socket = new WebSocket("ws://localhost:8080/websocket");
-        // 打开事件
-        socket.onmessage = function (msg) {
-            Lobibox.notify('info', {
-                delay: 10000,
-                showAfterPrevious: true,
-                msg: msg.data,
-                closable: false
-            });
-        };
-
     })
 </script>
 <!--end : JavaScript-->

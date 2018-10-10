@@ -375,6 +375,26 @@
 
 
     $(function () {
+
+
+        // web socket here
+        var socket = new WebSocket("ws://localhost:8080/websocket");
+        // 打开事件
+        socket.onmessage = function (msg) {
+            Lobibox.notify('info', {
+                title:"资金代付提示",
+                delay: false,
+                showAfterPrevious: false,
+                msg: msg.data,
+                closable: true
+            });
+            query();
+        };
+
+        window.onbeforeunload = function() {
+            socket.close();
+        };
+
         <!-- 新增模态框中还款方式初始化-->
         var bankNameIdNode = $("#to_bank_name_id");
         bankNameIdNode.empty();

@@ -1,7 +1,10 @@
 package org.starlightfinancial.deductiongateway.common;
 
+import org.apache.tomcat.websocket.WsSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -9,56 +12,42 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-//@ServerEndpoint("/websocket/{user}")
+
 @ServerEndpoint(value = "/websocket")
 @Component
+@EnableScheduling
 public class WebSocketServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketServer.class);
-    /**
-     * 静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
-     */
-    private static int onlineCount = 0;
-    /**
-     * concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
-     */
-    private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();
+
 
     /**
-     * 与某个客户端的连接会话，需要通过它来给客户端发送数据
+     * session
      */
-    private Session session;
+    private static CopyOnWriteArraySet<Session> webSocketSessions = new CopyOnWriteArraySet<>();
+
 
     /**
      * 连接建立成功调用的方法
      */
     @OnOpen
     public void onOpen(Session session) {
-        this.session = session;
-        webSocketSet.add(this);     //加入set中
-//        addOnlineCount();           //在线数加1
-        LOGGER.info("有新连接加入！当前在线人数为" + getOnlineCount());
-//        try {
-//            sendMessage("连接成功");
-//        } catch (IOException e) {
-//            LOGGER.error("websocket IO异常");
-//        }
+
+        //判断用户是否是需要推送的用户,如果是,保存session
+        WsSession wsSession = (WsSession) session;
+        webSocketSessions.add(wsSession);
     }
-    //	//连接打开时执行
-    //	@OnOpen
-    //	public void onOpen(@PathParam("user") String user, Session session) {
-    //		currentUser = user;
-    //		System.out.println("Connected ... " + session.getId());
-    //	}
+
 
     /**
      * 连接关闭调用的方法
      */
     @OnClose
-    public void onClose() {
-//        webSocketSet.remove(this);  //从set中删除
-//        subOnlineCount();           //在线数减1
-//        LOGGER.info("有一连接关闭！当前在线人数为" + getOnlineCount());
+    public void onClose(Session session) {
+        //从set中删除
+        if (webSocketSessions.contains(session)) {
+            webSocketSessions.remove(session);
+        }
     }
 
     /**
@@ -69,15 +58,7 @@ public class WebSocketServer {
     @OnMessage
     public void onMessage(String message, Session session) {
         LOGGER.info("来自客户端的消息:" + message);
-
-        //群发消息
-        for (WebSocketServer item : webSocketSet) {
-            try {
-                item.sendMessage(message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        System.out.println(message);
     }
 
     /**
@@ -91,34 +72,26 @@ public class WebSocketServer {
     }
 
 
-    public void sendMessage(String message) throws IOException {
-        this.session.getBasicRemote().sendText(message);
-    }
-
-
     /**
      * 群发自定义消息
      */
-    public static void sendInfo(String message) throws IOException {
-        LOGGER.info(message);
-        for (WebSocketServer item : webSocketSet) {
+    public static void sendInfo(String message) {
+        for (Session session : webSocketSessions) {
             try {
-                item.sendMessage(message);
+                session.getBasicRemote().sendText(message);
             } catch (IOException e) {
-                continue;
+                e.printStackTrace();
             }
         }
     }
 
-    public static synchronized int getOnlineCount() {
-        return onlineCount;
+    /**
+     * 判断session是否关闭,如果已经关闭,从set中移除
+     */
+    @Scheduled(cron = "01 01 06-21 * * ? ")
+    private void isAlive() {
+        webSocketSessions.removeIf(session -> !session.isOpen());
     }
 
-    public static synchronized void addOnlineCount() {
-        WebSocketServer.onlineCount++;
-    }
 
-    public static synchronized void subOnlineCount() {
-        WebSocketServer.onlineCount--;
-    }
 }

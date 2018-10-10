@@ -28,7 +28,7 @@
 <div class="container-fluid-full">
     <div class="row-fluid">
         <!-- start: Main Menu -->
-        <!--<div th:include="common :: #menu" th:remove="tag"></div>-->
+        <div th:include="common :: #menu" th:remove="tag"></div>
         <!-- end: Main Menu -->
 
         <noscript>
@@ -112,6 +112,7 @@
                                                 <option value="铠岳">铠岳</option>
                                                 <option value="润坤">润坤</option>
                                                 <option value="第三方咨询公司">第三方咨询公司</option>
+                                                <option value="康润">康润</option>
                                             </select>
                                         </td>
                                         <td><label for="select_repaymentMethod">还款方式</label></td>
@@ -265,6 +266,7 @@
                                             <option value="铠岳">铠岳</option>
                                             <option value="润坤">润坤</option>
                                             <option value="第三方咨询公司">第三方咨询公司</option>
+                                            <option value="康润">康润</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_contract_no">合同编号</label></td>
                                         <td><input type="text" name="contractNo" id="txt_contract_no"
@@ -373,7 +375,8 @@
     var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
         {"chargeCompany": "铠岳", "bankNameList": ["建行0334","招行0202"]},
         {"chargeCompany": "润坤", "bankNameList": ["招行0901","招行0702"]},
-        {"chargeCompany": "第三方咨询公司", "bankNameList": ["重庆银行6559"]}
+        {"chargeCompany": "第三方咨询公司", "bankNameList": ["重庆银行6559"]},
+        {"chargeCompany": "康润", "bankNameList": ["招行0101"]}
     ];
     var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
     <!-- 还款方式 -->
@@ -418,7 +421,7 @@
         editable: {
             type: 'select',
             title: '入账公司编辑',
-            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"},{value: "第三方咨询公司", text: "第三方咨询公司"}],
+            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"},{value: "第三方咨询公司", text: "第三方咨询公司"},{value: "康润", text: "康润"}],
             validate: function (v) {
                 noty({'text': '如果有入账银行,请注意修改入账银行', 'layout': 'center', 'type': 'warning', "timeout": "3000"});
             }

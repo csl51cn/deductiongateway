@@ -32,7 +32,7 @@ public class LoginController {
         if (loginUser != null && loginUser.getId() > 0) {
 //            session.setAttribute("loginUser", loginUser);
             SessionManager.userLoginHandle(loginUser, session);
-            return "main";
+            return "redirect:/main.do";
         }
         session.setAttribute("msg", "登录失败,用户名或密码错误/账户不可用");
         return "login";

@@ -94,7 +94,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      * 导出非代扣还款数据表头
      */
     private static final String[] EXPORT_COLUMN_NAME = new String[]{"入账公司", "合同编号", "还款时间", "还款原始信息", "单位/个人还款",
-            "还款方式", "还款类别", "还款金额", "入账时间", "导入时间"};
+            "还款方式", "还款类别", "还款金额", "入账时间", "导入时间","入账备注"};
 
 
     /**
@@ -736,6 +736,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             cell = row.createCell(9);
             cell.setCellStyle(dateStyle);
             cell.setCellValue(nonDeductionRepaymentInfo.getGmtCreate());
+            cell = row.createCell(10);
+            cell.setCellValue(nonDeductionRepaymentInfo.getRemark());
             i++;
         }
         return workbook;

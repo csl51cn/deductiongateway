@@ -37,9 +37,12 @@ public enum AccountBankEnum {
     /**
      * 第三方咨询服务公司:重庆银行6559
      */
-    THIRD_PARTY_CONSULT_BCQ_6559("2108","重庆银行6559");
+    THIRD_PARTY_CONSULT_BCQ_6559("2108", "重庆银行6559"),
 
-
+    /**
+     * 康润入账银行:招行0101
+     */
+    KANG_RUN_0101("2109", "招行0101");
 
 
     private String code;

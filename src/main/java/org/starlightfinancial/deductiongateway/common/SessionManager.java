@@ -82,4 +82,8 @@ public class SessionManager {
         session.removeAttribute("loginUser");
     }
 
+    public  static  Integer getUserId(String sessionId){
+        return SESSIONID_USER.getOrDefault(sessionId,-1);
+    }
+
 }

@@ -144,7 +144,7 @@ public class ScheduledTaskService {
     /**
      * 导入昨天的还款数据:成功代扣的和非代扣还款的,设置为9:30
      */
-    @Scheduled(cron = "00 40 9 * * ? ")
+//    @Scheduled(cron = "00 40 9 * * ? ")
     public void importRepaymentInfo() {
         LOGGER.info("**********开始导入昨天还款信息到业务系统**********");
         try {
