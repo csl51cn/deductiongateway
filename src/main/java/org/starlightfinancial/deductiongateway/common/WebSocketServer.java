@@ -45,9 +45,7 @@ public class WebSocketServer {
     @OnClose
     public void onClose(Session session) {
         //从set中删除
-        if (webSocketSessions.contains(session)) {
-            webSocketSessions.remove(session);
-        }
+        webSocketSessions.remove(session);
     }
 
     /**

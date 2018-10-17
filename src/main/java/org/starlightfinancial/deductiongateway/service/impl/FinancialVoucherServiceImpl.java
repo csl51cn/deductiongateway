@@ -75,10 +75,22 @@ public class FinancialVoucherServiceImpl implements FinancialVoucherService {
         splitOutNonDeductionRepaymentInfoMap.forEach((id, nonDeductionRepaymentInfo) -> {
             //获得对应的被拆分的非代扣还款记录
             NonDeductionRepaymentInfo originalNonDeductionRepaymentInfo = beSplitedNonDeductionRepaymentInfoMap.get(nonDeductionRepaymentInfo.getOriginalId());
-            //将拆分出来的记录的还款金额加到被拆分的记录的还款金额中
-            originalNonDeductionRepaymentInfo.setRepaymentAmount(originalNonDeductionRepaymentInfo.getRepaymentAmount().add(nonDeductionRepaymentInfo.getRepaymentAmount()));
-        });
+            //将拆分出来的记录的还款金额加到被拆分的记录的还款金额中合并成一条记录.
+            //为方便生成财务凭证,有取件费时需要特殊处理,如原本息金额10000,拆出100取件费,最后需要存在两条记录,一条还款金额是10000,一条是100的取件费,与其他情况合并成一条不同.
+            //由于没有较好的方法做拆分限制,有可能被拆分出来的不是取件费,而是本息,需要判断拆分出来的是取件费,还是被拆分的是取件费.
+            if (StringUtils.equals(originalNonDeductionRepaymentInfo.getRepaymentType(),RepaymentTypeEnum.PICK_UP_FEE.getDesc())){
+                //被拆分的是取件费.将金额加到拆分出来的本息之类的还款类别中,添加到保存的还款信息repaymentInfos.被拆分的记录保持不变,后面会添加到repaymentInfos中的
+                nonDeductionRepaymentInfo.setRepaymentAmount(originalNonDeductionRepaymentInfo.getRepaymentAmount().add(nonDeductionRepaymentInfo.getRepaymentAmount()));
+                repaymentInfos.add(beanConverter.transToRepaymentInfo(nonDeductionRepaymentInfo));
+            }else{
+                //被拆分的不是取件费,需要判断拆分出来的是否是取件费
+                originalNonDeductionRepaymentInfo.setRepaymentAmount(originalNonDeductionRepaymentInfo.getRepaymentAmount().add(nonDeductionRepaymentInfo.getRepaymentAmount()));
+                if(StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(),RepaymentTypeEnum.PICK_UP_FEE.getDesc())){
+                    repaymentInfos.add(beanConverter.transToRepaymentInfo(nonDeductionRepaymentInfo));
+                }
 
+            }
+        });
 
         //将非代扣还款信息转换为还款信息,并添加到repaymentInfos中
         beSplitedNonDeductionRepaymentInfoMap.forEach((id, nonDeductionRepaymentInfo) -> {
@@ -109,5 +121,4 @@ public class FinancialVoucherServiceImpl implements FinancialVoucherService {
         //入库
         repaymentInfoRepository.save(repaymentInfos);
     }
-
 }
