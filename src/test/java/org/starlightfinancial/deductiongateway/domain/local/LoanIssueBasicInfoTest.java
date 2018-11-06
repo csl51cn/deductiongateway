@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 /**
@@ -82,7 +83,7 @@ public class LoanIssueBasicInfoTest {
         loanIssue.setGmtCreate(new Date());
         loanIssue.setGmtModified(loanIssue.getGmtCreate());
         loanIssue.setTransactionStartTime(new Date());
-        loanIssueBasicInfo.setLoanIssue(loanIssue);
+        loanIssueBasicInfo.setLoanIssues(Collections.singletonList(loanIssue));
 //        loanIssueBasicInfoRepository.save(loanIssueBasicInfo);
 
 

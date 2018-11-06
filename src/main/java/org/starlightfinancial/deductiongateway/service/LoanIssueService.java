@@ -55,6 +55,7 @@ public interface LoanIssueService {
      * 查询放款结果
      *
      * @param ids 记录id
+     * @return 返回执行结果
      */
     Message queryLoanIssueResult(String ids);
 
@@ -63,9 +64,9 @@ public interface LoanIssueService {
      * 查询贷款退款结果
      *
      * @param queryDate 查询日期,只允许查询某一天内的记录
+     * @return 返回执行结果
      */
     Message queryLoanIssueRefund(Date queryDate);
-
 
 
     /**
@@ -75,4 +76,11 @@ public interface LoanIssueService {
      * @return excel表格
      */
     Workbook exportXLS(LoanIssueQueryCondition loanIssueQueryCondition);
+
+    /**
+     * 更新
+     *
+     * @param loanIssueBasicInfo 贷款发放基本信息
+     */
+    void updateLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo);
 }

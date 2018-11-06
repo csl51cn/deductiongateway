@@ -21,11 +21,14 @@ import org.starlightfinancial.deductiongateway.enums.LoanIssueStatusEnum;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategy;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategyContext;
+import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +55,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     /**
      * 导出资金代付数据表头
      */
-    private static final String[] EXPORT_COLUMN_NAME = new String[]{"业务编号", "合同编号", "收款人姓名", "收款账号", "收款账户所属银行",
+    private static final String[] EXPORT_COLUMN_NAME = new String[]{"订单号", "业务编号", "合同编号", "收款人姓名", "收款账号", "收款账户所属银行",
             "开户行", "身份证", "手机", "放款金额", "交易结果", "生成时间", "发起交易时间", "交易结束时间"};
 
     /**
@@ -64,17 +67,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<LoanIssueBasicInfo> saveLoanIssueBasicInfo(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
-
-        ArrayList<String> transactionNos = new ArrayList<>();
-        //生成商户订单号:商户编号+14位日期+3位随机数
-        int[] randomArray = Utility.randomArray(0, 999, loanIssueBasicInfos.size());
-        assert randomArray != null;
-        Arrays.stream(randomArray).forEach(i -> {
-            transactionNos.add(baofuConfig.getClassicPayMemberId() + Utility.getTimestamp() + String.format("%03d", i));
-        });
-
-        for (int i = 0; i < loanIssueBasicInfos.size(); i++) {
-            LoanIssueBasicInfo loanIssueBasicInfo = loanIssueBasicInfos.get(i);
+        for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
             if (Objects.isNull(loanIssueBasicInfo.getDateId())) {
                 //判断dateId是否为空,如果是,补齐数据
                 loanIssueBasicInfo.setDateId(businessTransactionDao.findDateIdByContractNo(loanIssueBasicInfo.getContractNo()));
@@ -94,21 +87,29 @@ public class LoanIssueServiceImpl implements LoanIssueService {
             if (StringUtils.isEmpty(loanIssueBasicInfo.getToBankProvince())) {
                 loanIssueBasicInfo.setToBankProvince("");
             }
-            LoanIssue loanIssue = new LoanIssue();
-            loanIssue.setLoanIssueBasicInfo(loanIssueBasicInfo);
-            //设置订单号
-            loanIssue.setTransactionNo(transactionNos.get(i));
-            //设置交易发起日期
-            loanIssue.setTransactionStartTime(new Date());
-            loanIssue.setGmtCreate(new Date());
-            loanIssue.setCreateId(loanIssueBasicInfo.getCreateId());
-            loanIssue.setGmtModified(loanIssue.getGmtCreate());
-            loanIssue.setModifiedId(loanIssue.getCreateId());
-            loanIssueBasicInfo.setLoanIssue(loanIssue);
+            LoanIssue loanIssue = createLoanIssue(loanIssueBasicInfo);
+            loanIssueBasicInfo.setLoanIssues(Collections.singletonList(loanIssue));
 
             loanIssueBasicInfoRepository.saveAndFlush(loanIssueBasicInfo);
         }
         return loanIssueBasicInfos;
+    }
+
+    /**
+     * 生成 loanIssue对象
+     *
+     * @param loanIssueBasicInfo 放款基本信息
+     * @return 返回loanIssue对象
+     */
+    private LoanIssue createLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo) {
+        LoanIssue loanIssue = new LoanIssue();
+        loanIssue.setLoanIssueBasicInfo(loanIssueBasicInfo);
+        loanIssue.setGmtCreate(new Date());
+        loanIssue.setCreateId(loanIssueBasicInfo.getCreateId());
+        loanIssue.setGmtModified(loanIssue.getGmtCreate());
+        loanIssue.setModifiedId(loanIssue.getCreateId());
+        loanIssue.setIsLast(ConstantsEnum.SUCCESS.getCode());
+        return loanIssue;
     }
 
     /**
@@ -117,7 +118,44 @@ public class LoanIssueServiceImpl implements LoanIssueService {
      * @param loanIssueBasicInfos 贷款发放基本信息
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void loanIssue(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
+        ArrayList<String> transactionNos = new ArrayList<>();
+        //生成商户订单号:商户编号+14位日期+3位随机数
+        int[] randomArray = Utility.randomArray(0, 999, loanIssueBasicInfos.size());
+        assert randomArray != null;
+        Arrays.stream(randomArray).forEach(i -> {
+            transactionNos.add(baofuConfig.getClassicPayMemberId() + Utility.getTimestamp() + String.format("%03d", i));
+        });
+        for (int i = 0; i < loanIssueBasicInfos.size(); i++) {
+            LoanIssueBasicInfo loanIssueBasicInfo = loanIssueBasicInfos.get(i);
+            List<LoanIssue> loanIssues = loanIssueBasicInfo.getLoanIssues();
+            AtomicBoolean needCreateLoanIssue = new AtomicBoolean(false);
+            loanIssues.forEach(loanIssue -> {
+                if (StringUtils.equals(loanIssue.getTransactionStatus(), LoanIssueStatusEnum.STATUS2.getCode()) || StringUtils.equals(loanIssue.getTransactionStatus(), LoanIssueStatusEnum.STATUS3.getCode())) {
+                    //当交易状态是失败或者退款时,需要将原有的记录标记为不是最新并生成一条新的记录
+                    loanIssue.setIsLast(ConstantsEnum.FAIL.getCode());
+                    needCreateLoanIssue.set(true);
+                }
+            });
+
+            LoanIssue loanIssue;
+            if (needCreateLoanIssue.get()) {
+                //需要重新生成的情况
+                loanIssue = createLoanIssue(loanIssueBasicInfo);
+                loanIssueBasicInfo.getLoanIssues().add(loanIssue);
+            } else {
+                //此时是只有一条记录的情况
+                loanIssue = loanIssues.get(0);
+            }
+            //设置订单号
+            loanIssue.setTransactionNo(transactionNos.get(i));
+            //设置交易发起日期
+            loanIssue.setTransactionStartTime(new Date());
+            //保存订单号
+            loanIssueBasicInfoRepository.saveAndFlush(loanIssueBasicInfo);
+        }
+
         //通过贷款放款渠道对集合进行分组
         Map<String, List<LoanIssueBasicInfo>> channelMap = loanIssueBasicInfos.stream().collect(Collectors.groupingBy(LoanIssueBasicInfo::getChannel));
         channelMap.forEach((channel, list) -> {
@@ -136,7 +174,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     @Override
     public PageBean queryLoanIssue(PageBean pageBean, LoanIssueQueryCondition loanIssueQueryCondition) {
 
-        Specification<LoanIssueBasicInfo> specification = getLoanIssueBasicInfoSpecification(loanIssueQueryCondition);
+        Specification<LoanIssueBasicInfo> specification = getLoanIssueBasicInfoSpecification(loanIssueQueryCondition, true);
         long count = loanIssueBasicInfoRepository.count(specification);
         if (count == 0) {
             //如果查询出来的总记录数为0,直接返回null,避免后续查询代码执行
@@ -162,9 +200,10 @@ public class LoanIssueServiceImpl implements LoanIssueService {
      * 组装查询条件
      *
      * @param loanIssueQueryCondition 查询条件
+     * @param onlyQueryLast           是否只查询最新记录
      * @return
      */
-    private Specification<LoanIssueBasicInfo> getLoanIssueBasicInfoSpecification(LoanIssueQueryCondition loanIssueQueryCondition) {
+    private Specification<LoanIssueBasicInfo> getLoanIssueBasicInfoSpecification(LoanIssueQueryCondition loanIssueQueryCondition, boolean onlyQueryLast) {
         return (root, query, cb) -> {
             ArrayList<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.between(root.get("gmtCreate"), loanIssueQueryCondition.getStartDate(), Utility.toMidNight(loanIssueQueryCondition.getEndDate())));
@@ -180,6 +219,10 @@ public class LoanIssueServiceImpl implements LoanIssueService {
             if (StringUtils.isNotBlank(loanIssueQueryCondition.getBusinessNo().trim())) {
                 predicates.add(cb.equal(root.<String>get("businessNo"), loanIssueQueryCondition.getBusinessNo().trim()));
             }
+            if (onlyQueryLast) {
+                predicates.add(cb.equal(root.join("loanIssues", JoinType.LEFT).get("isLast"), "1"));
+            }
+
             return cb.and(predicates.toArray(new Predicate[]{}));
         };
     }
@@ -246,7 +289,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     public Workbook exportXLS(LoanIssueQueryCondition loanIssueQueryCondition) {
         //查询所有非代扣还款信息
         List<LoanIssueBasicInfo> loanIssueBasicInfos =
-                loanIssueBasicInfoRepository.findAll(getLoanIssueBasicInfoSpecification(loanIssueQueryCondition));
+                loanIssueBasicInfoRepository.findAll(getLoanIssueBasicInfoSpecification(loanIssueQueryCondition, false));
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
         //设置列宽
@@ -273,40 +316,55 @@ public class LoanIssueServiceImpl implements LoanIssueService {
         HSSFCellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy h:mm"));
         int i = 1;
-        for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
+        List<LoanIssueBasicInfoExcelRow> loanIssueBasicInfoExcelRows = BeanConverter.transToLoanIssueBasicInfoExcelRowList(loanIssueBasicInfos);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (LoanIssueBasicInfoExcelRow loanIssueBasicInfoRow : loanIssueBasicInfoExcelRows) {
             row = sheet.createRow(i);
-
             cell = row.createCell(0);
-            cell.setCellValue(loanIssueBasicInfo.getBusinessNo());
+            cell.setCellValue(loanIssueBasicInfoRow.getTransactionNo());
             cell = row.createCell(1);
-            cell.setCellValue(loanIssueBasicInfo.getContractNo());
+            cell.setCellValue(loanIssueBasicInfoRow.getBusinessNo());
             cell = row.createCell(2);
-            cell.setCellValue(loanIssueBasicInfo.getToAccountName());
+            cell.setCellValue(loanIssueBasicInfoRow.getContractNo());
             cell = row.createCell(3);
-            cell.setCellValue(loanIssueBasicInfo.getToAccountNo());
+            cell.setCellValue(loanIssueBasicInfoRow.getToAccountName());
             cell = row.createCell(4);
-            cell.setCellValue(LoanIssueBankEnum.getBankNameByCode(loanIssueBasicInfo.getToBankNameId()));
+            cell.setCellValue(loanIssueBasicInfoRow.getToAccountNo());
             cell = row.createCell(5);
-            cell.setCellValue(loanIssueBasicInfo.getToBankProvince()+loanIssueBasicInfo.getToBankCity()+loanIssueBasicInfo.getToBankBranch());
+            cell.setCellValue(LoanIssueBankEnum.getBankNameByCode(loanIssueBasicInfoRow.getToBankNameId()));
             cell = row.createCell(6);
-            cell.setCellValue(loanIssueBasicInfo.getIdentityNo());
+            stringBuilder.append(loanIssueBasicInfoRow.getToBankProvince()).append(loanIssueBasicInfoRow.getToBankCity()).append(loanIssueBasicInfoRow.getToBankBranch());
+            cell.setCellValue(stringBuilder.toString());
+            stringBuilder.delete(0, stringBuilder.length());
             cell = row.createCell(7);
-            cell.setCellValue(loanIssueBasicInfo.getMobileNo());
+            cell.setCellValue(loanIssueBasicInfoRow.getIdentityNo());
             cell = row.createCell(8);
-            cell.setCellValue(loanIssueBasicInfo.getIssueAmount().toString());
+            cell.setCellValue(loanIssueBasicInfoRow.getMobileNo());
             cell = row.createCell(9);
-            cell.setCellValue(LoanIssueStatusEnum.getDescByCode(loanIssueBasicInfo.getLoanIssue().getTransactionStatus()));
+            cell.setCellValue(loanIssueBasicInfoRow.getIssueAmount().toString());
             cell = row.createCell(10);
-            cell.setCellValue(loanIssueBasicInfo.getLoanIssue().getGmtCreate());
-            cell.setCellStyle(dateStyle);
+            cell.setCellValue(LoanIssueStatusEnum.getDescByCode(loanIssueBasicInfoRow.getTransactionStatus()));
             cell = row.createCell(11);
-            cell.setCellValue(loanIssueBasicInfo.getLoanIssue().getTransactionStartTime());
+            cell.setCellValue(loanIssueBasicInfoRow.getGmtCreate());
             cell.setCellStyle(dateStyle);
             cell = row.createCell(12);
-            cell.setCellValue(loanIssueBasicInfo.getLoanIssue().getTransactionEndTime());
+            cell.setCellValue(loanIssueBasicInfoRow.getTransactionStartTime());
+            cell.setCellStyle(dateStyle);
+            cell = row.createCell(13);
+            cell.setCellValue(loanIssueBasicInfoRow.getTransactionEndTime());
             cell.setCellStyle(dateStyle);
             i++;
         }
         return workbook;
+    }
+
+    /**
+     * 更新
+     *
+     * @param loanIssueBasicInfo 贷款发放基本信息
+     */
+    @Override
+    public void updateLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo) {
+        loanIssueBasicInfoRepository.saveAndFlush(loanIssueBasicInfo);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author: Senlin.Deng
@@ -14,7 +15,7 @@ import java.util.Date;
  * @date: Created in 2018/9/17 16:26
  * @Modified By:
  */
-@NamedEntityGraph(name = "LoanIssueBasicInfo.loanIssue",attributeNodes={@NamedAttributeNode("loanIssue")})
+@NamedEntityGraph(name = "LoanIssueBasicInfo.loanIssues", attributeNodes = {@NamedAttributeNode("loanIssues")})
 @Entity(name = "BU_LOAN_BASIC_INFO")
 public class LoanIssueBasicInfo {
 
@@ -124,9 +125,8 @@ public class LoanIssueBasicInfo {
      * 交易记录
      */
     @JsonManagedReference
-    @OneToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="loan_issue_id",referencedColumnName = "id")
-    private LoanIssue loanIssue;
+    @OneToMany(targetEntity = LoanIssue.class, mappedBy = "loanIssueBasicInfo", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<LoanIssue> loanIssues;
 
     /**
      * 创建时间
@@ -262,12 +262,12 @@ public class LoanIssueBasicInfo {
         this.mobileNo = mobileNo;
     }
 
-    public LoanIssue getLoanIssue() {
-        return loanIssue;
+    public List<LoanIssue> getLoanIssues() {
+        return loanIssues;
     }
 
-    public void setLoanIssue(LoanIssue loanIssue) {
-        this.loanIssue = loanIssue;
+    public void setLoanIssues(List<LoanIssue> loanIssues) {
+        this.loanIssues = loanIssues;
     }
 
     public Date getGmtCreate() {
@@ -301,6 +301,7 @@ public class LoanIssueBasicInfo {
     public void setModifiedId(Integer modifiedId) {
         this.modifiedId = modifiedId;
     }
+
     public String getChannel() {
         return channel;
     }

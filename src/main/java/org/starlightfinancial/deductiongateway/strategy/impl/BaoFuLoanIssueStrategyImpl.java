@@ -93,7 +93,6 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
     @Override
     public Message queryLoanIssueResult(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
         SysUser user = UserContext.getUser();
-        System.out.println(user);
         //报文内容
         TransContent<TransReqBF0040002> transContent = new TransContent<>();
         //报文体
@@ -101,8 +100,9 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
         List<TransReqBF0040002> transReqBF0040002List = new ArrayList<>();
         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
             TransReqBF0040002 transReqData = new TransReqBF0040002();
-            transReqData.setTransBatchId(loanIssueBasicInfo.getLoanIssue().getBatchId());
-            transReqData.setTransNo(loanIssueBasicInfo.getLoanIssue().getTransactionNo());
+            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
+            transReqData.setTransBatchId(loanIssue.getBatchId());
+            transReqData.setTransNo(loanIssue.getTransactionNo());
             transReqBF0040002List.add(transReqData);
         });
         transReqBF0040002TransReqDataWrapper.setTransReqData(transReqBF0040002List);
@@ -117,18 +117,16 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                         || StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_15.getCode())) {
                     //获取返回的结果
                     String resultArray = jsonObject.getJSONArray("result").getString(0);
-                    TransContent<TransRespBF0040002> returnTransContent = new TransContent<>();
-                    //转换为TransContent
-                    returnTransContent = objectMapper.readValue(resultArray, new TypeReference<TransContent<TransRespBF0040002>>() {
+                    TransContent<TransRespBF0040002> returnTransContent = objectMapper.readValue(resultArray, new TypeReference<TransContent<TransRespBF0040002>>() {
                     });
                     TransHead returnTransHead = returnTransContent.getTransHead();
                     String returnCode = returnTransHead.getReturnCode();
                     if (StringUtils.equals(returnCode, BaoFuPayReturnCodeEnum.RETURN_CODE_0000.getCode())) {
                         List<TransRespBF0040002> transReqData = returnTransContent.getTransReqDatas().get(0).getTransReqData();
-                        //按照商户订单号分组
+                        //按照商户订单号分组,因为一笔订单可能被拆分成多笔交易
                         Map<String, List<TransRespBF0040002>> groupByTransactionNoMap = transReqData.stream().collect(Collectors.groupingBy(TransRespBF0040002::getTransNo));
                         for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
-                            LoanIssue loanIssue = loanIssueBasicInfo.getLoanIssue();
+                            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
                             List<TransRespBF0040002> transRespBF0040002s = groupByTransactionNoMap.get(loanIssue.getTransactionNo());
 
                             if (transRespBF0040002s.size() > 1) {
@@ -153,7 +151,10 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                                 if (progress.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
                                 }
-                                if (fail.size() > 0) {
+                                if (fail.size() > 0 && success.size() > 0) {
+                                    loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS4.getCode());
+                                }
+                                if (fail.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS2.getCode());
                                 }
                                 if (refund.size() > 0) {
@@ -177,7 +178,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                 } else if (StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_17.getCode())) {
                     JSONObject returnTransContent = jsonObject.getJSONObject("trans_content");
                     String returnMsg = returnTransContent.getJSONObject("trans_head").getString("return_msg");
-                    return Message.fail("查询失败,返回的消息是:"+returnMsg);
+                    return Message.fail("查询失败,返回的消息是:" + returnMsg);
                 } else {
                     return Message.fail("查询失败");
                 }
@@ -201,7 +202,6 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
     @Override
     public Message queryLoanIssueRefund(Date queryDate) {
         SysUser user = UserContext.getUser();
-        System.out.println(user);
         //报文内容
         TransContent<TransReqBF0040003> transContent = new TransContent<>();
         //报文体
@@ -236,13 +236,15 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                                 Predicate equal = cb.equal(root.join("loanIssue").get("transactionNo"), transactionNo);
                                 return cb.and(equal);
                             });
-                            LoanIssue loanIssue = loanIssueBasicInfo.getLoanIssue();
+                            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
                             //就算拆分了,如果发生退款也是全部都退
                             TransRespBF0040003 transRespBF0040003 = list.get(0);
                             loanIssue.setTransactionStatus(transRespBF0040003.getState());
                             loanIssue.setTransactionEndTime(Utility.convertToDate(transRespBF0040003.getTransEndTime(), "yyyy-MM-dd HH:mm:ss"));
                             loanIssue.setTransactionStatus(LoanIssueStatusEnum.getCodeByBaoFuCode(transRespBF0040003.getState()));
                             loanIssue.setTransactionRemark(transRespBF0040003.getTransRemark());
+                            loanIssue.setModifiedId(user.getId());
+                            loanIssue.setGmtModified(new Date());
                             loanIssueBasicInfoRepository.save(loanIssueBasicInfo);
                         });
 
@@ -254,7 +256,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                     //{"trans_content":{"trans_head":{"return_code":"0202","return_msg":"商户不存在,请联系宝付技术支持"}}}
                     JSONObject returnTransContent = jsonObject.getJSONObject("trans_content");
                     String returnMsg = returnTransContent.getJSONObject("trans_head").getString("return_msg");
-                    return Message.fail("查询失败,返回的消息是:"+returnMsg);
+                    return Message.fail("查询失败,返回的消息是:" + returnMsg);
                 } else {
                     return Message.fail("查询失败");
                 }
@@ -289,7 +291,8 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
         ArrayList<TransReqBF0040004> transReqBF0040004ArrayList = new ArrayList<>();
         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
             TransReqBF0040004 transReqData = new TransReqBF0040004();
-            transReqData.setTransNo(loanIssueBasicInfo.getLoanIssue().getTransactionNo());
+            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
+            transReqData.setTransNo(loanIssue.getTransactionNo());
             transReqData.setTransMoney(loanIssueBasicInfo.getIssueAmount().toString());
             transReqData.setToAccName(loanIssueBasicInfo.getToAccountName());
             transReqData.setToAccNo(loanIssueBasicInfo.getToAccountNo());
@@ -301,7 +304,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
             transReqData.setTransMobile(loanIssueBasicInfo.getMobileNo());
             transReqData.setTransSummary(loanIssueBasicInfo.getRemark());
             transReqData.setTransReserved("");
-            loanIssueBasicInfo.getLoanIssue().setTransactionStartTime(new Date());
+            loanIssue.setTransactionStartTime(new Date());
             transReqBF0040004ArrayList.add(transReqData);
         });
         transReqBF0040004TransReqDataWrapper.setTransReqData(transReqBF0040004ArrayList);
@@ -326,24 +329,28 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                     if (StringUtils.equals(returnCode, BaoFuPayReturnCodeEnum.RETURN_CODE_0000.getCode())) {
                         //交易已受理,更新状态,将返回来的批次号和宝付订单号保存下来
                         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
-                            loanIssueBasicInfo.getLoanIssue().setAcceptTransactionStatus(ConstantsEnum.SUCCESS.getCode());
-                            loanIssueBasicInfo.getLoanIssue().setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
+                            //设置收单状态和交易状态
+                            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
+                            loanIssue.setAcceptTransactionStatus(ConstantsEnum.SUCCESS.getCode());
+                            loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
                         });
                         List<TransRespBF0040004> transReqData = returnTransContent.getTransReqDatas().get(0).getTransReqData();
                         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
+                            LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
                             //通过商户订单号筛选出宝付返回的记录
                             List<TransRespBF0040004> collect = transReqData.stream().filter(transRespBF0040004 ->
-                                    StringUtils.equals(transRespBF0040004.getTransNo(), loanIssueBasicInfo.getLoanIssue().getTransactionNo())).collect(Collectors.toList());
+                                    StringUtils.equals(transRespBF0040004.getTransNo(), loanIssue.getTransactionNo())).collect(Collectors.toList());
                             //设置宝付批次号
-                            loanIssueBasicInfo.getLoanIssue().setBatchId(collect.get(0).getTransBatchId());
+                            loanIssue.setBatchId(collect.get(0).getTransBatchId());
                             //将宝付订单号使用|分隔,如:"订单号1|订单号2"
                             String transOrderIdStr = collect.stream().map(TransRespBF0040004::getTransOrderId).collect(Collectors.joining("|"));
-                            loanIssueBasicInfo.getLoanIssue().setServiceTransactionNo(transOrderIdStr);
+                            loanIssue.setServiceTransactionNo(transOrderIdStr);
                         });
                     } else {
                         //交易未受理
+
                         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
-                            loanIssueBasicInfo.getLoanIssue().setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
+                            findTheLastRecord(loanIssueBasicInfo).setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
                         });
                     }
                     loanIssueBasicInfoRepository.save(loanIssueBasicInfos);
@@ -351,13 +358,13 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                 } else if (StringUtils.equals(jsonObject.getString("error_code"), RsbCodeEnum.ERROR_CODE_17.getCode())) {
                     LOGGER.info("宝付返回的明文内容:{}", returnData);
                     loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
-                        loanIssueBasicInfo.getLoanIssue().setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
+                        findTheLastRecord(loanIssueBasicInfo).setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
                     });
                     loanIssueBasicInfoRepository.save(loanIssueBasicInfos);
                     return Message.success("交易未受理");
                 } else {
                     loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
-                        loanIssueBasicInfo.getLoanIssue().setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
+                        findTheLastRecord(loanIssueBasicInfo).setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
                     });
                     loanIssueBasicInfoRepository.save(loanIssueBasicInfos);
                     return Message.success("交易未受理");

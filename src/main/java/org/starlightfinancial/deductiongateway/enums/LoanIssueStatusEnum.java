@@ -9,7 +9,6 @@ package org.starlightfinancial.deductiongateway.enums;
 public enum LoanIssueStatusEnum {
 
 
-
     /**
      * 转账处理中
      */
@@ -21,7 +20,7 @@ public enum LoanIssueStatusEnum {
     STATUS1("1", "1", "转账成功"),
 
     /**
-     * 转账成功
+     * 转账失败
      */
     STATUS2("2", "-1", "转账失败"),
 
@@ -29,7 +28,12 @@ public enum LoanIssueStatusEnum {
     /**
      * 退款
      */
-    STATUS3("3", "2", "转账退款");
+    STATUS3("3", "2", "转账退款"),
+
+    /**
+     * 部分成功
+     */
+    STATUS4("4", "", "转账部分成功");
 
 
     private String code;
@@ -75,6 +79,7 @@ public enum LoanIssueStatusEnum {
         }
         return null;
     }
+
     public static String getDescByCode(String code) {
         for (LoanIssueStatusEnum loanIssueStatusEnum : LoanIssueStatusEnum.values()) {
             if (code.equals(loanIssueStatusEnum.getCode())) {

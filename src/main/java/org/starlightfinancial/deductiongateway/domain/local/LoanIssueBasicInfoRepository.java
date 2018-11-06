@@ -26,7 +26,7 @@ public interface LoanIssueBasicInfoRepository extends JpaRepository<LoanIssueBas
      * @return 返回查询到的记录
      */
     @Override
-    @EntityGraph("LoanIssueBasicInfo.loanIssue")
+    @EntityGraph("LoanIssueBasicInfo.loanIssues")
     Page<LoanIssueBasicInfo> findAll(Specification<LoanIssueBasicInfo> spec, Pageable pageable);
 
     /**
@@ -36,7 +36,7 @@ public interface LoanIssueBasicInfoRepository extends JpaRepository<LoanIssueBas
      * @return 返回查询到的记录
      */
     @Override
-    @EntityGraph("LoanIssueBasicInfo.loanIssue")
+    @EntityGraph("LoanIssueBasicInfo.loanIssues")
     List<LoanIssueBasicInfo> findAll(Iterable<Long> ids);
 
 
@@ -46,7 +46,7 @@ public interface LoanIssueBasicInfoRepository extends JpaRepository<LoanIssueBas
      * @param spec 条件
      * @return 查询到的记录
      */
-    @EntityGraph("LoanIssueBasicInfo.loanIssue")
+    @EntityGraph("LoanIssueBasicInfo.loanIssues")
     @Override
     LoanIssueBasicInfo findOne(Specification<LoanIssueBasicInfo> spec);
 

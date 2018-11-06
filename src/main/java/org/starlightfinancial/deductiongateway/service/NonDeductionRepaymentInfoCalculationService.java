@@ -90,8 +90,8 @@ public class NonDeductionRepaymentInfoCalculationService {
 
         //获得了所有可能对应的业务信息即候选业务信息,判断还款日期和还款金额是否在允许的误差范围内
         TreeSet<BusinessTransaction> resultSet = new TreeSet<>();
-        if (candidateBusinessTransactions.size() == 1) {
-            //如果候选的业务信息只有一条,直接加入到resultSet中
+        if (candidateBusinessTransactions.size() == 1 && StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.EVALUATION_FEE.getDesc())) {
+            //除去还款类别是调查评估费的非代扣还款,如果候选的业务信息只有一条,直接加入到resultSet中
             resultSet.add(candidateBusinessTransactions.get(0));
         } else {
             //如果候选的业务信息不止一条,继续用还款日期和还款金额去匹配
@@ -217,7 +217,7 @@ public class NonDeductionRepaymentInfoCalculationService {
         } else {
             //如果逾期或者提前还款,也直接添加到结果中,最后判断result中是否只有一条记录
             //如果还款类别是调查评估费,逾期不添加到候选业务信息中
-            if (RepaymentTypeEnum.EVALUATION_FEE.getCode() != repaymentPlan.getPlanTypeId()){
+            if (RepaymentTypeEnum.EVALUATION_FEE.getCode() != repaymentPlan.getPlanTypeId()) {
                 result.add(businessTransaction);
             }
 

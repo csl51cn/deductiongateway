@@ -126,8 +126,15 @@ public class LoanIssue {
      * 贷款发放基本信息
      */
     @JsonBackReference
-    @OneToOne(mappedBy = "loanIssue", cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false)
+    @JoinColumn(name = "bu_loan_basic_info_id")
     private LoanIssueBasicInfo loanIssueBasicInfo;
+
+    /**
+     * 是否是最新的记录
+     */
+    @Column(name = "is_last")
+    private String isLast;
 
     public Long getId() {
         return id;
@@ -257,5 +264,13 @@ public class LoanIssue {
 
     public void setLoanIssueBasicInfo(LoanIssueBasicInfo loanIssueBasicInfo) {
         this.loanIssueBasicInfo = loanIssueBasicInfo;
+    }
+
+    public String getIsLast() {
+        return isLast;
+    }
+
+    public void setIsLast(String isLast) {
+        this.isLast = isLast;
     }
 }

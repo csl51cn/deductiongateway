@@ -764,4 +764,37 @@ public class BeanConverter {
         repaymentInfo.setOriginalId(nonDeductionRepaymentInfo.getId());
         return repaymentInfo;
     }
+
+    public static List<LoanIssueBasicInfoExcelRow> transToLoanIssueBasicInfoExcelRowList(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
+        ArrayList<LoanIssueBasicInfoExcelRow> loanIssueBasicInfoExcelRows = new ArrayList<>();
+        for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
+            List<LoanIssue> loanIssues = loanIssueBasicInfo.getLoanIssues();
+            for (LoanIssue loanIssue : loanIssues) {
+                LoanIssueBasicInfoExcelRow loanIssueBasicInfoExcelRow = new LoanIssueBasicInfoExcelRow();
+                loanIssueBasicInfoExcelRow.setBusinessNo(loanIssueBasicInfo.getBusinessNo());
+                loanIssueBasicInfoExcelRow.setContractNo(loanIssueBasicInfo.getContractNo());
+                loanIssueBasicInfoExcelRow.setToAccountName(loanIssueBasicInfo.getToAccountName());
+                loanIssueBasicInfoExcelRow.setToAccountNo(loanIssueBasicInfo.getToAccountNo());
+                loanIssueBasicInfoExcelRow.setIssueAmount(loanIssueBasicInfo.getIssueAmount());
+                loanIssueBasicInfoExcelRow.setToBankNameId(loanIssueBasicInfo.getToBankNameId());
+                loanIssueBasicInfoExcelRow.setToBankProvince(loanIssueBasicInfo.getToBankProvince());
+                loanIssueBasicInfoExcelRow.setToBankCity(loanIssueBasicInfo.getToBankCity());
+                loanIssueBasicInfoExcelRow.setToBankBranch(loanIssueBasicInfo.getToBankCity());
+                loanIssueBasicInfoExcelRow.setIdentityNo(loanIssueBasicInfo.getIdentityNo());
+                loanIssueBasicInfoExcelRow.setMobileNo(loanIssueBasicInfo.getMobileNo());
+                loanIssueBasicInfoExcelRow.setChannel(loanIssueBasicInfo.getChannel());
+                loanIssueBasicInfoExcelRow.setTransactionNo(loanIssue.getTransactionNo());
+                loanIssueBasicInfoExcelRow.setTransactionStatus(loanIssue.getTransactionStatus());
+                loanIssueBasicInfoExcelRow.setTransactionStartTime(loanIssue.getTransactionStartTime());
+                loanIssueBasicInfoExcelRow.setTransactionEndTime(loanIssue.getTransactionEndTime());
+                loanIssueBasicInfoExcelRow.setGmtCreate(loanIssue.getGmtCreate());
+                loanIssueBasicInfoExcelRows.add(loanIssueBasicInfoExcelRow);
+            }
+        }
+        return loanIssueBasicInfoExcelRows;
+
+
+    }
+
+
 }

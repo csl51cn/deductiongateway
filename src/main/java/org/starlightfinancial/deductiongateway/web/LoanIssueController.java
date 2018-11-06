@@ -55,15 +55,17 @@ public class LoanIssueController {
      * @param session     会话session
      * @throws JMSException 获取消息异常时抛出
      */
-    @JmsListener(destination = "loanIssueQueueDev1", containerFactory = "jmsQueueListener")
+//    @JmsListener(destination = "loanIssueQueueDev1", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "testqueue", containerFactory = "jmsQueueListener")
     public void saveLoanIssueFromMessageQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
             LOGGER.info("收到放款消息:{}", text);
-            List<LoanIssueBasicInfo> loanIssueBasicInfos = JSON.parseArray(text, LoanIssueBasicInfo.class);
+            JSONObject jsonObject = JSONObject.parseObject(text);
+            List<LoanIssueBasicInfo> loanIssueBasicInfos = JSON.parseArray(jsonObject.getString("issueInfo"), LoanIssueBasicInfo.class);
             loanIssueBasicInfos = loanIssueService.saveLoanIssueBasicInfo(loanIssueBasicInfos);
             List<String> businessNoList = loanIssueBasicInfos.stream().map(LoanIssueBasicInfo::getBusinessNo).distinct().collect(Collectors.toList());
-            text = "待处理资金代付交易,业务编号为:"+businessNoList.toString();
+            text = "待处理资金代付交易,业务编号为:" + businessNoList.toString();
             WebSocketServer.sendInfo(text);
             textMessage.acknowledge();
             //目前不自动放款
@@ -195,5 +197,21 @@ public class LoanIssueController {
         IOUtils.closeQuietly(outputStream);
     }
 
+    /**
+     * 更新记录
+     *
+     * @param loanIssueBasicInfoStr json格式的数据
+     * @param session               会话session
+     * @return 更新结果
+     */
+    @RequestMapping(value = "/updateLoanIssue.do")
+    @ResponseBody
+    public String updateLoanIssue(String loanIssueBasicInfoStr, HttpSession session) {
+        LoanIssueBasicInfo loanIssueBasicInfo = JSONObject.parseObject(loanIssueBasicInfoStr, LoanIssueBasicInfo.class);
+        loanIssueBasicInfo.setModifiedId(Utility.getLoginUserId(session));
+        loanIssueBasicInfo.setGmtModified(new Date());
+        loanIssueService.updateLoanIssue(loanIssueBasicInfo);
+        return "1";
+    }
 
 }
