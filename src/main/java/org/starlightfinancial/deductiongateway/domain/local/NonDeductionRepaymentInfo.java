@@ -165,6 +165,12 @@ public class NonDeductionRepaymentInfo implements Serializable {
     @Column(name = "remark")
     private String remark;
 
+    /**
+     * 是否匹配到准时还款业务,当为0时可能是逾期或者提前还款业务:0-否,1-是
+     */
+    @Column(name = "is_on_time")
+    private String isOnTime;
+
     public Long getId() {
         return id;
     }
@@ -363,5 +369,11 @@ public class NonDeductionRepaymentInfo implements Serializable {
         return Objects.hash(id);
     }
 
+    public String getIsOnTime() {
+        return isOnTime;
+    }
 
+    public void setIsOnTime(String isOnTime) {
+        this.isOnTime = isOnTime;
+    }
 }
