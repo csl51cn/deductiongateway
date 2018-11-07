@@ -634,12 +634,21 @@
                                 classes: 'text-nowrap another-class',
                                 css: {"background": "#6de0ed"}
                             };
-                        }else{
-                            return {
-                                classes: 'text-nowrap another-class',
-                                css: {"background": "#c7edcc"}
-                            };
+                        }else {
+                            if (row.isOnTime ==0 ){
+                                return {
+                                    classes: 'text-nowrap another-class',
+                                    css: {"background": "#ffb7da"}
+                                };
+                            }else{
+                                return {
+                                    classes: 'text-nowrap another-class',
+                                    css: {"background": "#c7edcc"}
+                                };
+                            }
+
                         }
+
 
                     }
 
