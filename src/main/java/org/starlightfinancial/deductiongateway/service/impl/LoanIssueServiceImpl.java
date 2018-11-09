@@ -109,6 +109,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
         loanIssue.setGmtModified(loanIssue.getGmtCreate());
         loanIssue.setModifiedId(loanIssue.getCreateId());
         loanIssue.setIsLast(ConstantsEnum.SUCCESS.getCode());
+        loanIssue.setTransactionSummary(loanIssueBasicInfo.getToAccountName() + "  " + loanIssueBasicInfo.getContractNo());
         return loanIssue;
     }
 

@@ -302,7 +302,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
             transReqData.setToAccDept(loanIssueBasicInfo.getToBankBranch());
             transReqData.setTransCardId(loanIssueBasicInfo.getIdentityNo());
             transReqData.setTransMobile(loanIssueBasicInfo.getMobileNo());
-            transReqData.setTransSummary(loanIssueBasicInfo.getRemark());
+            transReqData.setTransSummary(loanIssue.getTransactionSummary());
             transReqData.setTransReserved("");
             loanIssue.setTransactionStartTime(new Date());
             transReqBF0040004ArrayList.add(transReqData);
