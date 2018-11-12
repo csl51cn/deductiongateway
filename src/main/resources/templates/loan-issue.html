@@ -146,7 +146,7 @@
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">×</span>
                             </button>
-                            <h4 class="modal-title" id="moreInfoModalLabel">代扣信息</h4>
+                            <h4 class="modal-title" id="moreInfoModalLabel">代付信息</h4>
                         </div>
                         <div class="modal-body" id="moreInfoBody">
                             <div id="tableInfo">
@@ -304,6 +304,7 @@
     $(function () {
 
         // web socket here
+        // var socket = new WebSocket("ws://10.200.1.111:8080/websocket");
         var socket = new WebSocket("ws://localhost:8080/websocket");
         // 打开事件
         socket.onmessage = function (msg) {
@@ -474,6 +475,11 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
+                    if(row.loanIssues[0].transactionStatus== "1"){
+                        noty({'text': '已经放款成功不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        setTimeout(query, 4000);
+                        return;
+                    }
                     $.ajax({
                         type: "post",
                         url: "/loanIssueController/updateLoanIssue.do",
