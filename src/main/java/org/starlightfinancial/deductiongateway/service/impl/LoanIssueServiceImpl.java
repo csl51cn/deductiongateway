@@ -44,6 +44,9 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     private LoanIssueBasicInfoRepository loanIssueBasicInfoRepository;
 
     @Autowired
+    private LoanIssueRepository loanIssueRepository;
+
+    @Autowired
     private BusinessTransactionDao businessTransactionDao;
 
     @Autowired
@@ -349,11 +352,22 @@ public class LoanIssueServiceImpl implements LoanIssueService {
             cell.setCellValue(loanIssueBasicInfoRow.getGmtCreate());
             cell.setCellStyle(dateStyle);
             cell = row.createCell(12);
-            cell.setCellValue(loanIssueBasicInfoRow.getTransactionStartTime());
-            cell.setCellStyle(dateStyle);
+
+            if (Objects.nonNull(loanIssueBasicInfoRow.getTransactionStartTime())) {
+                cell.setCellValue(loanIssueBasicInfoRow.getTransactionStartTime());
+                cell.setCellStyle(dateStyle);
+            } else {
+                cell.setCellValue("");
+            }
             cell = row.createCell(13);
-            cell.setCellValue(loanIssueBasicInfoRow.getTransactionEndTime());
-            cell.setCellStyle(dateStyle);
+
+            if (Objects.nonNull(loanIssueBasicInfoRow.getTransactionEndTime())) {
+                System.out.println(loanIssueBasicInfoRow.getTransactionEndTime()+" "+loanIssueBasicInfoRow.getBusinessNo());
+                cell.setCellValue(loanIssueBasicInfoRow.getTransactionEndTime());
+                cell.setCellStyle(dateStyle);
+            } else {
+                cell.setCellValue("");
+            }
             i++;
         }
         return workbook;
@@ -367,5 +381,9 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     @Override
     public void updateLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo) {
         loanIssueBasicInfoRepository.saveAndFlush(loanIssueBasicInfo);
+        LoanIssue loanIssue = loanIssueBasicInfo.getLoanIssues().get(0);
+        loanIssue.setTransactionSummary(loanIssueBasicInfo.getToAccountName() + " " + loanIssueBasicInfo.getContractNo());
+        loanIssue.setLoanIssueBasicInfo(loanIssueBasicInfo);
+        loanIssueRepository.saveAndFlush(loanIssue);
     }
 }

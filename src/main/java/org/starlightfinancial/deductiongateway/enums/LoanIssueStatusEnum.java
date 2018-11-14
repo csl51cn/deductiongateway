@@ -1,5 +1,7 @@
 package org.starlightfinancial.deductiongateway.enums;
 
+import java.util.Objects;
+
 /**
  * @author: Senlin.Deng
  * @Description: 转账状态枚举, 后期有其他渠道继续添加其他的code
@@ -81,6 +83,9 @@ public enum LoanIssueStatusEnum {
     }
 
     public static String getDescByCode(String code) {
+        if (Objects.isNull(code)){
+            return null;
+        }
         for (LoanIssueStatusEnum loanIssueStatusEnum : LoanIssueStatusEnum.values()) {
             if (code.equals(loanIssueStatusEnum.getCode())) {
                 return loanIssueStatusEnum.getDesc();

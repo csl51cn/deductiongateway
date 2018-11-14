@@ -126,7 +126,7 @@ public class LoanIssue {
      * 贷款发放基本信息
      */
     @JsonBackReference
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH,CascadeType.PERSIST}, optional = false)
     @JoinColumn(name = "bu_loan_basic_info_id")
     private LoanIssueBasicInfo loanIssueBasicInfo;
 
