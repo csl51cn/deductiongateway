@@ -163,7 +163,9 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                             } else {
                                 //只有一条,未超渠道限额,直接设置状态
                                 TransRespBF0040002 transRespBF0040002 = transRespBF0040002s.get(0);
-                                loanIssue.setTransactionFee(new BigDecimal(transRespBF0040002.getTransFee()));
+                                if (StringUtils.isNotBlank(transRespBF0040002.getTransFee())) {
+                                    loanIssue.setTransactionFee(new BigDecimal(transRespBF0040002.getTransFee()));
+                                }
                                 loanIssue.setTransactionStatus(LoanIssueStatusEnum.getCodeByBaoFuCode(transRespBF0040002.getState()));
                                 loanIssue.setTransactionEndTime(Utility.convertToDate(transRespBF0040002.getTransEndTime(), "yyyy-MM-dd HH:mm:ss"));
                                 loanIssue.setTransactionRemark(transRespBF0040002.getTransRemark());
