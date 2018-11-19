@@ -143,21 +143,21 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                                 List<TransRespBF0040002> fail = groupByStateMap.get(LoanIssueStatusEnum.STATUS2.getBaoFuCode());
                                 //退款的集合
                                 List<TransRespBF0040002> refund = groupByStateMap.get(LoanIssueStatusEnum.STATUS3.getBaoFuCode());
-                                if (success.size() == transRespBF0040002s.size()) {
+                                if (Objects.nonNull(success) && success.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS1.getCode());
                                     Optional<Date> maxTransEndTime = success.stream().map(transRespBF0040002 -> Utility.convertToDate(transRespBF0040002.getTransEndTime(), "yyyy-MM-dd HH:mm:ss")).max((date, anotherDate) -> date != null ? date.compareTo(anotherDate) : 0);
                                     loanIssue.setTransactionEndTime(maxTransEndTime.get());
                                 }
-                                if (progress.size() == transRespBF0040002s.size()) {
+                                if (Objects.nonNull(progress) && progress.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
                                 }
-                                if (fail.size() > 0 && success.size() > 0) {
+                                if (Objects.nonNull(fail) && fail.size() > 0 && success.size() > 0) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS4.getCode());
                                 }
-                                if (fail.size() == transRespBF0040002s.size()) {
+                                if (Objects.nonNull(fail) && fail.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS2.getCode());
                                 }
-                                if (refund.size() > 0) {
+                                if (Objects.nonNull(refund) && refund.size() > 0) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS3.getCode());
                                 }
                             } else {

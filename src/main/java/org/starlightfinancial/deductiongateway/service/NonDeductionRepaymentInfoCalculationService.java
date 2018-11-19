@@ -90,10 +90,21 @@ public class NonDeductionRepaymentInfoCalculationService {
 
         //获得了所有可能对应的业务信息即候选业务信息,判断还款日期和还款金额是否在允许的误差范围内
         TreeSet<BusinessTransaction> resultSet = new TreeSet<>();
-        if (candidateBusinessTransactions.size() == 1 && StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.EVALUATION_FEE.getDesc())) {
-            //除去还款类别是调查评估费的非代扣还款,如果候选的业务信息只有一条,直接加入到resultSet中
-            nonDeductionRepaymentInfo.setIsOnTime(ConstantsEnum.SUCCESS.getCode());
-            resultSet.add(candidateBusinessTransactions.get(0));
+        if (candidateBusinessTransactions.size() == 1) {
+            //除去还款类别是调查评估费的非代扣还款,如果候选的业务信息只有一条,直接加入到resultSet中,调查评估费需要判断是否是匹配到调查评估费已经结清的业务
+            boolean canAddToResultSet = true;
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.EVALUATION_FEE.getDesc())) {
+                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(candidateBusinessTransactions.get(0).getDateId(), RepaymentTypeEnum.EVALUATION_FEE.getCode(), "0");
+                if (Objects.isNull(repaymentPlan)) {
+                    //调查评估费已经结清,不能直接添加到resultSet中
+                    canAddToResultSet = false;
+                }
+            }
+            if (canAddToResultSet) {
+                nonDeductionRepaymentInfo.setIsOnTime(ConstantsEnum.SUCCESS.getCode());
+                resultSet.add(candidateBusinessTransactions.get(0));
+            }
+
         } else {
             //如果候选的业务信息不止一条,继续用还款日期和还款金额去匹配
             compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);

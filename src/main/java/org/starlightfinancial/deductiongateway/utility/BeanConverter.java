@@ -779,7 +779,7 @@ public class BeanConverter {
                 loanIssueBasicInfoExcelRow.setToBankNameId(loanIssueBasicInfo.getToBankNameId());
                 loanIssueBasicInfoExcelRow.setToBankProvince(loanIssueBasicInfo.getToBankProvince());
                 loanIssueBasicInfoExcelRow.setToBankCity(loanIssueBasicInfo.getToBankCity());
-                loanIssueBasicInfoExcelRow.setToBankBranch(loanIssueBasicInfo.getToBankCity());
+                loanIssueBasicInfoExcelRow.setToBankBranch(loanIssueBasicInfo.getToBankBranch());
                 loanIssueBasicInfoExcelRow.setIdentityNo(loanIssueBasicInfo.getIdentityNo());
                 loanIssueBasicInfoExcelRow.setMobileNo(loanIssueBasicInfo.getMobileNo());
                 loanIssueBasicInfoExcelRow.setChannel(loanIssueBasicInfo.getChannel());
