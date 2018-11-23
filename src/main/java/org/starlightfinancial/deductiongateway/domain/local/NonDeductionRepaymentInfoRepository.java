@@ -42,4 +42,15 @@ public interface NonDeductionRepaymentInfoRepository extends JpaRepository<NonDe
     List<NonDeductionRepaymentInfo> findByGmtCreateGreaterThanEqualAndGmtCreateLessThanEqual(Date startDate, Date endDate);
 
 
+    /**
+     * 根据修改时间和上传状态查询记录
+     *
+     * @param startDate    开始日期(包含)
+     * @param endDate      结束日期(不含)
+     * @param isUploaded   上传状态
+     * @return 返回查询到的记录
+     */
+    List<NonDeductionRepaymentInfo> findByGmtModifiedGreaterThanEqualAndGmtModifiedLessThanEqualAndIsUploaded(Date startDate, Date endDate,String isUploaded);
+
+
 }

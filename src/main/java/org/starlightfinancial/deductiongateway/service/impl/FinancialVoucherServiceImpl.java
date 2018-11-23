@@ -61,7 +61,7 @@ public class FinancialVoucherServiceImpl implements FinancialVoucherService {
 
 
         //导入生成时间是从昨天到今天的非代扣还款数据,需要将拆分出来的还款记录的还款金额合并到被拆分的还款记录中,后面会去重
-        List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findByGmtCreateGreaterThanEqualAndGmtCreateLessThanEqual(yesterday, Utility.toMidNight(today));
+        List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoRepository.findByGmtModifiedGreaterThanEqualAndGmtModifiedLessThanEqualAndIsUploaded(yesterday, Utility.toMidNight(today), ConstantsEnum.SUCCESS.getCode());
         //获得拆分出来的非代扣还款记录map,键是id,值是记录
         Map<Long, NonDeductionRepaymentInfo> splitOutNonDeductionRepaymentInfoMap = nonDeductionRepaymentInfos.stream()
                 .filter(nonDeductionRepaymentInfo -> nonDeductionRepaymentInfo.getOriginalId() != null).collect(Collectors.toMap(NonDeductionRepaymentInfo::getId, Function.identity()));
@@ -106,7 +106,7 @@ public class FinancialVoucherServiceImpl implements FinancialVoucherService {
         });
 
 
-        //去重,首先从数据中查询所有昨天的还款数据
+        //去重,首先从数据中查询所有昨天导入的还款数据
         List<RepaymentInfo> existedRepaymentInfos = repaymentInfoRepository.findByGmtCreateGreaterThanEqualAndGmtCreateLessThanEqual(yesterday, Utility.toMidNight(today));
         Iterator<RepaymentInfo> iterator = repaymentInfos.iterator();
         while (iterator.hasNext()) {

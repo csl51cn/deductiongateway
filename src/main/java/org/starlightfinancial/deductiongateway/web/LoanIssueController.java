@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.web;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.common.WebSocketServer;
+import org.starlightfinancial.deductiongateway.domain.local.LoanIssue;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueQueryCondition;
+import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
+import org.starlightfinancial.deductiongateway.enums.LoanIssueStatusEnum;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
 import org.starlightfinancial.deductiongateway.service.impl.BackgroundNotificationConsumer;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
@@ -140,15 +144,35 @@ public class LoanIssueController {
      */
     @RequestMapping("/loanIssue.do")
     @ResponseBody
-    public String loanIssue(String ids) {
+    public Message loanIssue(String ids) {
         try {
             List<LoanIssueBasicInfo> loanIssueBasicInfos = loanIssueService.queryLoanIssueListByIds(ids);
+            for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
+                List<LoanIssue> loanIssues = loanIssueBasicInfo.getLoanIssues();
+                for (LoanIssue loanIssue : loanIssues) {
+                    if (StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), loanIssue.getIsLast())) {
+                        //如果记录是最新的并且交易状态是未知或者成功或者部分成功时,取消操作
+                        if (StringUtils.equals(LoanIssueStatusEnum.STATUS0.getCode(), loanIssue.getTransactionStatus())) {
+                            //状态未知
+                            return Message.fail("操作取消:" + loanIssueBasicInfo.getContractNo() + "放款结果为未知不能进行放款操作");
+                        }
+                        if (StringUtils.equals(LoanIssueStatusEnum.STATUS1.getCode(), loanIssue.getTransactionStatus())) {
+                            //转账成功
+                            return Message.fail("操作取消:" + loanIssueBasicInfo.getContractNo() + "已放款成功,不能进行放款操作");
+                        }
+                        if (StringUtils.equals(LoanIssueStatusEnum.STATUS4.getCode(), loanIssue.getTransactionStatus())) {
+                            //部分成功
+                            return Message.fail("操作取消:" + loanIssueBasicInfo.getContractNo() + "已部分放款成功,不能进行放款操作");
+                        }
+                    }
+                }
+            }
             loanIssueService.loanIssue(loanIssueBasicInfos);
-            return "1";
+            return Message.success();
         } catch (Exception e) {
             LOGGER.error("贷款发放操作失败");
         }
-        return "0";
+        return Message.fail();
     }
 
 

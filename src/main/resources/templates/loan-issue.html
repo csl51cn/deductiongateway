@@ -691,7 +691,7 @@
             var rows = $('#table').bootstrapTable('getSelections');
             for (var i = 0; i < rows.length; i++) {
                 var transactionStatus = rows[i].loanIssues[0].transactionStatus;
-                if (transactionStatus === 0) {
+                if (transactionStatus === '0') {
                     noty({
                         'text': "操作取消:" + rows[i].contractNo + "放款结果为未知不能进行放款操作",
                         'layout': 'center',
@@ -699,7 +699,7 @@
                         "timeout": "5000"
                     });
                     return;
-                } else if (transactionStatus === 1) {
+                } else if (transactionStatus === '1') {
                     noty({
                         'text': "操作取消:" + rows[i].contractNo + "已放款成功,不能进行放款操作",
                         'layout': 'center',
@@ -707,7 +707,7 @@
                         "timeout": "5000"
                     });
                     return;
-                } else if (transactionStatus === 4) {
+                } else if (transactionStatus === '4') {
                     noty({
                         'text': "操作取消:" + rows[i].contractNo + "已部分放款成功,不能进行放款操作",
                         'layout': 'center',
@@ -744,12 +744,12 @@
                     success: function (data) {
                         value = 0;
                         $('#myModal').modal('hide');
-                        if ("1" == data) {
-                            setTimeout(query(), 4020);
+                        setTimeout(query(), 4020);
+                        if (data.code == "0000") {
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
                         } else {
                             noty({
-                                'text': '执行失败,' + data,
+                                'text':  data.message,
                                 'layout': 'center',
                                 'type': 'error',
                                 "timeout": "6000"
@@ -760,6 +760,7 @@
                     error: function (data) {
                         value = 0;
                         $('#myModal').modal('hide');
+                        setTimeout(query(), 4020);
                         noty({
                             'text': '执行失败,' + data.responseText,
                             'layout': 'center',
