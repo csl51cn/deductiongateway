@@ -362,7 +362,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
             cell = row.createCell(13);
 
             if (Objects.nonNull(loanIssueBasicInfoRow.getTransactionEndTime())) {
-                System.out.println(loanIssueBasicInfoRow.getTransactionEndTime()+" "+loanIssueBasicInfoRow.getBusinessNo());
+                System.out.println(loanIssueBasicInfoRow.getTransactionEndTime() + " " + loanIssueBasicInfoRow.getBusinessNo());
                 cell.setCellValue(loanIssueBasicInfoRow.getTransactionEndTime());
                 cell.setCellStyle(dateStyle);
             } else {
@@ -381,9 +381,15 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     @Override
     public void updateLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo) {
         loanIssueBasicInfoRepository.saveAndFlush(loanIssueBasicInfo);
-        LoanIssue loanIssue = loanIssueBasicInfo.getLoanIssues().get(0);
+        LoanIssue loanIssue = findTheLastRecord(loanIssueBasicInfo);
         loanIssue.setTransactionSummary(loanIssueBasicInfo.getToAccountName() + " " + loanIssueBasicInfo.getContractNo());
         loanIssue.setLoanIssueBasicInfo(loanIssueBasicInfo);
         loanIssueRepository.saveAndFlush(loanIssue);
+    }
+
+    private LoanIssue findTheLastRecord(LoanIssueBasicInfo loanIssueBasicInfo) {
+        List<LoanIssue> loanIssues = loanIssueBasicInfo.getLoanIssues();
+        List<LoanIssue> collect = loanIssues.stream().filter(loanIssue -> StringUtils.equals(loanIssue.getIsLast(), ConstantsEnum.SUCCESS.getCode()) || Objects.isNull(loanIssue.getAcceptTransactionStatus())).collect(Collectors.toList());
+        return collect.get(0);
     }
 }
