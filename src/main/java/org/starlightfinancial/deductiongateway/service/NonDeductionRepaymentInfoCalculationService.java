@@ -10,8 +10,6 @@ import org.starlightfinancial.deductiongateway.utility.SpringContextUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -93,18 +91,32 @@ public class NonDeductionRepaymentInfoCalculationService {
         if (candidateBusinessTransactions.size() == 1) {
             //除去还款类别是调查评估费的非代扣还款,如果候选的业务信息只有一条,直接加入到resultSet中,调查评估费需要判断是否是匹配到调查评估费已经结清的业务
             boolean canAddToResultSet = true;
+            BusinessTransaction businessTransaction = candidateBusinessTransactions.get(0);
             if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), RepaymentTypeEnum.EVALUATION_FEE.getDesc())) {
-                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(candidateBusinessTransactions.get(0).getDateId(), RepaymentTypeEnum.EVALUATION_FEE.getCode(), "0");
+                RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), RepaymentTypeEnum.EVALUATION_FEE.getCode(), "0");
                 if (Objects.isNull(repaymentPlan)) {
                     //调查评估费已经结清,不能直接添加到resultSet中
                     canAddToResultSet = false;
                 }
             }
             if (canAddToResultSet) {
-                nonDeductionRepaymentInfo.setIsOnTime(ConstantsEnum.SUCCESS.getCode());
-                resultSet.add(candidateBusinessTransactions.get(0));
+                /* 如果是他人代还的情况,也就是进行还款操作的人不是借款人,共借人,担保人中其中一个,但是与其他业务的债务人同名,也会进入此分支.
+                   此时需要通过查询对应还款类别的未结清的期数最小的还款计划信息,比对计划还款日期与实际还款日期差值,如果差值不在±1范围内,不算匹配到准时还款*/
+                Integer repaymentType = RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType());
+                if (repaymentType != null) {
+                    //获取还款类别代码不为null,查询对应还款类别的未结清的期数最小的还款计划信息
+                    RepaymentPlan repaymentPlan = repaymentPlanRepository.findFirstByDateIdAndPlanTypeIdAndStatusOrderByIdAsc(businessTransaction.getDateId(), repaymentType, "0");
+                    if (repaymentPlan != null) {
+                        long between = Utility.between(nonDeductionRepaymentInfo.getRepaymentTermDate(), repaymentPlan.getPlanTermDate());
+                        if (between >= -1 && between <= 1) {
+                            nonDeductionRepaymentInfo.setIsOnTime(ConstantsEnum.SUCCESS.getCode());
+                        } else {
+                            nonDeductionRepaymentInfo.setIsOnTime(ConstantsEnum.FAIL.getCode());
+                        }
+                    }
+                }
+                resultSet.add(businessTransaction);
             }
-
         } else {
             //如果候选的业务信息不止一条,继续用还款日期和还款金额去匹配
             compareDateAndAmount(nonDeductionRepaymentInfo, candidateBusinessTransactions, resultSet);
@@ -205,10 +217,8 @@ public class NonDeductionRepaymentInfoCalculationService {
      */
     private static void concreteCompareDateAndAmount(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, TreeSet<BusinessTransaction> result, BusinessTransaction businessTransaction, RepaymentPlan repaymentPlan) {
         //实际还款日与计划还款日对比
-        LocalDate repaymentTermDate = Utility.getLocalDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
-        LocalDate planTermDate = Utility.getLocalDate(repaymentPlan.getPlanTermDate());
         //两个日期的差值:planTermDate - repaymentTermDate
-        long between = ChronoUnit.DAYS.between(repaymentTermDate, planTermDate);
+        long between = Utility.between(nonDeductionRepaymentInfo.getRepaymentTermDate(), repaymentPlan.getPlanTermDate());
         if (between >= -1 && between <= 1) {
             //如果日期差值在[-1,1]范围内,继续判断实际还款金额和计划还款金额的差值是否在[-2,2]范围内
             BigDecimal repaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
