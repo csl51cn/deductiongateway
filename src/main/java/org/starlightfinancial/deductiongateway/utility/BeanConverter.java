@@ -373,6 +373,11 @@ public class BeanConverter {
         dataContent.setPayCm(baofuConfig.getClassicPayCm());
         dataContent.setNotifyUrl(baofuConfig.getClassicNotifyUrl());
 
+        AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(), dataContent.getAccNo(), dataContent.getIdHolder(), dataContent.getIdCard());
+        if (Objects.nonNull(accountManager)){
+            //手机号
+            dataContent.setMobile(accountManager.getMobile());
+        }
         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(dataContent);
         String contentData = jsonObject.toString();
         log.info("宝付代扣contentData:{}", contentData);
