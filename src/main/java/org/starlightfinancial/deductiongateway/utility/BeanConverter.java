@@ -663,7 +663,7 @@ public class BeanConverter {
                 //宝付只在润通账户扣除手续费
                 principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
                 //设置本息入账银行账户
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
                 serviceFeeRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
             }
             repaymentInfos.add(serviceFeeRepaymentInfo);
@@ -677,7 +677,7 @@ public class BeanConverter {
                 principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
             } else {
                 //宝付
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
             }
 
         }
@@ -728,7 +728,7 @@ public class BeanConverter {
             //收银宝,需要根据入账公司来确定入账银行
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_TONG.getValue())) {
                 //润通
-                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CCB_3504.getCode());
+                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
             }
 
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
