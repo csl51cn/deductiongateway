@@ -302,10 +302,9 @@
 <script type="text/javascript" th:inline="javascript">
 
     $(function () {
-
+        var host = "ws://" + window.location.host + "/websocket";
         // web socket here
-        // var socket = new WebSocket("ws://10.200.1.111:8080/websocket");
-        var socket = new WebSocket("ws://localhost:8080/websocket");
+        var socket = new WebSocket(host);
         // 打开事件
         socket.onmessage = function (msg) {
             Lobibox.notify('info', {
@@ -475,7 +474,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if(row.loanIssues[0].transactionStatus== "1"){
+                    if (row.loanIssues[0].transactionStatus == "1") {
                         noty({'text': '已经放款成功不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                         setTimeout(query, 4000);
                         return;
@@ -749,7 +748,7 @@
                             noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
                         } else {
                             noty({
-                                'text':  data.message,
+                                'text': data.message,
                                 'layout': 'center',
                                 'type': 'error',
                                 "timeout": "6000"
