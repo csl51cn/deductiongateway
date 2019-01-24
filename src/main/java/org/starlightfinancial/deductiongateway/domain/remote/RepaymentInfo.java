@@ -126,6 +126,13 @@ public class RepaymentInfo {
     @Column(name = "modified_id")
     private Integer modifiedId;
 
+    /**
+     * 代表是否被此记录是否是拆分形成的:0否,1是.
+     * 例如有笔还款,人为分为了两笔,新建的的那条记录叫做拆分形成的,原始那条记录叫做被拆分了
+     */
+    @Column(name = "create_from_another")
+    private String createFromAnother;
+
 
     public Long getId() {
         return id;
@@ -261,5 +268,13 @@ public class RepaymentInfo {
 
     public void setRepaymentType(String repaymentType) {
         this.repaymentType = repaymentType;
+    }
+
+    public String getCreateFromAnother() {
+        return createFromAnother;
+    }
+
+    public void setCreateFromAnother(String createFromAnother) {
+        this.createFromAnother = createFromAnother;
     }
 }

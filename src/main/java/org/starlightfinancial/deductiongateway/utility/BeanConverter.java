@@ -625,6 +625,8 @@ public class BeanConverter {
         principalAndInterestRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData1());
         //设置还款类别
         principalAndInterestRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getCode()));
+        //设置是否是从其他记录拆分出来的:否-0
+        principalAndInterestRepaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
         //判断是否是银联代扣
         boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
@@ -754,7 +756,12 @@ public class BeanConverter {
         } else {
             repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
         }
-
+        //设置是否是被拆分出来生成的的:如果originalId不为空,说明当前记录是从其他记录拆分出来的.如果为空,说明不是
+        if(Objects.nonNull(nonDeductionRepaymentInfo.getOriginalId())){
+            repaymentInfo.setCreateFromAnother(ConstantsEnum.SUCCESS.getCode());
+        }else{
+            repaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
+        }
         //设置创建时间
         repaymentInfo.setGmtCreate(new Date());
         //设置创建人
