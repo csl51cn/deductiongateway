@@ -138,7 +138,7 @@ public class BeanConverter {
         MortgageDeduction mortgageDeduction = new MortgageDeduction();
         //设置合同编号
         mortgageDeduction.setContractNo(autoBatchDeduction.getContractNo());
-        //设置银行名称,此时为中文
+        //设置银行名称,此时为中文,本方法后面会处理
         mortgageDeduction.setParam1(autoBatchDeduction.getBankName());
         //设置卡折类型
         mortgageDeduction.setParam2("0");

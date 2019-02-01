@@ -10,7 +10,11 @@ import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
+import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
+import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
+import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
+import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
@@ -18,10 +22,12 @@ import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by sili.chen on 2018/1/3
@@ -47,6 +53,7 @@ public class Delivery extends Decorator {
     @Autowired
     private OperationStrategyContext operationStrategyContext;
 
+
     List<MortgageDeduction> result;
 
     @Override
@@ -57,9 +64,14 @@ public class Delivery extends Decorator {
     }
 
     private void delivery() {
-        List list = ((Assembler) this.route).getResult();
+        List<MortgageDeduction> list = ((Assembler) this.route).getResult();
+        //将建设银行筛选出来
+        List<MortgageDeduction> ccbList = list.stream().filter(mortgageDeduction -> BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
+        List<MortgageDeduction> otherBankList = list.stream().filter(mortgageDeduction -> !BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
         if ("UNIONPAY".equals(router)) {
-            deliveryUnionPay(list);
+            deliveryUnionPay(otherBankList);
+            //建设银行使用宝付进行代扣
+            deliveryBaoFuClassic(ccbList);
         } else if ("BAOFU".equals(router)) {
             deliveryBaoFu(list);
         }
@@ -101,6 +113,11 @@ public class Delivery extends Decorator {
 //        }
 //    }
 
+    /**
+     * 银联白名单代扣
+     *
+     * @param list 待代扣的MortgageDeduction数据
+     */
     private void deliveryUnionPay(List<MortgageDeduction> list) {
         for (MortgageDeduction mortgageDeduction : list) {
             GoPayBean goPayBean = beanConverter.transToGoPayBean(mortgageDeduction);
@@ -144,6 +161,11 @@ public class Delivery extends Decorator {
         }
     }
 
+    /**
+     * 宝付协议支付
+     *
+     * @param list 待代扣的MortgageDeduction数据
+     */
     private void deliveryBaoFu(List<MortgageDeduction> list) {
         for (MortgageDeduction mortgageDeduction : list) {
             BaoFuRequestParams baoFuRequestParams = beanConverter.transToBaoFuRequestParams(mortgageDeduction);
@@ -172,7 +194,59 @@ public class Delivery extends Decorator {
         }
     }
 
+    /**
+     * 宝付代扣
+     *
+     * @param list 待代扣的MortgageDeduction数据
+     */
+    private void deliveryBaoFuClassic(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+
+            RequestParams requestParams = null;
+            try {
+                requestParams = beanConverter.transToRequestParams(mortgageDeduction);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.debug("宝付代扣:代扣基本数据转换为请求宝付参数异常,合同号:[{}]", e, mortgageDeduction.getContractNo());
+                continue;
+            }
+            mortgageDeduction.setOrdId(requestParams.getContent().getTransId());
+            mortgageDeduction.setMerId(requestParams.getContent().getMemberId());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getOrderDesc());
+            mortgageDeduction.setPlanNo(0);
+            mortgageDeduction.setType("0");
+            mortgageDeduction.setPayTime(new Date());
+            //设置渠道信息
+            mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode());
+
+            try {
+                Map map = HttpClientUtil.send(baofuConfig.getClassicUrl(), requestParams.switchToNvpList());
+                String returnData = (String) map.get("returnData");
+                returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getClassicCerFile());
+                returnData = SecurityUtil.Base64Decode(returnData);
+                JSONObject parse = (JSONObject) JSONObject.parse(returnData);
+                String respMsg = parse.getObject("resp_msg", String.class);
+                if (StringUtils.equals("交易成功", respMsg)) {
+                    mortgageDeduction.setIssuccess("1");
+                    //计算并设置手续费
+                    operationStrategyContext.getOperationStrategy(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode()).calculateHandlingCharge(mortgageDeduction);
+                } else {
+                    mortgageDeduction.setIssuccess("0");
+                }
+                String respCode = parse.getObject("resp_code", String.class);
+                mortgageDeduction.setResult(respCode);
+                mortgageDeduction.setErrorResult(respMsg);
+                result.add(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //保存订单号
+                result.add(mortgageDeduction);
+            }
+        }
+    }
+
     public List<MortgageDeduction> getResult() {
         return result;
     }
+
 }
