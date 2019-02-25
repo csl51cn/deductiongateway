@@ -161,7 +161,13 @@ public class NonDeductionRepaymentInfoController {
             return "请选择一条记录上传";
         }
         try {
-            nonDeductionRepaymentInfoService.uploadAutoAccountingFile(ids, session);
+            List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoService.listNonDeductions(ids);
+            //判断是否存在已上传的记录
+            boolean anyMatch = nonDeductionRepaymentInfos.stream().anyMatch(nonDeductionRepaymentInfo -> StringUtils.equals(nonDeductionRepaymentInfo.getIsUploaded(), ConstantsEnum.SUCCESS.getCode()));
+            if(anyMatch){
+                return "选中了包含已上传的记录";
+            }
+            nonDeductionRepaymentInfoService.uploadAutoAccountingFile(nonDeductionRepaymentInfos, session);
             return "1";
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("上传自动入账excel文件失败", e);
@@ -302,14 +308,11 @@ public class NonDeductionRepaymentInfoController {
         try {
             financialVoucherService.importRepaymentData();
             return "1";
-        }catch (Exception e){
-            LOGGER.error("手动导入还款信息失败",e);
+        } catch (Exception e) {
+            LOGGER.error("手动导入还款信息失败", e);
         }
         return "0";
     }
-
-
-
 
 
     /**

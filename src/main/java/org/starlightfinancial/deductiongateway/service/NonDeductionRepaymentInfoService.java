@@ -57,13 +57,13 @@ public interface NonDeductionRepaymentInfoService {
     /**
      * 上传自动入账文件
      *
-     * @param ids     一条记录或多条记录id
+     * @param nonDeductionRepaymentInfos  需要处理的非代扣还款信息
      * @param session 会话session
      * @throws IOException               io异常时抛出
      * @throws FieldFormatCheckException 非代扣还款数据属性格式不符合预期时抛出
      * @throws ClassNotFoundException    深复制异常时抛出
      */
-    void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException;
+    void uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException;
 
 
     /**
@@ -108,4 +108,12 @@ public interface NonDeductionRepaymentInfoService {
      * @param session 会话session
      */
     void modifyUploadStatus(String ids, HttpSession session);
+
+    /**
+     * 根据id查询非代扣还款信息
+     *
+     * @param ids 要查询的id
+     * @return 返回查询到的非代扣还款信息
+     */
+    List<NonDeductionRepaymentInfo> listNonDeductions(String ids);
 }

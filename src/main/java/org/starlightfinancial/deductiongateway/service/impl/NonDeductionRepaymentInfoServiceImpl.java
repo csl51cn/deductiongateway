@@ -328,24 +328,20 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     /**
      * 上传自动入账文件
      *
-     * @param ids     一条记录或多条记录id
-     * @param session 会话session
+     * @param nonDeductionRepaymentInfos 需要处理的非代扣还款信息
+     * @param session                    会话session
      * @throws IOException               io异常时抛出
      * @throws FieldFormatCheckException 非代扣还款数据属性格式不符合预期时抛出
      * @throws ClassNotFoundException    深复制异常时抛出
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadAutoAccountingFile(String ids, HttpSession session) throws IOException,
+    public void uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException,
             FieldFormatCheckException, ClassNotFoundException {
-        //处理ids,先用逗号切割,然后转为List
-        List<Long> idsList =
-                Arrays.stream(ids.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
-        //根据id查询对应的记录
-        List<NonDeductionRepaymentInfo> all = nonDeductionRepaymentInfoRepository.findAll(idsList);
+
         //筛选信息完整和未上传自动入账文件的记录,如果其属性isIntegrated为1和isUploaded为0保留,其余舍弃
         List<NonDeductionRepaymentInfo> afterFilter =
-                all.stream().filter(nonDeductionRepaymentInfo -> "1".equals(nonDeductionRepaymentInfo.getIsIntegrated()) && "0".equals(nonDeductionRepaymentInfo.getIsUploaded())).collect(Collectors.toList());
+                nonDeductionRepaymentInfos.stream().filter(nonDeductionRepaymentInfo -> "1".equals(nonDeductionRepaymentInfo.getIsIntegrated()) && "0".equals(nonDeductionRepaymentInfo.getIsUploaded())).collect(Collectors.toList());
 
         //入账公司,还款方式,还款类别,入账银行(银行转账时)格式校验
         checkFieldFormat(afterFilter);
@@ -400,7 +396,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         });
 
         nonDeductionRepaymentInfoRepository.save(original);
-        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:[{}]", Utility.getLoginUserName(session), ids);
+        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:[{}]", Utility.getLoginUserName(session), nonDeductionRepaymentInfos);
     }
 
     /**
@@ -775,6 +771,20 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         });
 
         LOGGER.info("修改上传入账文件状态成功,操作人:[{}],修改为已上传记录id:{},修改为未上传记录id:{}", Utility.getLoginUserName(session), setUploaded, setNonUploaded);
+    }
+
+    /**
+     * 根据id查询非代扣还款信息
+     *
+     * @param ids 要查询的id
+     * @return 返回查询到的非代扣还款信息
+     */
+    @Override
+    public List<NonDeductionRepaymentInfo> listNonDeductions(String ids) {
+        //处理ids,先用逗号切割,然后转为List
+        List<Long> idsList = Arrays.stream(ids.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
+        //根据id查询对应的记录
+        return nonDeductionRepaymentInfoRepository.findAll(idsList);
     }
 
     /**
