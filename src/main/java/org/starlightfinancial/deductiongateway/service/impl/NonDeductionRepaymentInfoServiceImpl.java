@@ -396,7 +396,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         });
 
         nonDeductionRepaymentInfoRepository.save(original);
-        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:[{}]", Utility.getLoginUserName(session), nonDeductionRepaymentInfos);
+        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:{}", Utility.getLoginUserName(session),afterFilter.stream().map(NonDeductionRepaymentInfo::getId).collect(Collectors.toList()));
+
     }
 
     /**
