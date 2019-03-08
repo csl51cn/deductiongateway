@@ -295,6 +295,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
         NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
+        String differenceFieldValue = Utility.compareObjectFieldValue(nonDeductionRepaymentInfo, nonDeductionRepaymentInfoInDataBase);
         trim(nonDeductionRepaymentInfo);
         if (!StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), nonDeductionRepaymentInfo.getIsUploaded())) {
 
@@ -321,8 +322,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             }
         }
         nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo);
-        LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(session),
-                nonDeductionRepaymentInfo.getId());
+        LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}],更新情况:{}", Utility.getLoginUserName(session),
+                nonDeductionRepaymentInfo.getId(), differenceFieldValue);
     }
 
     /**
@@ -396,7 +397,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         });
 
         nonDeductionRepaymentInfoRepository.save(original);
-        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:{}", Utility.getLoginUserName(session),afterFilter.stream().map(NonDeductionRepaymentInfo::getId).collect(Collectors.toList()));
+        LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:{}", Utility.getLoginUserName(session), afterFilter.stream().map(NonDeductionRepaymentInfo::getId).collect(Collectors.toList()));
 
     }
 

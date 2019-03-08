@@ -7,7 +7,12 @@ import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -342,5 +347,42 @@ public class Utility {
         return ChronoUnit.DAYS.between(localDate1, localDate2);
     }
 
+    /**
+     * 对比出同一类对象的不同属性
+     *
+     * @param oldObject 旧的对象
+     * @param newObject 新的对象
+     * @return 返回不同的属性
+     */
+    public static String compareObjectFieldValue(Object oldObject, Object newObject) {
+        StringBuilder sb = new StringBuilder();
+        Class<?> clazz = oldObject.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            if ("serialVersionUID".equals(field.getName())) {
+                continue;
+            }
+            try {
+                PropertyDescriptor pd = new PropertyDescriptor(field.getName(), clazz);
+                Method getMethod = pd.getReadMethod();
+                Object oldValue = getMethod.invoke(oldObject);
+                Object newValue = getMethod.invoke(newObject);
+                if (oldValue == null || newValue == null) {
+                    continue;
+                }
+                if (oldValue instanceof Date) {
+                    oldValue = convertToString((Date) oldValue, "yyyy-MM-dd");
+                    newValue = convertToString((Date) newValue, "yyyy-MM-dd");
+                }
+                if (!oldValue.toString().equals(newValue.toString())) {
+                    sb.append("属性:").append(field.getName()).append("[").append(oldValue).append("]->").append("[").append(newValue).append("] ");
+
+                }
+            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
 
 }
