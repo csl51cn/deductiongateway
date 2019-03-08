@@ -295,7 +295,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
         NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
-        String differenceFieldValue = Utility.compareObjectFieldValue(nonDeductionRepaymentInfo, nonDeductionRepaymentInfoInDataBase);
+
         trim(nonDeductionRepaymentInfo);
         if (!StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), nonDeductionRepaymentInfo.getIsUploaded())) {
 
@@ -321,6 +321,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 nonDeductionRepaymentInfo.setBankName(null);
             }
         }
+        String differenceFieldValue = Utility.compareObjectFieldValue(nonDeductionRepaymentInfo, nonDeductionRepaymentInfoInDataBase);
         nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo);
         LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}],更新情况:{}", Utility.getLoginUserName(session),
                 nonDeductionRepaymentInfo.getId(), differenceFieldValue);
