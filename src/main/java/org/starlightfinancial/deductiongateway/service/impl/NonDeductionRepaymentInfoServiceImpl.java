@@ -295,11 +295,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
         NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
-        //如果修改了还款人,需要将非代扣还款信息的合同编号设置为空,后续代码会自动设置匹配状态以及重新匹配合同号,
-        //避免起初还款人录入错误,系统已自动匹配合同号,修改还款人姓名后不再匹配合同号,入账时入到错误的业务中
-        if (!StringUtils.equals(nonDeductionRepaymentInfoInDataBase.getCustomerName(), nonDeductionRepaymentInfo.getCustomerName())) {
-            nonDeductionRepaymentInfo.setContractNo(null);
-        }
+
+
         trim(nonDeductionRepaymentInfo);
         if (!StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), nonDeductionRepaymentInfo.getIsUploaded())) {
 
@@ -311,6 +308,12 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 //判断数据库中的记录合同编号是否和更新记录的一致,如果不一致,设置手动匹配
                 if (!StringUtils.equals(nonDeductionRepaymentInfo.getContractNo(), nonDeductionRepaymentInfoInDataBase.getContractNo())) {
                     nonDeductionRepaymentInfo.setIsAutoMatched(ConstantsEnum.FAIL.getCode());
+                } else {
+                    //如果合同号无修改但修改了还款人,需要将非代扣还款信息的合同编号设置为空,后续代码会自动设置匹配状态以及重新匹配合同号,
+                    //避免起初还款人录入错误,系统已自动匹配合同号,修改还款人姓名后不再匹配合同号,入账时入到错误的业务中的情况
+                    if (!StringUtils.equals(nonDeductionRepaymentInfoInDataBase.getCustomerName(), nonDeductionRepaymentInfo.getCustomerName())) {
+                        nonDeductionRepaymentInfo.setContractNo(null);
+                    }
                 }
             }
         }
