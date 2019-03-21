@@ -88,7 +88,7 @@ public class PoiUtil {
      * @param targetClass                目标 java bean 类型
      * @param resultList                 包含转换后java bean 的List
      * @param sheet                      excel表格的当前sheet
-     * @param columnIndexAndFieldNameMap 类索引和目标java bean 的字段名映射Map
+     * @param columnIndexAndFieldNameMap 列索引和目标java bean 的字段名映射Map
      * @param <T>                        目标java bean 类型
      * @throws InstantiationException 实例化目标类型对象异常抛出的异常
      * @throws IllegalAccessException 目标类型对象字段设置值时无访问权限时抛出的异常
