@@ -201,7 +201,23 @@ public class MortgageDeductionController {
             log.debug("手动触发批量代扣失败", e);
             return "0";
         }
-
     }
+
+    /**
+     * 手动触发代扣入账文件上传
+     * @return
+     */
+    @RequestMapping(value = "/mortgageDeductionController/uploadAutoAccountingFile.do")
+    @ResponseBody
+    public String uploadAutoAccountingFile() {
+        try {
+            mortgageDeductionService.uploadAutoAccountingFile();
+            return "1";
+        } catch (IOException | ClassNotFoundException e) {
+            log.error("**********处理代扣自动入账excel文档深复制异常**********", e);
+            return "0";
+        }
+    }
+
 
 }

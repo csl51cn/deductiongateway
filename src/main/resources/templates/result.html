@@ -223,6 +223,7 @@
                                         <td rowspan="2">
                                             <input type="button" id="queryBtn" class="btn" value="查询"/>
                                             <input type="button" id="exportBtn" class="btn" value="导出结果"/>
+                                            <input type="button" id="uploadBtn" class="btn" value="上传入账文件"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -256,6 +257,12 @@
 
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
+    if (staffId == 1) {
+        $("#uploadBtn").show();
+    } else {
+        $("#uploadBtn").hide();
+    }
+
     window.operateEvents = {
 
         'click .action': function (e, value, row, index) {
@@ -276,7 +283,6 @@
     }
     ;
     var value = 0;
-
 
 
     var columns = [{
@@ -553,6 +559,7 @@
             $("#prog").css("width", value + "%")
             st = setTimeout(increment, 500);
         }
+
         <!--具体执行操作的函数-->
         function executeAction(data, url) {
             value = 0;
@@ -587,6 +594,31 @@
                 })
             })
         }
+
+        <!--上传入账文件按钮功能-->
+        $("#uploadBtn").click(function () {
+            value = 0;
+            increment(value);
+            $('#myModal').modal('show');
+            $.ajax({
+                url: "/mortgageDeductionController/uploadAutoAccountingFile.do",
+                timeout: 900000,
+                method: "POST",
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    if ("1" == data) {
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                },
+                error: function (data) {
+                    $('#myModal').modal('hide');
+                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                }
+            })
+        })
+
     })
 </script>
 <!-- end: JavaScript-->
