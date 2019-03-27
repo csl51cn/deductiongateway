@@ -349,10 +349,11 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                             loanIssue.setServiceTransactionNo(transOrderIdStr);
                         });
                     } else {
-                        //交易未受理
-
+                        //交易未受理,转账失败
                         loanIssueBasicInfos.forEach(loanIssueBasicInfo -> {
-                            findTheLastRecord(loanIssueBasicInfo).setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
+                            LoanIssue theLastRecord = findTheLastRecord(loanIssueBasicInfo);
+                            theLastRecord.setAcceptTransactionStatus(ConstantsEnum.FAIL.getCode());
+                            theLastRecord.setTransactionStatus(LoanIssueStatusEnum.STATUS2.getCode());
                         });
                     }
                     loanIssueBasicInfoRepository.save(loanIssueBasicInfos);
