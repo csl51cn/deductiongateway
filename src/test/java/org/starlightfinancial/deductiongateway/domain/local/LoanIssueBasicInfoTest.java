@@ -8,9 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 
 /**
  * @author: Senlin.Deng
@@ -19,7 +17,7 @@ import java.util.Date;
  * @Modified By:
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class LoanIssueBasicInfoTest {
     @Autowired
     private  LoanIssueBasicInfoRepository loanIssueBasicInfoRepository;
@@ -144,4 +142,13 @@ public class LoanIssueBasicInfoTest {
 
     }
 
+    @Test
+    public void  test3(){
+        ArrayList<Long> longs = new ArrayList<>();
+        longs.add(17L);
+        List<LoanIssueBasicInfo> all = loanIssueBasicInfoRepository.findAll(longs);
+        List<LoanIssueBasicInfo> distinctByIdIn = loanIssueBasicInfoRepository.findDistinctByIdIn(Collections.singletonList(17L));
+        System.out.println(all);
+        System.out.println(distinctByIdIn);
+    }
 }

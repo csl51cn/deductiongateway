@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description: 贷款发放基本信息
+ * @Description: 贷款发放基本信息.引入@NamedEntityGraph是为了避免N+1查询问题.
  * @date: Created in 2018/9/17 16:26
  * @Modified By:
  */

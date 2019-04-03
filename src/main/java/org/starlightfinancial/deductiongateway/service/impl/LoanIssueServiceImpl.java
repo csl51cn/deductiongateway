@@ -241,7 +241,7 @@ public class LoanIssueServiceImpl implements LoanIssueService {
     public List<LoanIssueBasicInfo> queryLoanIssueListByIds(String ids) {
         //将ids切割出来,转换为Long型集合
         List<Long> idsList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
-        return loanIssueBasicInfoRepository.findAll(idsList);
+        return loanIssueBasicInfoRepository.findDistinctByIdIn(idsList);
     }
 
     /**
