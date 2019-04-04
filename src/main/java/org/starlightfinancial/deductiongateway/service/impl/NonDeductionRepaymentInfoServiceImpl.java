@@ -63,38 +63,36 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     /**
      * 新增非代扣还款数据时的Excel列名与字段映射
      */
-    private static final HashMap<String, String> UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP =
-            new HashMap<String, String>(6) {
-                private static final long serialVersionUID = -7538782664536862677L;
-
-                {
-                    put("还款时间", "repaymentTermDate");
-                    put("还款原始信息", "repaymentOriginalInfo");
-                    put("单位/个人还款", "customerName");
-                    put("还款方式", "repaymentMethod");
-                    put("还款类别", "repaymentType");
-                    put("还款金额", "repaymentAmount");
-                }
-            };
+    private static HashMap<String, String> UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP = new HashMap<>();
 
     /**
      * 拆分非代扣还款数据时的Excel列名与字段映射
      */
-    private static final HashMap<String, String> SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP =
-            new HashMap<String, String>(UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP) {
-                private static final long serialVersionUID = -4103996416358302239L;
-
-                {
-                    put("入账时间", "accountingDate");
-                    put("合同编号", "contractNo");
-                }
-            };
-
+    private static HashMap<String, String> SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP = new HashMap<>();
     /**
      * 导出非代扣还款数据表头
      */
-    private static final String[] EXPORT_COLUMN_NAME = new String[]{"入账公司", "合同编号", "还款时间", "还款原始信息", "单位/个人还款",
+    private static String[] EXPORT_COLUMN_NAME = new String[]{"入账公司", "合同编号", "还款时间", "还款原始信息", "单位/个人还款",
             "还款方式", "还款类别", "还款金额", "入账时间", "导入时间", "入账备注"};
+
+    static {
+        //新增非代扣还款数据时的Excel列名与字段映射
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款时间", "repaymentTermDate");
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款原始信息", "repaymentOriginalInfo");
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("单位/个人还款", "customerName");
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款方式", "repaymentMethod");
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款类别", "repaymentType");
+        UPLOAD_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款金额", "repaymentAmount");
+
+        //拆分非代扣还款数据时的Excel列名与字段映射
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款时间", "repaymentTermDate");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款原始信息", "repaymentOriginalInfo");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("单位/个人还款", "customerName");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("还款金额", "repaymentAmount");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("入账时间", "accountingDate");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("合同编号", "contractNo");
+        SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP.put("入账备注", "remark");
+    }
 
 
     /**
@@ -492,7 +490,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     /**
      * 拆分非代扣还款信息
      *
-     * @param nonDeductionRepaymentInfos          由页面传入的非代扣还款信息
+     * @param nonDeductionRepaymentInfos          传入的将要保存的非代扣还款信息
      * @param originalNonDeductionRepaymentInfoId 被拆分的非代扣还款信息的id
      * @param session                             会话session
      */
@@ -613,7 +611,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         //首先将传入的包含拆分信息的excel文件转换为map<sheetName,List<NonDeductionRepaymentInfo>>,其中sheetName为入账公司名
         Map<String, List<NonDeductionRepaymentInfo>> resultMap = PoiUtil.readExcel(uploadFile,
                 SPLIT_COLUMN_NAME_AND_FIELD_NAME_MAP, NonDeductionRepaymentInfo.class);
-
+        NonDeductionRepaymentInfo originalNonDeduction = nonDeductionRepaymentInfoRepository.findOne(originalNonDeductionRepaymentInfoId);
         //拆分信息
         List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = new ArrayList<>();
         //设置NonDeductionRepaymentInfo对象的入账公司,要求上传的excel表格的sheet名是入账公司的中文名称
@@ -652,15 +650,10 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 //判断入账日期是否为null,如果为null设置为还款日期
                 nonDeductionRepaymentInfo.setAccountingDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
             }
-            //处理还款方式中银行转账的入账银行:银行转账-银行名称
-            String repaymentMethod = nonDeductionRepaymentInfo.getRepaymentMethod();
-            //用"-"切割字符串,如果是银行转账,将银行转账,银行名称分隔开
-            String[] splitArray = repaymentMethod.split("-");
-            nonDeductionRepaymentInfo.setRepaymentMethod(splitArray[0]);
-            //判断切割后的字符串数组长度是否大于1
-            if (splitArray.length > 1) {
-                nonDeductionRepaymentInfo.setBankName(splitArray[1]);
-            }
+            //还款方式,还款类别,入账银行使用被拆分记录的信息
+            nonDeductionRepaymentInfo.setRepaymentMethod(originalNonDeduction.getRepaymentMethod());
+            nonDeductionRepaymentInfo.setRepaymentType(originalNonDeduction.getRepaymentType());
+            nonDeductionRepaymentInfo.setBankName(originalNonDeduction.getBankName());
             //设置被拆分记录的Id
             nonDeductionRepaymentInfo.setOriginalId(originalNonDeductionRepaymentInfoId);
             nonDeductionRepaymentInfos.add(nonDeductionRepaymentInfo);
