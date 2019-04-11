@@ -334,7 +334,7 @@
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 value=0;
-                increment(value);
+                increment();
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -400,7 +400,7 @@
             })
         });
         <!--进度条自动增长-->
-        function increment(value) {
+        function increment() {
             value += 1;
             if (value == 80) {
                 clearTimeout(st);

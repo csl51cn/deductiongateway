@@ -522,7 +522,7 @@
             $('#confirmModal').modal();
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
-                increment(value);
+                increment();
                 $('#myModal').modal('show');
                 $.ajax({
                     url: "/channelDispatchController/queryPayResult.do",
@@ -550,7 +550,7 @@
         });
 
         <!--进度条自动增长-->
-        function increment(value) {
+        function increment() {
             value += 1;
             if (value == 80) {
                 clearTimeout(st);
@@ -567,7 +567,7 @@
             $('#confirmModal').modal();
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
-                increment(value);
+                increment();
                 $('#myModal').modal('show');
                 $.ajax({
                     url: url,
@@ -598,7 +598,7 @@
         <!--上传入账文件按钮功能-->
         $("#uploadBtn").click(function () {
             value = 0;
-            increment(value);
+            increment();
             $('#myModal').modal('show');
             $.ajax({
                 url: "/mortgageDeductionController/uploadAutoAccountingFile.do",

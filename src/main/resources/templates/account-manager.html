@@ -214,7 +214,7 @@
                                         <td><input type="text" class="" id="accountName" name="accountName"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" class="btn" value="查询"/>
-                                            <!--<input type="button" id="addBtn" class="btn"  value="新增"/>-->
+                                            <input type="button" id="addBtn" class="btn"  value="新增"/>
                                             <input type="button" id="importBtn" class="btn" value="批量更新代扣卡"/>
                                         </td>
                                     </tr>
@@ -612,7 +612,7 @@
 
                 //进度条
                 value = 0;
-                increment(value);
+                increment();
                 $('#myModal').modal('show');
 
                 //发起签约请求
@@ -668,7 +668,7 @@
                 return;
             }
             value = 0;
-            increment(value);
+            increment();
             $('#myModal').modal('show');
 
             $.ajax({
@@ -693,7 +693,7 @@
             $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 value = 0;
-                increment(value);
+                increment();
                 $('#myModal').modal('show');
 
                 $.ajax({
@@ -740,7 +740,7 @@
         }
 
         <!--进度条自动增长-->
-        function increment(value) {
+        function increment() {
             value += 1;
             if (value == 80) {
                 clearTimeout(st);
