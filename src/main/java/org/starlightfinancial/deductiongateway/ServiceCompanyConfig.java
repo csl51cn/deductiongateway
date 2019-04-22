@@ -35,11 +35,7 @@ public class ServiceCompanyConfig {
     public String getServiceCompanyCode(String serviceCompany, String channel) {
 
         Map<String, String> channelCodeMap = serviceCompanyMap.getOrDefault(serviceCompany, serviceCompanyMap.get("铠岳"));
-        if (channelCodeMap.containsKey(channel)) {
-            return channelCodeMap.get(channel);
-        } else {
-            return null;
-        }
+        return channelCodeMap.getOrDefault(channel, null);
     }
 
 

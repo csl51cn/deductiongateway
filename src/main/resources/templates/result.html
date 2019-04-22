@@ -175,17 +175,24 @@
                                         </button>
                                     </td>
                                     <td>
+                                        <img src="/img/cpcn.png" style="max-width:45%;">
+                                        <button type="button" id="chinaPayClearNetClassicDeductionBtn"
+                                                class="deduction btn btn-info  btn-small" style="margin-right:15px;">
+                                            中金代扣
+                                        </button>
+                                    </td>
+                                    <td>
                                         <button type="button" id="manualConfirmBtn"
                                                 class="manualConfirm btn btn-default  btn-small"
                                                 style="margin-right:15px;">人工确认成功
                                         </button>
                                     </td>
                                 </tr>
-                                <!--<tr>-->
-                                <!--<td>-->
-                                <!--<button type="button" id="manualConfirmBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>-->
-                                <!--</td>-->
-                                <!--</tr>-->
+                                <tr>
+                                <td>
+                                <button type="button" id="queryResultBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
+                                </td>
+                                </tr>
                             </table>
                         </div>
                         <div class="modal-footer">
@@ -325,7 +332,7 @@
             } else if (value == '0') {
                 return '交易失败';
             } else {
-                return '暂无结果'
+                return '暂无结果,请查询'
             }
         }
     }, {
@@ -411,10 +418,12 @@
                         }
                         $("#status").html(status);
                         var deductionMethodContent = null;
-                        if (row.orderDesc == '银联' || row.orderDesc == '批量代扣款') {
+                        if (row.channel == '0001' || row.channel == '0003' || row.channel == '0004') {
                             deductionMethodContent = '<img src="/img/unionpay.png" style="max-width:25%;">';
-                        } else if (row.orderDesc == '宝付') {
+                        } else if (row.channel == '0002'  || row.channel == '0005') {
                             deductionMethodContent = '<img src="/img/baofu.png" style="max-width:25%;">';
+                        } else  if (row.channel =="0006") {
+                            deductionMethodContent = '<img src="/img/cpcn.png" style="max-width:25%;">';
                         } else {
                             deductionMethodContent = '未知';
                         }
@@ -514,9 +523,14 @@
             var url = "/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0005"}, url);
         });
+        <!--中金单笔代扣-->
+        $("#chinaPayClearNetClassicDeductionBtn").click(function () {
+            var url = "/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0006"}, url);
+        });
         var value;
         <!--查询扣款结果按钮功能-->
-        $("#manualConfirmBtn").click(function () {
+        $("#queryResultBtn").click(function () {
             value = 0;
             $('#actionModal').modal('hide');
             $('#confirmModal').modal();

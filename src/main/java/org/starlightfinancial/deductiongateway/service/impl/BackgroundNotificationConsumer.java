@@ -12,6 +12,8 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
+import org.starlightfinancial.deductiongateway.utility.Constant;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Notice2018Req;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
@@ -120,6 +122,58 @@ public class BackgroundNotificationConsumer {
                     mortgageDeduction.setIssuccess("0");
                     mortgageDeduction.setResult(jsonObject.getString("biz_resp_code"));
                     mortgageDeduction.setErrorResult(BFErrorCodeEnum.getValueByCode(jsonObject.getString("biz_resp_code")));
+                }
+                mortgageDeductionService.updateMortgageDeduction(mortgageDeduction);
+                textMessage.acknowledge();
+            } else {
+                //数据库中未查询到此订单号相关记录,消息重发
+                session.recover();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.recover();
+        }
+
+    }
+
+
+    /**
+     * 中金支付结果后台通知处理
+     *
+     * @param textMessage
+     * @param session
+     */
+//    @JmsListener(destination = "chinaPayClearNetQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "chinaPayClearNetQueueDev", containerFactory = "jmsQueueListener")
+    public void receiveChinaPayClearNetQueue(TextMessage textMessage, Session session) throws JMSException {
+        try {
+            String text = textMessage.getText();
+            logger.info("收到中金支付后台通知消息:{}", text);
+            Notice2018Req notice2018Request = JSONObject.parseObject(text, Notice2018Req.class);
+            //获取订单号
+            String txSN = notice2018Request.getTxSN();
+            if (StringUtils.isBlank(txSN)) {
+                //如果获取到的消息中订单号为空,签收消息
+                textMessage.acknowledge();
+                return;
+            }
+            //根据订单号查询记录
+            MortgageDeduction mortgageDeduction = mortgageDeductionService.findByOrdId(txSN);
+            if (mortgageDeduction != null && !StringUtils.equals(mortgageDeduction.getIssuccess(), Constant.CHECK_SUCCESS)) {
+                //30表示支付成功
+                if (30 == notice2018Request.getStatus()) {
+                    //设置支付状态:1表示成功
+                    mortgageDeduction.setIssuccess(Constant.CHECK_SUCCESS);
+                    mortgageDeduction.setResult(notice2018Request.getResponseCode());
+                    mortgageDeduction.setErrorResult("支付成功");
+                    //计算手续费
+                    operationStrategyContext.calculateHandlingCharge(mortgageDeduction);
+                } else if (40 == notice2018Request.getStatus()) {
+                    //代扣失败
+                    mortgageDeduction.setErrorResult(notice2018Request.getResponseMessage());
+                    mortgageDeduction.setResult(notice2018Request.getResponseCode());
+                    mortgageDeduction.setIssuccess(Constant.CHECK_FAILURE);
                 }
                 mortgageDeductionService.updateMortgageDeduction(mortgageDeduction);
                 textMessage.acknowledge();

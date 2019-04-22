@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayClearNetConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
@@ -19,8 +20,13 @@ import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.*;
+import org.starlightfinancial.rpc.hessian.entity.common.RequestResult;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2011Req;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.response.Tx2011Res;
+import org.starlightfinancial.rpc.hessian.service.cpcn.BaseService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -53,6 +59,9 @@ public class Delivery extends Decorator {
     @Autowired
     private OperationStrategyContext operationStrategyContext;
 
+    @Autowired
+    private ChinaPayClearNetConfig chinaPayClearNetConfig;
+
 
     List<MortgageDeduction> result;
 
@@ -69,9 +78,10 @@ public class Delivery extends Decorator {
         List<MortgageDeduction> ccbList = list.stream().filter(mortgageDeduction -> BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
         List<MortgageDeduction> otherBankList = list.stream().filter(mortgageDeduction -> !BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
         if ("UNIONPAY".equals(router)) {
-            deliveryUnionPay(otherBankList);
+//            deliveryUnionPay(otherBankList);
             //建设银行使用宝付进行代扣
-            deliveryBaoFuClassic(ccbList);
+//            deliveryChinaPayClearNetClassic(ccbList);
+            deliveryChinaPayClearNetClassic(list);
         } else if ("BAOFU".equals(router)) {
             deliveryBaoFu(list);
         }
@@ -236,6 +246,57 @@ public class Delivery extends Decorator {
                 String respCode = parse.getObject("resp_code", String.class);
                 mortgageDeduction.setResult(respCode);
                 mortgageDeduction.setErrorResult(respMsg);
+                result.add(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //保存订单号
+                result.add(mortgageDeduction);
+            }
+        }
+    }
+
+    /**
+     * 中金支付单笔代扣
+     *
+     * @param list 待代扣的MortgageDeduction数据
+     */
+    private void deliveryChinaPayClearNetClassic(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            Tx2011Req tx2011Req = beanConverter.transToTx2011Req(mortgageDeduction);
+            mortgageDeduction.setOrdId(tx2011Req.getTxSN());
+            mortgageDeduction.setMerId(tx2011Req.getInstitutionID());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getOrderDesc());
+            mortgageDeduction.setPlanNo(0);
+            mortgageDeduction.setType("0");
+            //设置渠道信息
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
+            mortgageDeduction.setPayTime(new Date());
+            try {
+                BaseService tx2011Service = HessianProxyFactoryUtils.getHessianClientBean(BaseService.class, chinaPayClearNetConfig.getClassicDeductionUrl());
+                RequestResult requestResult = tx2011Service.doBusiness(tx2011Req);
+                if (StringUtils.equals(requestResult.getErrorCode(), RsbCodeEnum.ERROR_CODE_01.getCode())) {
+                    Tx2011Res tx2011Response = (Tx2011Res) requestResult.getResult().get(0);
+                    int status = tx2011Response.getStatus();
+                    //status为20是正在处理,不用特别设置状态,默认就是
+                    if (status == 30) {
+                        //代扣成功
+                        mortgageDeduction.setErrorResult("交易成功");
+                        mortgageDeduction.setResult(tx2011Response.getCode());
+                        mortgageDeduction.setIssuccess("1");
+                        //计算并设置手续费
+                        operationStrategyContext.getOperationStrategy(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode()).calculateHandlingCharge(mortgageDeduction);
+                    } else if (status == 40) {
+                        //代扣失败
+                        mortgageDeduction.setErrorResult(tx2011Response.getResponseMessage());
+                        mortgageDeduction.setResult(tx2011Response.getCode());
+                        mortgageDeduction.setIssuccess("0");
+                    }
+                } else {
+                    mortgageDeduction.setErrorResult(requestResult.getReason());
+                    mortgageDeduction.setResult(requestResult.getErrorCode());
+                    mortgageDeduction.setIssuccess("0");
+                }
                 result.add(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();

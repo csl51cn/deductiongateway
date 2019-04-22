@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
+import org.starlightfinancial.deductiongateway.ChinaPayClearNetConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.ServiceCompanyConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
@@ -22,6 +23,7 @@ import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction
 import org.starlightfinancial.deductiongateway.domain.remote.RepaymentInfo;
 import org.starlightfinancial.deductiongateway.enums.*;
 import org.starlightfinancial.deductiongateway.service.CacheService;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2011Req;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -57,8 +59,12 @@ public class BeanConverter {
     @Autowired
     private ServiceCompanyConfig serviceCompanyConfig;
 
+    @Autowired
+    private ChinaPayClearNetConfig chinaPayClearNetConfig;
+
     private static final List<DeductionChannelEnum> CHINA_PAY;
     private static final List<DeductionChannelEnum> BAO_FU;
+    private static final List<DeductionChannelEnum> CHINA_PAY_CLEAR_NET;
 
     static {
         CHINA_PAY = new ArrayList<>();
@@ -69,6 +75,10 @@ public class BeanConverter {
         BAO_FU = new ArrayList<>();
         BAO_FU.add(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION);
         BAO_FU.add(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY);
+
+        CHINA_PAY_CLEAR_NET = new ArrayList<>();
+        CHINA_PAY_CLEAR_NET.add(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION);
+
     }
 
     /**
@@ -374,7 +384,7 @@ public class BeanConverter {
         dataContent.setNotifyUrl(baofuConfig.getClassicNotifyUrl());
 
         AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(), dataContent.getAccNo(), dataContent.getIdHolder(), dataContent.getIdCard());
-        if (Objects.nonNull(accountManager)){
+        if (Objects.nonNull(accountManager)) {
             //手机号
             dataContent.setMobile(accountManager.getMobile());
         }
@@ -629,6 +639,10 @@ public class BeanConverter {
         principalAndInterestRepaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
         //判断是否是银联代扣
         boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
+        //是否是宝付
+        boolean isBaoFU = BAO_FU.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
+        //是否是中金支付
+        boolean isChinaPayClearNet = CHINA_PAY_CLEAR_NET.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
             //如果存在服务费,分两种情况处理:1.银联两个入账账户按比例扣除手续费;2.宝付是润通账户扣除手续费
             //创建服务费还款记录
@@ -638,17 +652,22 @@ public class BeanConverter {
             serviceFeeRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData2());
             //设置服务费入账公司
             serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
-            //设置服务费入账银行:铠岳和润坤的银联,宝付渠道各自都是使用的相同银行进行商户开户的
+            //设置服务费入账银行:铠岳的银联,宝付渠道各自都是使用的相同银行进行商户开户的,润坤的银联,宝付渠道一致,中金支付的不同
             if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
                 //铠岳
                 serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
             } else {
                 //润坤
-                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+                if (isChinaPayClearNet) {
+                    serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0901.getCode());
+                } else {
+                    serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+                }
             }
+
             //设置还款类别
             serviceFeeRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.SERVICE_FEE.getCode()));
-
+            //设置手续费
             if (isChinaPay) {
                 //设置本息手续费
                 BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
@@ -658,16 +677,18 @@ public class BeanConverter {
                 BigDecimal principalAndInterestHandlingCharge = mortgageDeduction.getHandlingCharge().multiply(principalAndInterestProportion).setScale(2, BigDecimal.ROUND_HALF_UP);
                 principalAndInterestRepaymentInfo.setHandlingCharge(principalAndInterestHandlingCharge);
                 //设置本息入账银行账户
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());
                 //设置服务费入账公司手续费
                 serviceFeeRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge().subtract(principalAndInterestHandlingCharge).setScale(2, BigDecimal.ROUND_HALF_UP));
-            } else {
-                //宝付只在润通账户扣除手续费
+            }
+            if (isBaoFU || isChinaPayClearNet) {
+                //宝付与中金支付只在润通账户扣除手续费
                 principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
                 //设置本息入账银行账户
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());
                 serviceFeeRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
             }
+
             repaymentInfos.add(serviceFeeRepaymentInfo);
 
         } else {
@@ -676,10 +697,10 @@ public class BeanConverter {
             //设置本息入账银行账户
             if (isChinaPay) {
                 //银联
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());
             } else {
                 //宝付
-                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());
             }
 
         }
@@ -730,7 +751,7 @@ public class BeanConverter {
             //收银宝,需要根据入账公司来确定入账银行
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_TONG.getValue())) {
                 //润通
-                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());
             }
 
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
@@ -757,9 +778,9 @@ public class BeanConverter {
             repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
         }
         //设置是否是被拆分出来生成的的:如果originalId不为空,说明当前记录是从其他记录拆分出来的.如果为空,说明不是
-        if(Objects.nonNull(nonDeductionRepaymentInfo.getOriginalId())){
+        if (Objects.nonNull(nonDeductionRepaymentInfo.getOriginalId())) {
             repaymentInfo.setCreateFromAnother(ConstantsEnum.SUCCESS.getCode());
-        }else{
+        } else {
             repaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
         }
         //设置创建时间
@@ -777,6 +798,12 @@ public class BeanConverter {
         return repaymentInfo;
     }
 
+    /**
+     * 转换为代付记录excel
+     *
+     * @param loanIssueBasicInfos 代付记录
+     * @return
+     */
     public static List<LoanIssueBasicInfoExcelRow> transToLoanIssueBasicInfoExcelRowList(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
         ArrayList<LoanIssueBasicInfoExcelRow> loanIssueBasicInfoExcelRows = new ArrayList<>();
         for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
@@ -804,8 +831,71 @@ public class BeanConverter {
             }
         }
         return loanIssueBasicInfoExcelRows;
+    }
 
+    /**
+     * 转换为中金支付单笔代扣请求参数
+     *
+     * @param mortgageDeduction 代扣数据
+     * @return 转换后的请求参数
+     */
+    public Tx2011Req transToTx2011Req(MortgageDeduction mortgageDeduction) {
 
+        Tx2011Req tx2011Req = new Tx2011Req();
+        tx2011Req.setAccountName(mortgageDeduction.getCustomerName());
+        tx2011Req.setAccountNumber(mortgageDeduction.getParam3());
+        tx2011Req.setBranchName("");
+        tx2011Req.setProvince("");
+        tx2011Req.setAccountType(Integer.parseInt("11"));
+        tx2011Req.setCity("");
+        tx2011Req.setNote("");
+        tx2011Req.setEmail("");
+        tx2011Req.setIdentificationNumber(mortgageDeduction.getParam6());
+        tx2011Req.setIdentificationType("0");
+        tx2011Req.setContractUserID("");
+        tx2011Req.setCardMediaType("10");
+        tx2011Req.setBankNoByPBC("");
+        tx2011Req.setReserve1("");
+        //银行编码
+        tx2011Req.setBankID(ChinaPayClearNetBankCodeEnum.getCodeById(mortgageDeduction.getParam1()));
+        tx2011Req.setInstitutionID(chinaPayClearNetConfig.getClassicMemberId());
+        //设置订单号
+        tx2011Req.setTxSN(MerSeq.tickOrder());
+        //设置订单金额
+        String amount1 = mortgageDeduction.getSplitData1().toString();
+        String amount2 = mortgageDeduction.getSplitData2().toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        tx2011Req.setAmount(m1 + m2);
+        //设置分账两个相关参数
+        //设置分账方式:按金额分账,10不分账,20按比例分账,30按金额分账
+        if (m2 != 0) {
+            tx2011Req.setSplitType("30");
+        } else {
+            tx2011Req.setSplitType("10");
+        }
+        //不分账settlementFlag格式为0001
+        StringBuilder settlementFlag = new StringBuilder("0001");
+        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
+            //设置分账信息:格式0001_5000,0002_1000,0003_4000，总金额是10000分，0001结算标识分账5000分，0002结算标识分账1000分，0003结算标识分账4000分
+            settlementFlag.append("_").append(m1);
+            settlementFlag.append(",").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode())).append("_").append(m2);
+        }
+        tx2011Req.setSettlementFlag(settlementFlag.toString());
+
+        //手机号
+        tx2011Req.setPhoneNumber("");
+        AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(), mortgageDeduction.getParam3(), mortgageDeduction.getCustomerName(), mortgageDeduction.getParam6());
+        if (Objects.nonNull(accountManager)) {
+            tx2011Req.setPhoneNumber(accountManager.getMobile());
+        }
+        return tx2011Req;
     }
 
 

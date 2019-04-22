@@ -30,7 +30,12 @@ public enum DeductionChannelEnum {
     /**
      * 宝付代扣
      */
-    BAO_FU_CLASSIC_DEDUCTION("0005", "宝付", "宝付旧代扣"),;
+    BAO_FU_CLASSIC_DEDUCTION("0005", "宝付", "宝付旧代扣"),
+
+    /**
+     * 中金支付单笔代扣
+     */
+    CHINA_PAY_CLEAR_NET_DEDUCTION("0006", "中金", "中金单笔代扣");
 
 
     /**
@@ -87,6 +92,7 @@ public enum DeductionChannelEnum {
         }
         return null;
     }
+
     public static String getOrderDescByCode(String code) {
         if (code != null) {
             for (DeductionChannelEnum deductionChannelEnum : DeductionChannelEnum.values()) {

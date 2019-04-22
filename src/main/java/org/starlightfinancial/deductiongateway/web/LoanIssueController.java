@@ -23,7 +23,6 @@ import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueStatusEnum;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
-import org.starlightfinancial.deductiongateway.service.impl.BackgroundNotificationConsumer;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/loanIssueController")
 public class LoanIssueController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BackgroundNotificationConsumer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoanIssueController.class);
 
     @Autowired
     private LoanIssueService loanIssueService;

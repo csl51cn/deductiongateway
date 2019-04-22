@@ -105,6 +105,7 @@
                                             <!--<input type="button" id="baoFuDeductionBtn" class="btn"  value="宝付协议支付"/>-->
                                             <input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>
                                             <input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>
+                                            <input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>
                                             <input type="button" id="deleteBtn" class="btn"  value="删除"/>
                                         </td>
                                     </tr>
@@ -344,6 +345,13 @@
             $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
             executeDeduct("0005");
         });
+
+        <!--宝付支付单笔代扣-->
+        $("#chinaPayClearNetClassicDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
+            executeDeduct("0006");
+        });
+
 
 
         <!--删除按钮功能-->

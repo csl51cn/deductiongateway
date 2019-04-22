@@ -11,7 +11,7 @@ public enum AccountBankEnum {
     /**
      * 润通入账银行:招行0366
      */
-    RUN_TONG_CMBC_0356("2094", "招行0366"),
+    RUN_TONG_CMBC_0366("2094", "招行0366"),
     /**
      * 润通入账银行:建行3504
      */
