@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.strategy.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,8 +109,10 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
             mortgageDeduction.setPayTime(new Date());
             try {
+                LOGGER.debug("中金支付单笔代扣请求:{}", JSONObject.toJSONString(tx2011Req));
                 BaseService tx2011Service = HessianProxyFactoryUtils.getHessianClientBean(BaseService.class, chinaPayClearNetConfig.getClassicDeductionUrl());
                 RequestResult requestResult = tx2011Service.doBusiness(tx2011Req);
+                LOGGER.debug("中金支付单笔代扣返回:{}", JSONObject.toJSONString(requestResult));
                 if (StringUtils.equals(requestResult.getErrorCode(), RsbCodeEnum.ERROR_CODE_01.getCode())) {
                     Tx2011Res tx2011Response = (Tx2011Res) requestResult.getResult().get(0);
                     int status = tx2011Response.getStatus();

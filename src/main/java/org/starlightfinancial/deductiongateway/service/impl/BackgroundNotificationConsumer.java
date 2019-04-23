@@ -160,7 +160,13 @@ public class BackgroundNotificationConsumer {
             }
             //根据订单号查询记录
             MortgageDeduction mortgageDeduction = mortgageDeductionService.findByOrdId(txSN);
-            if (mortgageDeduction != null && !StringUtils.equals(mortgageDeduction.getIssuccess(), Constant.CHECK_SUCCESS)) {
+            if (mortgageDeduction != null) {
+
+                if (StringUtils.equals(mortgageDeduction.getIssuccess(), Constant.CHECK_SUCCESS)) {
+                    //同步返回已经支付成功,不用更新状态,签收消息
+                    textMessage.acknowledge();
+                    return;
+                }
                 //30表示支付成功
                 if (30 == notice2018Request.getStatus()) {
                     //设置支付状态:1表示成功

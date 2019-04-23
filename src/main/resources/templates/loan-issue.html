@@ -300,6 +300,12 @@
 
 
 <script type="text/javascript" th:inline="javascript">
+    var staffId = [[${session.loginUser.staffId}]];
+    if (staffId == 1) {
+        $("#addBtn").show();
+    } else {
+        $("#addBtn").hide();
+    }
 
     $(function () {
         var host = "ws://" + window.location.host + "/websocket";
@@ -474,33 +480,37 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (row.loanIssues[0].transactionStatus == "1") {
-                        noty({'text': '已经放款成功不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        setTimeout(query, 4000);
-                        return;
-                    }
-                    $.ajax({
-                        type: "post",
-                        url: "/loanIssueController/updateLoanIssue.do",
-                        data: {"loanIssueBasicInfoStr": JSON.stringify(row)},
-                        dataType: 'JSON',
-                        success: function (data) {
-                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                            if (data == "1") {
-                                noty({
-                                    'text': '执行完成',
-                                    'layout': 'center',
-                                    'type': 'information',
-                                    "timeout": "4000"
-                                });
-                            } else {
+                    if (staffId == 1) {
+                        if (row.loanIssues[0].transactionStatus == "1") {
+                            noty({'text': '已经放款成功不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            setTimeout(query, 4000);
+                            return;
+                        }
+                        $.ajax({
+                            type: "post",
+                            url: "/loanIssueController/updateLoanIssue.do",
+                            data: {"loanIssueBasicInfoStr": JSON.stringify(row)},
+                            dataType: 'JSON',
+                            success: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                if (data == "1") {
+                                    noty({
+                                        'text': '执行完成',
+                                        'layout': 'center',
+                                        'type': 'information',
+                                        "timeout": "4000"
+                                    });
+                                } else {
+                                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                }
+                            },
+                            error: function () {
                                 noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             }
-                        },
-                        error: function () {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
-                    })
+                        })
+                    } else {
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
 
                 },
                 onClickCell: function (field, value, row, $element) {

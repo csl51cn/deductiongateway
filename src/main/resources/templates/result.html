@@ -189,9 +189,12 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                <td>
-                                <button type="button" id="queryResultBtn" class="manualConfirm btn btn-default  btn-small" style="margin-right:15px;">查询扣款结果</button>
-                                </td>
+                                    <td>
+                                        <button type="button" id="queryResultBtn"
+                                                class="manualConfirm btn btn-default  btn-small"
+                                                style="margin-right:15px;">查询扣款结果
+                                        </button>
+                                    </td>
                                 </tr>
                             </table>
                         </div>
@@ -276,6 +279,11 @@
             $('#actionModal').modal();
             $(".btn-success").unbind("click");
             $("#rowId").val(row.id);
+            if (row.channel == "0006" && (row.issuccess != "0" || row.issuccess != "1")) {
+                $("#queryResultBtn").show();
+            } else {
+                $("#queryResultBtn").hide();
+            }
 
         }
     };
@@ -420,9 +428,9 @@
                         var deductionMethodContent = null;
                         if (row.channel == '0001' || row.channel == '0003' || row.channel == '0004') {
                             deductionMethodContent = '<img src="/img/unionpay.png" style="max-width:25%;">';
-                        } else if (row.channel == '0002'  || row.channel == '0005') {
+                        } else if (row.channel == '0002' || row.channel == '0005') {
                             deductionMethodContent = '<img src="/img/baofu.png" style="max-width:25%;">';
-                        } else  if (row.channel =="0006") {
+                        } else if (row.channel == "0006") {
                             deductionMethodContent = '<img src="/img/cpcn.png" style="max-width:25%;">';
                         } else {
                             deductionMethodContent = '未知';
