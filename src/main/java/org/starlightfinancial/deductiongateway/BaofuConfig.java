@@ -206,6 +206,12 @@ public class BaofuConfig {
     @Value("${baofu.classic.api.pay.loan-issue-refund.url}")
     private String classicPayLoanIssueRefundUrl;
 
+    /**
+     * 协议支付费率
+     */
+    @Value("${baofu.protocol.api.charge}")
+    private BigDecimal protocolCharge;
+
     public String getClassicVersion() {
         return classicVersion;
     }
@@ -462,5 +468,13 @@ public class BaofuConfig {
 
     public void setClassicPayLoanIssueRefundUrl(String classicPayLoanIssueRefundUrl) {
         this.classicPayLoanIssueRefundUrl = classicPayLoanIssueRefundUrl;
+    }
+
+    public BigDecimal getProtocolCharge() {
+        return protocolCharge;
+    }
+
+    public void setProtocolCharge(BigDecimal protocolCharge) {
+        this.protocolCharge = protocolCharge;
     }
 }

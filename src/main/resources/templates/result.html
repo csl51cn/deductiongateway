@@ -511,10 +511,10 @@
         //     executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0001"},url);
         // });
         <!--宝付协议支付按钮功能-->
-        // $("#baoFuDeductionBtn").click(function () {
-        //     var url  ="/channelDispatchController/doPay.do";
-        //     executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0002"},url);
-        // });
+        $("#baoFuDeductionBtn").click(function () {
+            var url  ="/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0002"},url);
+        });
 
         <!--银联白名单-->
         $("#chinaPayClassicDeductionBtn").click(function () {

@@ -11,7 +11,6 @@ import org.starlightfinancial.deductiongateway.BaofuConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayClearNetConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
-import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by sili.chen on 2018/1/3
@@ -74,13 +72,7 @@ public class Delivery extends Decorator {
 
     private void delivery() {
         List<MortgageDeduction> list = ((Assembler) this.route).getResult();
-        //将建设银行筛选出来
-        List<MortgageDeduction> ccbList = list.stream().filter(mortgageDeduction -> BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
-        List<MortgageDeduction> otherBankList = list.stream().filter(mortgageDeduction -> !BankCodeEnum.BANK_CODE_03.getId().equals(mortgageDeduction.getParam1())).collect(Collectors.toList());
         if ("UNIONPAY".equals(router)) {
-//            deliveryUnionPay(otherBankList);
-            //建设银行使用宝付进行代扣
-//            deliveryChinaPayClearNetClassic(ccbList);
             deliveryChinaPayClearNetClassic(list);
         } else if ("BAOFU".equals(router)) {
             deliveryBaoFu(list);
@@ -88,7 +80,8 @@ public class Delivery extends Decorator {
 
     }
 
-//    private void deliveryUnionPay(List<MortgageDeduction> list) {
+
+//    private void deliveryUnionPayDelay(List<MortgageDeduction> list) {
 //        for (MortgageDeduction mortgageDeduction : list) {
 //
 //            ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
@@ -288,8 +281,10 @@ public class Delivery extends Decorator {
                         operationStrategyContext.getOperationStrategy(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode()).calculateHandlingCharge(mortgageDeduction);
                     } else if (status == 40) {
                         //代扣失败
-                        mortgageDeduction.setErrorResult(tx2011Response.getResponseMessage());
-                        mortgageDeduction.setResult(tx2011Response.getCode());
+                        JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2011Response.getResponsePlainText());
+                        JSONObject body   = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                        mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
+                        mortgageDeduction.setResult(body.getString("ResponseCode"));
                         mortgageDeduction.setIssuccess("0");
                     }
                 } else {

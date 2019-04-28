@@ -228,7 +228,7 @@ public class BatchConfig {
                       @Qualifier("localTransactionManager") PlatformTransactionManager tx) {
         return stepBuilderFactory.get("step1")
                 .transactionManager(tx)
-                .<AutoBatchDeduction, List>chunk(65000)
+                .<AutoBatchDeduction, List>chunk(1)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)

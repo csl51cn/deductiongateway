@@ -58,8 +58,7 @@ public class LoanIssueController {
      * @param session     会话session
      * @throws JMSException 获取消息异常时抛出
      */
-//    @JmsListener(destination = "loanIssueQueue", containerFactory = "jmsQueueListener")
-    @JmsListener(destination = "testqueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "loanIssueQueue", containerFactory = "jmsQueueListener")
     public void saveLoanIssueFromMessageQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -235,6 +234,18 @@ public class LoanIssueController {
         loanIssueBasicInfo.setGmtModified(new Date());
         loanIssueService.updateLoanIssue(loanIssueBasicInfo);
         return "1";
+    }
+
+    @RequestMapping(value = "/checkLoanIssue")
+    @ResponseBody
+    public String checkLoanIssue(String password) {
+        boolean isNotMatch = loanIssueService.checkLoanIssue(password);
+        if(isNotMatch){
+            return "0";
+        }else{
+            return "1";
+        }
+
     }
 
 }

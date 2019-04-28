@@ -644,7 +644,7 @@ public class BeanConverter {
         //是否是中金支付
         boolean isChinaPayClearNet = CHINA_PAY_CLEAR_NET.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
-            //如果存在服务费,分两种情况处理:1.银联两个入账账户按比例扣除手续费;2.宝付是润通账户扣除手续费
+            //如果存在服务费,分两种情况处理:1.银联两个入账账户按比例扣除手续费;2.宝付,中金支付是润通账户扣除手续费
             //创建服务费还款记录
             RepaymentInfo serviceFeeRepaymentInfo = new RepaymentInfo();
             BeanUtils.copyProperties(principalAndInterestRepaymentInfo, serviceFeeRepaymentInfo);
@@ -652,13 +652,20 @@ public class BeanConverter {
             serviceFeeRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData2());
             //设置服务费入账公司
             serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
-            //设置服务费入账银行:铠岳的银联,宝付渠道各自都是使用的相同银行进行商户开户的,润坤的银联,宝付渠道一致,中金支付的不同
+            //设置服务费入账银行:铠岳的银联,宝付渠道各自都是使用的相同银行进行商户开户的,润坤的银联,宝付渠道一致.中金支付的铠岳与润坤都是另外的卡
             if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
                 //铠岳
-                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+                if(isChinaPayClearNet){
+                    //中金支付
+                    serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CMBC_0202.getCode());
+                }else{
+                    serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+                }
+
             } else {
                 //润坤
                 if (isChinaPayClearNet) {
+                    //中金支付
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0901.getCode());
                 } else {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());

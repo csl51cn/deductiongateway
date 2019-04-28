@@ -19,6 +19,7 @@ import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueChannelEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueStatusEnum;
 import org.starlightfinancial.deductiongateway.service.LoanIssueService;
+import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategy;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
@@ -54,6 +55,11 @@ public class LoanIssueServiceImpl implements LoanIssueService {
 
     @Autowired
     private LoanIssueStrategyContext loanIssueStrategyContext;
+
+    @Autowired
+    private SystemService systemService;
+
+    private static final String CHECK_USER = "hong.li";
 
     /**
      * 导出资金代付数据表头
@@ -385,6 +391,19 @@ public class LoanIssueServiceImpl implements LoanIssueService {
         loanIssue.setTransactionSummary(loanIssueBasicInfo.getToAccountName() + " " + loanIssueBasicInfo.getContractNo());
         loanIssue.setLoanIssueBasicInfo(loanIssueBasicInfo);
         loanIssueRepository.saveAndFlush(loanIssue);
+    }
+
+    /**
+     * 复核金额时,比对密码
+     *
+     * @param password 密码
+     * @return
+     */
+    @Override
+    public boolean checkLoanIssue(String password) {
+        //目前只有指定的用户具有复核权限
+        SysUser loginUser = systemService.findSysUser(CHECK_USER, password);
+        return loginUser == null;
     }
 
     private LoanIssue findTheLastRecord(LoanIssueBasicInfo loanIssueBasicInfo) {

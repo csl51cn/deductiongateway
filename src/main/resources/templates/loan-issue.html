@@ -119,6 +119,29 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
 
+            <div class="modal fade" id="passwordConfirmModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <span>请输入密码确认</span>
+                            <input type="password" class="" id="password" name="password"
+                                   style="width: 150px;"/>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" id="passwordConfirmdobtn"
+                                    data-dismiss="modal">确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
 
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                  style="display: none;">
@@ -697,6 +720,7 @@
 
         $("#issueBtn").click(function () {
             var ids = [];
+            var amount = 0;
             var rows = $('#table').bootstrapTable('getSelections');
             for (var i = 0; i < rows.length; i++) {
                 var transactionStatus = rows[i].loanIssues[0].transactionStatus;
@@ -726,6 +750,7 @@
                     return;
                 } else {
                     ids.push(rows[i].id);
+                    amount = amount + rows[i].issueAmount;
                 }
 
             }
@@ -736,50 +761,82 @@
                 noty({'text': '一次放款不能超过五条记录', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                 return;
             }
-            $('#confirmModal').modal();
-            var confirmdobtn = $("#confirmdobtn");
-            confirmdobtn.unbind("click");
-            confirmdobtn.click(function () {
-                value = 0;
-                increment();
-                $('#myModal').modal('show');
+            if (amount <= 100000) {
+                $('#confirmModal').modal();
+                var confirmdobtn = $("#confirmdobtn");
+                confirmdobtn.unbind("click").click(function(){
+                    doLoanIssue(ids);
+                });
+            } else {
+                //清除历史值
+                $("#passwordConfirmdobtn").val("");
+                $('#passwordConfirmModal').modal();
+                var passwordConfirmdobtn = $("#passwordConfirmdobtn");
+                passwordConfirmdobtn.unbind("click").click(function(){
+                    var  password  = $("#password").val();
+                    if (!password){
+                        noty({'text': '放款操作未执行,请先填写确认密码', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        return;
+                    }
+                    $.ajax({
+                        type: "post",
+                        url: "/loanIssueController/checkLoanIssue.do",
+                        data: {"password":password},
+                        dataType: 'JSON',
+                        success: function (data) {
+                            if (data == "1") {
+                                doLoanIssue(ids);
+                            } else {
+                                noty({'text': '放款操作未执行,确认密码错误', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
 
-                $.ajax({
-                    url: "/loanIssueController/loanIssue.do",
-                    timeout: 1800000,
-                    method: "POST",
-                    data: {"ids": ids.toString()},
-                    dataType: 'JSON',
-                    success: function (data) {
-                        value = 0;
-                        $('#myModal').modal('hide');
-                        setTimeout(query(), 4020);
-                        if (data.code == "0000") {
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
-                        } else {
-                            noty({
-                                'text': data.message,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "6000"
-                            });
                         }
+                    });
+                });
+            }
 
-                    },
-                    error: function (data) {
-                        value = 0;
-                        $('#myModal').modal('hide');
-                        setTimeout(query(), 4020);
+        });
+        <!--放款请求的具体方法 -->
+        function doLoanIssue (ids) {
+            value = 0;
+            increment();
+            $('#myModal').modal('show');
+
+            $.ajax({
+                url: "/loanIssueController/loanIssue.do",
+                timeout: 1800000,
+                method: "POST",
+                data: {"ids": ids.toString()},
+                dataType: 'JSON',
+                success: function (data) {
+                    value = 0;
+                    $('#myModal').modal('hide');
+                    setTimeout(query(), 4020);
+                    if (data.code == "0000") {
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                    } else {
                         noty({
-                            'text': '执行失败,' + data.responseText,
+                            'text': data.message,
                             'layout': 'center',
                             'type': 'error',
                             "timeout": "6000"
                         });
                     }
-                })
-            });
-        });
+
+                },
+                error: function (data) {
+                    value = 0;
+                    $('#myModal').modal('hide');
+                    setTimeout(query(), 4020);
+                    noty({
+                        'text': '执行失败,' + data.responseText,
+                        'layout': 'center',
+                        'type': 'error',
+                        "timeout": "6000"
+                    });
+                }
+            })
+        };
 
         <!--查询交易结果按钮 -->
         $("#queryResultBtn").click(function () {

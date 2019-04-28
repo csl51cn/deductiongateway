@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description:
+ * @Description: 代付操作Service接口
  * @date: Created in 2018/9/18 16:32
  * @Modified By:
  */
@@ -83,4 +83,12 @@ public interface LoanIssueService {
      * @param loanIssueBasicInfo 贷款发放基本信息
      */
     void updateLoanIssue(LoanIssueBasicInfo loanIssueBasicInfo);
+
+    /**
+     * 复核金额时,比对密码
+     *
+     * @param password 密码
+     * @return
+     */
+    boolean checkLoanIssue(String password);
 }

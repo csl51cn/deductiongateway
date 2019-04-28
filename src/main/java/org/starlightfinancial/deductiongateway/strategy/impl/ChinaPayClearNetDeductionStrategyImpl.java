@@ -17,6 +17,7 @@ import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HessianProxyFactoryUtils;
+import org.starlightfinancial.deductiongateway.utility.XmlUtils;
 import org.starlightfinancial.rpc.hessian.entity.common.RequestResult;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2011Req;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2020Req;
@@ -125,8 +126,10 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
                         calculateHandlingCharge(mortgageDeduction);
                     } else if (status == 40) {
                         //代扣失败
-                        mortgageDeduction.setErrorResult(tx2011Response.getResponseMessage());
-                        mortgageDeduction.setResult(tx2011Response.getCode());
+                        JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2011Response.getResponsePlainText());
+                        JSONObject body   = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                        mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
+                        mortgageDeduction.setResult(body.getString("ResponseCode"));
                         mortgageDeduction.setIssuccess("0");
                     }
                 } else {
@@ -172,8 +175,10 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
                     calculateHandlingCharge(mortgageDeduction);
                 } else if (status == 40) {
                     //代扣失败
-                    mortgageDeduction.setErrorResult(tx2020Response.getResponseMessage());
-                    mortgageDeduction.setResult(tx2020Response.getCode());
+                    JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2020Response.getResponsePlainText());
+                    JSONObject body   = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                    mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
+                    mortgageDeduction.setResult(body.getString("ResponseCode"));
                     mortgageDeduction.setIssuccess("0");
                 }
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);

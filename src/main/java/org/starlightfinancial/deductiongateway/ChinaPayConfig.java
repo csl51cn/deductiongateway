@@ -157,22 +157,30 @@ public class ChinaPayConfig {
 
 
     /**
-     * (0,1000)手续费
+     * 旧代扣渠道(0,1000)手续费
      */
     @Value("${chinapay.classic.api.less_than_1000.handling.charge}")
     private BigDecimal levelOne;
 
     /**
-     * [1000,5000)手续费
+     * 旧代扣渠道[1000,5000)手续费
      */
     @Value("${chinapay.classic.api.over_and_included_1000_and_less_than_5000.handling.charge}")
     private BigDecimal levelTwo;
 
     /**
-     * ≥5000手续费
+     * 旧代扣渠道≥5000手续费
      */
     @Value("${chinapay.classic.api.over_and_included_5000.handling.charge}")
     private BigDecimal levelThree;
+
+    /**
+     * 快捷支付手续费费率
+     */
+    @Value("${chinapay.express.realtime.api.charge}")
+    private BigDecimal expressRealtimeCharge;
+
+
 
 
     public String getExpressRealTimeUrl() {
@@ -381,5 +389,13 @@ public class ChinaPayConfig {
 
     public void setLevelThree(BigDecimal levelThree) {
         this.levelThree = levelThree;
+    }
+
+    public BigDecimal getExpressRealtimeCharge() {
+        return expressRealtimeCharge;
+    }
+
+    public void setExpressRealtimeCharge(BigDecimal expressRealtimeCharge) {
+        this.expressRealtimeCharge = expressRealtimeCharge;
     }
 }

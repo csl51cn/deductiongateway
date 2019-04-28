@@ -277,7 +277,7 @@
                         $("#channelMarking").attr("value", "0001");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/unionpay.png");
-                        // $("#signModalBody").html($("#signTableInfo").html());
+                        $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
                 }
@@ -314,6 +314,7 @@
                         $("#channelMarking").attr("value", "0002");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/baofu.png");
+                        $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
                 }
@@ -418,34 +419,34 @@
         //         return {css:{"color":cssObject.color,"background":cssObject.background}};
         //     }
         // },
-        //     {
-        //         field: 'baofuIsSigned',
-        //         title: '宝付签约',
-        //         formatter: function (value, row, index) {
-        //             if (value == 1) {
-        //                 return "已签约";
-        //             } else {
-        //                 return "未签约";
-        //             }
-        //
-        //         },
-        //         cellStyle:function(value,row,index){
-        //             var cssObject  = {};
-        //
-        //             if (value==1){
-        //                 cssObject.color = "green";
-        //             }else{
-        //                 cssObject.color = "red";
-        //             }
-        //             if (index % 2 == 0){
-        //                 cssObject.background = "#fff"
-        //             }else{
-        //                 cssObject.background ="#aaa"
-        //             }
-        //
-        //             return {css:{"color":cssObject.color,"background":cssObject.background}};
-        //         }
-        //     },
+            // {
+            //     field: 'baofuIsSigned',
+            //     title: '宝付签约',
+            //     formatter: function (value, row, index) {
+            //         if (value == 1) {
+            //             return "已签约";
+            //         } else {
+            //             return "未签约";
+            //         }
+            //
+            //     },
+            //     cellStyle:function(value,row,index){
+            //         var cssObject  = {};
+            //
+            //         if (value==1){
+            //             cssObject.color = "green";
+            //         }else{
+            //             cssObject.color = "red";
+            //         }
+            //         if (index % 2 == 0){
+            //             cssObject.background = "#fff"
+            //         }else{
+            //             cssObject.background ="#aaa"
+            //         }
+            //
+            //         return {css:{"color":cssObject.color,"background":cssObject.background}};
+            //     }
+            // },
         {
             field: 'sort',
             title: '扣款顺序',
@@ -646,15 +647,15 @@
         });
 
 
-        // <!--签约窗口隐藏时,清空modal-body数据-->
-        // $('#signModal').on('hidden.bs.modal', function () {
-        //     $(this).find(".modal-body").empty();
-        // });
-        //
-        // <!--更多信息窗口隐藏时,清空modal-body数据-->
-        // $('#moreInfoModal').on('hidden.bs.modal', function () {
-        //     $(this).find(".modal-body").empty();
-        // });
+        <!--签约窗口隐藏时,清空modal-body数据-->
+        $('#signModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
+
+        <!--更多信息窗口隐藏时,清空modal-body数据-->
+        $('#moreInfoModal').on('hidden.bs.modal', function () {
+            $(this).find(".modal-body").empty();
+        });
 
         <!--查询按钮功能-->
         $("#queryBtn").click(function () {

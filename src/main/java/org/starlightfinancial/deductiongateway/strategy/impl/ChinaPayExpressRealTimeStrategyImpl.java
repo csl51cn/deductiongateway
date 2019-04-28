@@ -17,6 +17,7 @@ import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -306,6 +307,14 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      */
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
-
+        BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        BigDecimal charge = totalAmount.multiply(chinaPayConfig.getExpressRealtimeCharge());
+        BigDecimal min = BigDecimal.valueOf(0.08);
+        if (charge.compareTo(min) < 0) {
+            //手续费按照费率计算小于8分钱时,需要设置为8分钱
+            mortgageDeduction.setHandlingCharge(min);
+        } else {
+            mortgageDeduction.setHandlingCharge(charge);
+        }
     }
 }
