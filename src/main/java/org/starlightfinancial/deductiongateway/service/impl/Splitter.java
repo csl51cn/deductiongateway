@@ -92,7 +92,11 @@ public class Splitter extends Decorator {
                 bxAmount = new BigDecimal(0);
                 fwfAmount = singleLimit;
             } else {
-                bxAmount = singleLimit.subtract(drawDownFwfAmount);
+                if (drawDownBxAmount.doubleValue() >= singleLimit.subtract(drawDownFwfAmount).doubleValue()) {
+                    bxAmount = singleLimit.subtract(drawDownFwfAmount);
+                } else {
+                    bxAmount = drawDownBxAmount;
+                }
                 fwfAmount = drawDownFwfAmount;
             }
             AutoBatchDeduction newObj = new AutoBatchDeduction();
