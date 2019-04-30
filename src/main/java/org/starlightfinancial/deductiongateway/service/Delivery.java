@@ -79,10 +79,10 @@ public class Delivery extends Decorator {
             String bank = mortgageDeduction.getParam1();
             return StringUtils.equals(BankCodeEnum.BANK_CODE_03.getId(), bank) || StringUtils.equals(BankCodeEnum.BANK_CODE_01.getId(), bank);
         }).collect(Collectors.toList());
-        //筛选中国农业银行,中国银行,中国交通银行 宝付代扣
+        //筛选中国交通银行,中国农业银行宝付代扣
         List<MortgageDeduction> baoFuList = list.stream().filter(mortgageDeduction -> {
             String bank = mortgageDeduction.getParam1();
-            return StringUtils.equals(BankCodeEnum.BANK_CODE_04.getId(), bank) || StringUtils.equals(BankCodeEnum.BANK_CODE_05.getId(), bank) || StringUtils.equals(BankCodeEnum.BANK_CODE_02.getId(), bank);
+            return  StringUtils.equals(BankCodeEnum.BANK_CODE_05.getId(), bank) || StringUtils.equals(BankCodeEnum.BANK_CODE_02.getId(), bank);
         }).collect(Collectors.toList());
 
         //移除中金支付与宝付代扣的List,使用银联代扣
