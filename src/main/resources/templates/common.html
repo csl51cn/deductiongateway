@@ -11,6 +11,7 @@
     <link id="base-style" href="/css/style.css" rel="stylesheet">
     <link id="base-style-responsive" href="/css/style-responsive.css" rel="stylesheet">
     <link href='/css/fonts-googleapis.com.css' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/lobibox.min.css">
     <!-- end: CSS -->
 
 
@@ -77,12 +78,25 @@
     <script src="/js/retina.js"></script>
 
     <script src="/js/custom.js"></script>
-    <script type="text/javascript">
-       $('.collapse').collapse();
+
+    <script src="/js/lobibox.min.js"></script>
+    <script type="text/javascript" th:inline="javascript">
+        $('.collapse').collapse();
         $(function () {
+            //自动计算页脚中的年份
             var now = new Date();
             var year = now.getFullYear();
-            $("#footer").html("版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ")
+            $("#footer").html("版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ");
+
+            //贷款放款指定人可见
+            var session = [[${session}]];
+            if (session.loginUser) {
+                var staffId = session.loginUser.staffId;
+                if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211 || staffId == 7523) {
+                    $("#loanIssueLi").css("display", "block")
+                }
+            }
+
         });
     </script>
 </div>
@@ -90,10 +104,11 @@
     <div id="sidebar-left" class="span2">
         <div class="collapse nav-collapse sidebar-nav">
             <ul class="nav nav-tabs nav-stacked">
-                <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入账户信息</span></a>
+                <li><a href="/main.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入代扣信息</span></a>
                 </li>
                 <li><a href="/unionpay.do"><i class="icon-list-alt"></i><span class="hidden-tablet"> 导入银联结果</span></a>
                 </li>
+
                 <li><a href="/deduction.do"><i class="icon-align-justify"></i><span class="hidden-tablet"> 代扣</span></a>
                 </li>
                 <li><a href="/result.do"><i class="icon-bar-chart"></i><span class="hidden-tablet"> 扣款结果统计</span></a>
@@ -104,6 +119,15 @@
                         class="hidden-tablet"> 限额管理</span></a></li>
                 <li><a href="/deductiontemplate.do"><i class="icon-align-justify"></i><span
                         class="hidden-tablet"> 代扣模板</span></a></li>
+                <li><a href="/non-deduction-upload.do"><i class="icon-list-alt"></i><span class="hidden-tablet">导入非代扣还款信息</span></a>
+                </li>
+                <li><a href="/non-deduction-show.do"><i class="icon-tasks"></i><span
+                        class="hidden-tablet"> 非代扣还款数据</span></a></li>
+                <li><a href="/associate-payer.do"><i class="icon-tasks"></i><span
+                        class="hidden-tablet">关联还款人</span></a></li>
+                <li id="loanIssueLi" style="display: none;"><a href="/loan-issue-page.do"><i
+                        class="icon-tasks"></i><span
+                        class="hidden-tablet">资金代付</span></a></li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <title>非代扣还款信息</title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-datepicker.css" rel="stylesheet">
+    <link href="/css/jquery.noty.css" rel="stylesheet">
+    <link href="/css/uploadify.css" rel="stylesheet">
+    <link href="/css/fileinput.min.css" rel="stylesheet">
+    <style>
+        mark {
+            background-color: #00ff90;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div th:include="common :: #navbar" th:remove="tag"></div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/non-deduction-show.do">非代扣还款信息</a></li>
+            </ul>
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>非代扣还款数据</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form id="form">
+                                <table class="table-bordered">
+                                    <tr>
+                                        <td><label for="repaymentStartDate">还款开始日期</label></td>
+                                        <td><input size="16" type="text" id="repaymentStartDate" class="form_datetime"
+                                                   name="startDate" style="width: 150px;"/></td>
+                                        <td><label for="repaymentEndDate">结束日期</label></td>
+                                        <td>
+                                            <input size="16" type="text" id="repaymentEndDate" class="form_datetime"
+                                                   name="endDate" style="width: 150px;"/></td>
+                                        <td><label for="customerName">客户名称</label></td>
+                                        <td>
+                                            <input type="text" class="" id="customerName" name="customerName"
+                                                   style="width: 150px;"/>
+                                        </td>
+                                        <td><label for="contractNo">合同号</label></td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="importStartDate">导入开始日期</label></td>
+                                        <td><input size="16" type="text" id="importStartDate" class="form_datetime"
+                                                   name="importStartDate" style="width: 150px;"/></td>
+                                        <td><label for="importEndDate">结束日期</label></td>
+                                        <td>
+                                            <input size="16" type="text" id="importEndDate" class="form_datetime"
+                                                   name="importEndDate" style="width: 150px;"/></td>
+                                        <td><label for="isUploaded">是否上传入账文件</label></td>
+                                        <td>
+                                            <select id="isUploaded" name="isUploaded" style="width: 164px;">
+                                                <option value="0,1">全部</option>
+                                                <option value="1">已上传</option>
+                                                <option value="0" selected>未上传</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="select_isIntegrated">是否有合同号</label></td>
+                                        <td>
+                                            <select id="select_isIntegrated" style="width: 164px;" name="isIntegrated">
+                                                <option value="0,1" selected>全部</option>
+                                                <option value="1">有</option>
+                                                <option value="0">没有</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="select_chargeCompany">入账公司</label></td>
+                                        <td>
+                                            <select id="select_chargeCompany" style="width: 164px;"
+                                                    name="chargeCompany">
+                                                <option value="0" selected>全部</option>
+                                                <option value="润通">润通</option>
+                                                <option value="铠岳">铠岳</option>
+                                                <option value="润坤">润坤</option>
+                                                <option value="第三方咨询公司">第三方咨询公司</option>
+                                                <option value="康润">康润</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="select_repaymentMethod">还款方式</label></td>
+                                        <td>
+                                            <select id="select_repaymentMethod" style="width: 164px;"
+                                                    name="isIntegrated">
+                                                <option value="0" selected>全部</option>
+                                                <option value="银行转账">银行转账</option>
+                                                <option value="现金">现金</option>
+                                                <option value="收银宝">收银宝</option>
+                                                <option value="POS机刷卡">POS机刷卡</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="bankName">入账银行</label></td>
+                                        <td>
+                                            <select id="bankName" style="width: 164px;" name="bankName">
+                                                <option value="0" selected>全部</option>
+                                                <option value="招行0366">招行0366</option>
+                                                <option value="建行3504">建行3504</option>
+                                            </select>
+                                        </td>
+                                        <td><label for="select_repayment_type">还款类别</label></td>
+                                        <td>
+                                            <select id="select_repayment_type" style="width: 164px;"
+                                                    name="repaymentType">
+                                                <option value="0" selected>全部</option>
+                                                <option value="本息">本息</option>
+                                                <option value="服务费">服务费</option>
+                                                <option value="调查评估费">调查评估费</option>
+                                                <option value="取件费">取件费</option>
+                                                <option value="诉讼成本">诉讼成本</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+
+                            <table>
+                                <tr>
+                                    <td>操作</td>
+                                    <td>
+                                        <input type="button" class="btn btn-info" id="queryBtn" value="查询"/>
+                                        <input type="button" class="btn " id="addBtn" value="新增"/>
+                                        <input type="button" class="btn " id="uploadBtn" value="上传入账文件"/>
+                                        <input type="button" class="btn" id="exportBtn" value="导出"/>
+                                        <input type="button" class="btn " id="freshBtn" value="重新尝试匹配"/>
+                                        <input type="button" class="btn " id="splitBtn" value="批量拆分还款记录"/>
+                                        <input type="button" class="btn " id="importRepaymentBtn" value="导入昨日还款"/>
+                                        <input type="button" class="btn " id="modifyUploadStatusBtn" value="更改上传状态"/>
+                                    </td>
+
+                                </tr>
+                            </table>
+                        </div>
+                        <table id="table"></table>
+                        <div>
+                            <span>总还款额(元):</span><span id="totalRepaymentAmount"></span>
+                        </div>
+                        <div>
+                            粉色:系统自动匹配,未精准匹配
+                            绿色:系统自动匹配,精准匹配
+                            蓝色:人工填写
+                        </div>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+
+            <div class="modal fade" id="confirmModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                            <span id="logoImage"></span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" id="confirmdobtn" data-dismiss="modal">确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+            <div class="modal fade" id="splitModal" style="display: none;width:800px;">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">批量拆分还款记录</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form class="form-horizontal" id="fileInputForm">
+                                <fieldset>
+                                    <div class="control-group">
+                                        <label class="control-label" for="uploadify">文件上传</label>
+                                        <div class="controls">
+                                            <input class="input-file uniform_on" id="uploadify" type="file"
+                                                   name="uploadFile">
+                                            <div id="fileQueue"></div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="splitModalSaveBtn">保存</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 style="display: none;">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade " id="editModal" style="width:800px;display: none;">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title" id="editModalTitle">新增还款信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <!-- 模态框的角色:新增非代扣还款信息模态框,拆分非代扣还款信息模态框 -->
+                            <input type="text" id="modalRole" style="display: none">
+                            <form id="editForm" class="modal-form">
+                                <input type="text" id="txt_originalNonDeductionRepaymentInfoId"
+                                       name="originalNonDeductionRepaymentInfoId" style="display: none">
+                                <table class="table">
+                                    <tbody>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_charge_company">入账公司</label></td>
+                                        <td><select id="txt_charge_company" name="chargeCompany">
+                                            <option value="润通">润通</option>
+                                            <option value="铠岳">铠岳</option>
+                                            <option value="润坤">润坤</option>
+                                            <option value="第三方咨询公司">第三方咨询公司</option>
+                                            <option value="康润">康润</option>
+                                        </select></td>
+                                        <td><label class="control-label" for="txt_contract_no">合同编号</label></td>
+                                        <td><input type="text" name="contractNo" id="txt_contract_no"
+                                                   placeholder="合同编号"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_repayment_term_date">还款日期</label></td>
+                                        <td><input type="text" name="repaymentTermDate" id="txt_repayment_term_date"
+                                                   placeholder="还款日期"></td>
+                                        <td><label class="control-label" for="txt_customer_name">客户名称</label></td>
+                                        <td><input type="text" name="customerName" id="txt_customer_name"
+                                                   placeholder="客户名称"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_repayment_method">还款方式</label></td>
+                                        <td><select id="txt_repayment_method" name="repaymentMethod">
+                                        </select></td>
+                                        <td><label class="control-label" for="txt_bank_name">入账银行</label></td>
+                                        <td><select id="txt_bank_name" name="bankName">
+                                            <option value="招行0366">招行0366</option>
+                                            <option value="建行3504">建行3504</option>
+                                            <option value="">无</option>
+                                        </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_repayment_type">还款类别</label></td>
+                                        <td><select id="txt_repayment_type" name="repaymentType">
+                                            <option value="本息">本息</option>
+                                            <option value="服务费">服务费</option>
+                                            <option value="调查评估费">调查评估费</option>
+                                            <option value="取件费">取件费</option>
+                                            <option value="诉讼成本">诉讼成本</option>
+                                        </select></td>
+                                        <td><label class="control-label" for="txt_repayment_amount">还款金额</label></td>
+                                        <td><input type="text" name="repaymentAmount" id="txt_repayment_amount"
+                                                   placeholder="还款金额"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label"
+                                                   for="txt_repayment_original_info">还款原始信息</label></td>
+                                        <td><input type="text" name="repaymentOriginalInfo"
+                                                   id="txt_repayment_original_info" placeholder="还款原始信息"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-editable.js"></script>
+<script src="/js/bootstrap-table-editable.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/js/bootstrap-datepicker.js"></script>
+<script src="/js/piexif.min.js"></script>
+<script src="/js/sortable.min.js"></script>
+<script src="/js/purify.min.js"></script>
+<script src="/js/fileinput.min.js"></script>
+<script src="/js/theme.min.js"></script>
+<script src="/js/zh.js"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+    var staffId = [[${session.loginUser.staffId}]];
+    if (staffId == 1 || staffId == 3384 || staffId == 3390) {
+        $("#uploadBtn").show();
+        $("#freshBtn").show();
+        $("#splitBtn").show();
+        $("#modifyUploadStatusBtn").show();
+    } else {
+        $("#uploadBtn").hide();
+        $("#freshBtn").hide();
+        $("#splitBtn").hide();
+        $("#modifyUploadStatusBtn").hide();
+    }
+
+    if (staffId == 1) {
+        $("#importRepaymentBtn").show();
+    } else {
+        $("#importRepaymentBtn").hide();
+    }
+
+
+    <!-- 入账公司对应入账银行 -->
+    var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
+        {"chargeCompany": "铠岳", "bankNameList": ["建行0334", "招行0202"]},
+        {"chargeCompany": "润坤", "bankNameList": ["招行0901", "招行0702"]},
+        {"chargeCompany": "第三方咨询公司", "bankNameList": ["重庆银行6559"]},
+        {"chargeCompany": "康润", "bankNameList": ["招行0101"]}
+    ];
+    var chargeCompanyAndBankNameLength = chargeCompanyAndBankName.length;
+    <!-- 还款方式 -->
+    var repaymentMethod = ["银行转账", "现金", "收银宝", "POS机刷卡"];
+
+
+    <!-- 改变入账银行名 -->
+    function changeBankName(chargeCompany) {
+        for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+            if (chargeCompanyAndBankName[i].chargeCompany == chargeCompany) {
+                var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                var tempBankNameLength = tempBankNameList.length;
+                var bankNameNode = $("#txt_bank_name");
+                bankNameNode.empty();
+                for (var j = 0; j < tempBankNameLength; j++) {
+                    var bankName = tempBankNameList[j];
+                    bankNameNode.append("<option value='" + bankName + "'>" + bankName + "</option>");
+                }
+                bankNameNode.append("<option value=''>无</option>")
+                break;
+            }
+        }
+    }
+
+    var columns;
+    columns = [{
+        field: 'state',
+        checkbox: true
+    }, {
+        field: 'number',
+        title: '序号',
+        formatter: function (value, row, index) {
+            var options = $('#table').bootstrapTable("getOptions");
+            return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+        }
+    }, {
+        field: 'id',
+        title: 'id'
+    }, {
+        field: 'chargeCompany',
+        title: '入账公司',
+        editable: {
+            type: 'select',
+            title: '入账公司编辑',
+            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"}, {
+                value: "第三方咨询公司",
+                text: "第三方咨询公司"
+            }, {value: "康润", text: "康润"}],
+            validate: function (v) {
+                noty({'text': '如果有入账银行,请注意修改入账银行', 'layout': 'center', 'type': 'warning', "timeout": "3000"});
+            }
+        }
+    }, {
+        field: 'contractNo',
+        title: '合同编号',
+        editable: {
+            type: 'text',
+            title: '合同编号编辑'
+        },
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        }
+    }, {
+        field: 'repaymentTermDate',
+        title: '还款日期',
+        formatter: function (value, row, index) {
+            return formatDate(value);
+        },
+        editable: {
+            type: 'date',
+            viewformat: 'yyyy-mm-dd',
+            title: '还款日期编辑',
+            validate: function (v) {
+                if (!v) return '还款日期不能为空';
+            },
+            datepicker: {
+                language: 'cn'
+            }
+        }
+
+    }, {
+        field: 'accountingDate',
+        title: '入账日期',
+        formatter: function (value, row, index) {
+            return formatDate(value);
+        },
+        editable: {
+            type: 'date',
+            viewformat: 'yyyy-mm-dd',
+            title: '入账日期编辑',
+            validate: function (v) {
+                if (!v) return '入账日期不能为空';
+            },
+            datepicker: {
+                language: 'cn'
+            }
+        }
+
+    }, {
+        field: 'repaymentOriginalInfo',
+        title: '还款原始信息',
+        editable: {
+            type: 'text',
+            title: '还款原始信息编辑'
+        }
+    }, {
+        field: 'customerName',
+        title: '单位/个人还款',
+        editable: {
+            type: 'text',
+            title: '单位/个人还款编辑',
+            validate: function (v) {
+                if (!v) return '单位/个人还款不能为空';
+            }
+        }
+    }, {
+        field: 'repaymentMethod',
+        title: '还款方式',
+        editable: {
+            type: 'select',
+            title: '还款方式还款编辑',
+            source: [{value: "银行转账", text: "银行转账"}, {value: "现金", text: "现金"}, {
+                value: "收银宝",
+                text: "收银宝"
+            }, {value: "POS机刷卡", text: "POS机刷卡"}],
+            emptytext: "无",
+            validate: function (v) {
+                if (!v) return '还款方式不能为空';
+            }
+        }
+    }, {
+        field: 'repaymentType',
+        title: '还款类别',
+        editable: {
+            type: 'select',
+            title: '还款类别编辑(不入账的费用选择其它)',
+            source: [{value: "本息", text: "本息"}, {value: "服务费", text: "服务费"}, {
+                value: "调查评估费",
+                text: "调查评估费"
+            }, {value: "取件费", text: "取件费"}, {value: "诉讼成本", text: "诉讼成本"}],
+            emptytext: "无",
+            validate: function (v) {
+                if (!v) return '还款类别不能为空';
+            }
+        }
+    }, {
+        field: 'repaymentAmount',
+        title: '还款金额',
+        editable: {
+            type: 'text',
+            title: '还款金额编辑',
+            validate: function (v) {
+                if (!v) {
+                    return '还款金额不能为空';
+                } else if (!isNumberic(v)) {
+                    return "只能输入数字";
+                }
+            }
+        }
+    }, {
+        field: 'bankName',
+        title: '入账银行',
+        editable: {
+            type: 'select',
+            title: '银行转账入账银行编辑',
+            source: function () {
+                var sourceInfo = [];
+                var $this = $(this).parent();
+                <!-- 如果要增加或者减少前面的字段,这里的$this.prevAll()[8].innerHTML 8需要相应的修改 -->
+                var chargeCompanyNode = $($this.prevAll()[8]).children(".editable")[0];
+                var chargeCompany = $(chargeCompanyNode).context.innerHTML;
+                for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+                    if (chargeCompanyAndBankName[i].chargeCompany == chargeCompany) {
+                        var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                        var tempBankNameLength = tempBankNameList.length;
+                        for (var j = 0; j < tempBankNameLength; j++) {
+                            sourceInfo.push({"value": tempBankNameList[j], text: tempBankNameList[j]});
+                        }
+                        sourceInfo.push({"value": '', text: "无"});
+                        break;
+                    }
+                }
+                if (sourceInfo.length > 0) {
+                    return sourceInfo;
+                }
+                return [{value: "招行0366", text: "建行3504"}, {value: "建行3504", text: "建行3504"}, {
+                    value: "建行0334",
+                    text: "建行0334"
+                }, {value: "招行0901", text: "招行0901"}];
+            },
+            emptytext: "无"
+        }
+    }, {
+        field: 'isUploaded',
+        title: '入账文件',
+        formatter: function (value, row, index) {
+            if (value == '1') {
+                return '已上传';
+            } else if (value == '0') {
+                return '未上传';
+            } else {
+                return '未知状态'
+            }
+        }
+    }, {
+        field: 'gmtCreate',
+        title: '导入时间',
+        formatter: function (value, row, index) {
+            return formatDate(value);
+        }
+    }, {
+        field: "isAutoMatched",
+        title: "是否系统自动匹配到业务信息"
+    }, {
+        field: "remark",
+        title: "入账备注",
+        formatter: function (value, row, index) {
+            if (!value) {
+                return "无";
+            }
+            return value;
+        },
+        editable: {
+            type: 'text',
+            title: '入账备注编辑'
+        }
+    }];
+
+
+    $(function () {
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/nonDeductionController/queryNonDeductionRepaymentInfo.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 40,
+                pageList: [10, 20, 30, 40, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                clickEdit: true,
+                rowStyle: function rowStyle(row, index) {
+                    if (row.isIntegrated == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#d1d1d1"}
+                        };
+                    } else {
+                        if (row.isAutoMatched == 0) {
+                            return {
+                                classes: 'text-nowrap another-class',
+                                css: {"background": "#6de0ed"}
+                            };
+                        } else {
+                            if (row.isOnTime == 0) {
+                                return {
+                                    classes: 'text-nowrap another-class',
+                                    css: {"background": "#ffb7da"}
+                                };
+                            } else {
+                                return {
+                                    classes: 'text-nowrap another-class',
+                                    css: {"background": "#c7edcc"}
+                                };
+                            }
+
+                        }
+
+
+                    }
+
+                },
+                onEditableSave: function (field, row, oldValue, $el) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7523) {
+                        if (row.isUploaded == "1") {
+                            noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            setTimeout(query, 4000);
+                            return;
+                        }
+                        $.ajax({
+                            type: "post",
+                            url: "/nonDeductionController/updateNonDeduction.do",
+                            data: row,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                if (data == "1") {
+                                    noty({
+                                        'text': '执行完成',
+                                        'layout': 'center',
+                                        'type': 'information',
+                                        "timeout": "4000"
+                                    });
+                                } else {
+                                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                }
+                            },
+                            error: function () {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        })
+                    } else {
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                },
+                onDblClickRow: function (row, value, field) {
+                    //双击后弹出拆分非代扣还款信息模态框,按确认后会新增一条非代扣还款信息,假设此条非代扣还款信息还款金额为X元,
+                    // 然后会将原始的非代扣还款信息的还款金额相应减少X元并更新数据库记录.
+                    $("#editForm")[0].reset();
+                    //设置模态框角色
+                    $("#modalRole").val("split");
+                    //设置模态框标题
+                    $("#editModalTitle").html("<mark>拆分</mark>非代扣还款信息");
+                    $("#txt_originalNonDeductionRepaymentInfoId").val(row.id);
+                    $("#txt_charge_company").val(row.chargeCompany);
+                    changeBankName(row.chargeCompany);
+                    $("#txt_repayment_term_date").val(row.repaymentTermDate);
+                    $("#txt_repayment_original_info").val(row.repaymentOriginalInfo);
+                    $("#txt_repayment_method").val(row.repaymentMethod);
+                    $("#txt_bank_name").select(row.bankName);
+                    $("#txt_repayment_type").val(row.repaymentType);
+                    $("#editModal").modal();
+                },
+                onLoadSuccess: function (data) {
+                    queryTotalAmount();
+                }
+            });
+        }
+
+
+        var repaymentStartDateNode = $("#repaymentStartDate");
+        var repaymentEndDateNode = $("#repaymentEndDate");
+        var importStartDateNode = $("#importStartDate");
+        var importEndDateNode = $("#importEndDate");
+        <!--设置默认时间-->
+        repaymentStartDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            repaymentStartDateNode.datetimepicker("setEndDate", repaymentEndDateNode.val())
+        });
+        repaymentEndDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            todayBtn: true,
+            autoclose: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            repaymentEndDateNode.datetimepicker("setStartDate", repaymentStartDateNode.val())
+        });
+        <!--设置默认时间-->
+        var firstDay = new Date();
+        firstDay.setDate(1);
+        <!--设置开始日期默认时间为当月第一天-->
+        repaymentStartDateNode.datetimepicker('update', firstDay);
+        <!--设置结束日期默认时间为当天-->
+        repaymentEndDateNode.datetimepicker("setValue");
+
+        importStartDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            importStartDateNode.datetimepicker("setEndDate", importEndDateNode.val())
+        });
+        importEndDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            todayBtn: true,
+            autoclose: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            importEndDateNode.datetimepicker("setStartDate", importStartDateNode.val())
+        });
+        <!--设置开始日期默认时间为昨天-->
+        importStartDateNode.datetimepicker('update', firstDay);
+        <!--设置结束日期默认时间为当天-->
+        importEndDateNode.datetimepicker("setValue");
+
+
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+        $('#table').bootstrapTable('hideColumn', 'isAutoMatched');
+
+        function queryParams() {
+            var date = formatDate(new Date())
+            var repaymentStartDate = repaymentStartDateNode.val();
+            var repaymentEndDate = repaymentEndDateNode.val();
+            if (repaymentStartDate == "") {
+                repaymentStartDate = date;
+            }
+            if (repaymentEndDate == "") {
+                repaymentEndDate = date;
+            }
+
+            var importStartDate = importStartDateNode.val();
+            var importEndDate = importEndDateNode.val();
+            if (importStartDate == "") {
+                importStartDate = date;
+            }
+            if (importEndDate == "") {
+                importEndDate = date;
+            }
+
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                repaymentStartDate: repaymentStartDate,
+                repaymentEndDate: repaymentEndDate,
+                customerName: $("#customerName").val(),
+                contractNo: $("#contractNo").val(),
+                isIntegrated: $("#select_isIntegrated").val(),
+                isUploaded: $("#isUploaded").val(),
+                importStartDate: importStartDate,
+                importEndDate: importEndDate,
+                chargeCompany: $("#select_chargeCompany").val(),
+                repaymentMethod: $("#select_repaymentMethod").val(),
+                repaymentType: $("#select_repayment_type").val(),
+                bankName: $("#bankName").val()
+            }
+        }
+
+        <!--查询按钮功能-->
+        $("#queryBtn").click(function () {
+            query()
+        });
+        <!--是否有合同编号选择变化重新加载数据-->
+        $("#select_isIntegrated").change(function () {
+            query();
+        });
+        <!--是否上传入账文件选择变化重新加载数据-->
+        $("#isUploaded").change(function () {
+            query();
+        });
+        <!--入账公司选择变化重新加载数据-->
+        $("#chargeCompany").change(function () {
+            query();
+        });
+        <!--还款方式选择变化重新加载数据-->
+        $("#repaymentMethod").change(function () {
+            query();
+        });
+        <!--入账银行选择变化重新加载数据-->
+        $("#bankName").change(function () {
+            query();
+        });
+        <!--还款类别选择变化重新加载数据-->
+        $("#select_repayment_type").change(function () {
+            query();
+        });
+
+        function query() {
+            $('#table').bootstrapTable('removeAll');
+            $('#table').bootstrapTable('refresh', {
+                url: '/nonDeductionController/queryNonDeductionRepaymentInfo.do',
+                query: queryParams()
+            });
+        }
+
+        function queryTotalAmount() {
+            $.ajax({
+                type: "post",
+                url: "/nonDeductionController/queryTotalRepaymentAmount.do",
+                data: "",
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data.code == "0000") {
+                        $("#totalRepaymentAmount").html(data.message);
+                    } else {
+                        $("#totalRepaymentAmount").html(0);
+                    }
+                },
+                error: function (data) {
+                    $("#totalRepaymentAmount").html(0);
+                }
+            });
+        }
+
+        <!--新增按钮功能-->
+        $("#addBtn").click(function () {
+            $("#editForm")[0].reset();
+            //设置模态框角色
+            $("#modalRole").val("add");
+            //设置模态框标题
+            $("#editModalTitle").html("<mark>新增</mark>非代扣还款信息");
+            $("#editModal").modal();
+        });
+        <!--拆分还款记录按钮功能-->
+        $("#splitBtn").click(function () {
+            $("#fileInputForm")[0].reset();
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].isUploaded == "1") {
+                    $('#splitModal').modal('hide');
+                    noty({'text': '请选择未上传入账文件的记录进行拆分', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    return;
+                }
+                ids.push(rows[i].id);
+            }
+            if (ids.length != 1) {
+                $('#splitModal').modal('hide');
+                noty({'text': '请选择一条记录进行拆分', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return;
+            }
+            //为拆分的id赋值
+            idData = {"originalNonDeductionRepaymentInfoId": ids[0]};
+            $("#splitModal").modal();
+        });
+        <!--新增模态框中日期插件初始化-->
+        $("#txt_repayment_term_date").datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        });
+
+        <!--新增模态框中的确认按钮功能-->
+        $("#editModal .btn-success").click(function () {
+            var modalRole = $("#modalRole").val();
+            var url;
+            if (modalRole == "split") {
+                url = "/nonDeductionController/splitNonDeduction.do";
+            } else {
+                url = "/nonDeductionController/saveNonDeduction.do";
+            }
+            var sendData = $("#editForm").serializeObject();
+            if (!sendData.repaymentAmount || !isNumberic(sendData.repaymentAmount)) {
+                noty({'text': '还款金额为空或者不是数字', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if (!sendData.repaymentTermDate) {
+                noty({'text': '还款日期为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            $.ajax({
+                type: "post",
+                url: url,
+                data: sendData,
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data == "1") {
+                        setTimeout(query, 4000);
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+
+                },
+                error: function (data) {
+                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                }
+            });
+        });
+        var value;
+        <!--上传入账文件模态框中的确认按钮功能-->
+        $("#uploadBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录上传', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/nonDeductionController/uploadAutoAccountingFile.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout(query(), 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
+                    }
+                })
+            });
+
+        });
+
+        <!-- 新增模态框中入账公司变化时,同时修改入账银行名称-->
+        $("#txt_charge_company").change(function () {
+            var chargeCompany = $(this).val();
+            changeBankName(chargeCompany);
+        });
+
+
+        <!-- 新增模态框中还款方式初始化-->
+        var repaymentMethodNode = $("#txt_repayment_method");
+        repaymentMethodNode.empty();
+        for (var i = 0; i < repaymentMethod.length; i++) {
+            repaymentMethodNode.append("<option value='" + repaymentMethod[i] + "'>" + repaymentMethod[i] + "</option>");
+        }
+        <!-- 新增模态框中还款方式初始化-->
+        repaymentMethodNode.change(function () {
+            var repaymentMethodNodeVal = repaymentMethodNode.val();
+            if (repaymentMethodNodeVal != '银行转账') {
+                $("#txt_bank_name :last-child").attr("selected", true);
+            }
+        });
+
+
+        <!-- 重新尝试匹配-->
+        $("#freshBtn").click(function () {
+            value = 0;
+            increment();
+            $('#myModal').modal('show');
+            $.ajax({
+                url: "/nonDeductionController/retrySearchBusinessTransactionInfo.do",
+                timeout: 1800000,
+                method: "POST",
+                data: queryParams(),
+                success: function (data) {
+                    value = 0;
+                    $('#myModal').modal('hide');
+                    if ("1" == data) {
+                        setTimeout(query(), 4020);
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+                },
+                error: function (data) {
+                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                }
+            })
+        });
+
+        //拆分的id
+        var idData;
+        var uploadNode = $("#uploadify");
+        uploadNode.fileinput({
+            language: 'zh', //设置语言
+            uploadUrl: "/nonDeductionController/batchSplitNonDeduction.do", //上传的地址
+            allowedFileExtensions: ['xls', 'xlsx'],//['xls', 'xlsx']指定文件后缀
+            showUpload: false, //是否显示上传按钮
+            showCaption: true,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            maxFileCount: 1,//最大上传文件数限制
+            uploadAsync: true,
+            dropZoneEnabled: true,
+            maxFileSize: 10240,
+            showPreview: true,
+            uploadExtraData: function (previewId, index) {           //传参
+                return idData;
+            }
+
+        });
+        //导入文件上传完成之后的事件
+        uploadNode.on("fileuploaded", function (event, data, previewId, index) {
+            $('#splitModal').modal('hide');
+            var result = data.response.result;
+            var msg = data.response.msg;
+            if ("1" == result) {
+                setTimeout(query(), 4020);
+                noty({'text': msg + '拆分成功', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+            } else {
+                noty({'text': '拆分失败,' + msg, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            }
+        });
+        //异步上传错误结果处理
+        uploadNode.on('fileerror', function (event, data, msg) {
+            $('#splitModal').modal('hide');
+            var result = data.response.result;
+            var msg = data.response.msg;
+            if ("0" == result) {
+                noty({'text': '拆分失败,' + msg, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            }
+        });
+
+        //拆分模态框中保存按钮
+        $("#splitModalSaveBtn").click(function () {
+            //上传
+            uploadNode.fileinput("upload");
+        });
+
+        <!--导出结果按钮功能-->
+        $("#exportBtn").click(function () {
+            var repaymentStartDate = repaymentStartDateNode.val();
+            var repaymentEndDate = repaymentEndDateNode.val();
+            var contractNo = $("#contractNo").val();
+            var customerName = $("#customerName").val();
+            var isIntegrated = $("#select_isIntegrated").val();
+            var isUploaded = $("#isUploaded").val();
+            var importStartDate = importStartDateNode.val();
+            var importEndDate = importEndDateNode.val();
+            var chargeCompany = $("#select_chargeCompany").val();
+            var repaymentMethod = $("#select_repaymentMethod").val();
+            var bankName = $("#bankName").val();
+            var repaymentType = $("#select_repayment_type").val();
+            location.href = "/nonDeductionController/exportXLS.do?repaymentStartDate=" + repaymentStartDate + "&repaymentEndDate=" + repaymentEndDate +
+                "&contractNo=" + contractNo + "&customerName=" + customerName + "&isIntegrated=" + isIntegrated + "&isUploaded=" + isUploaded + "&importStartDate=" + importStartDate + "&importEndDate=" + importEndDate
+                + "&chargeCompany=" + chargeCompany + "&repaymentMethod=" + repaymentMethod + "&bankName=" + bankName + "&repaymentType=" + repaymentType;
+        });
+        <!--查询条件入账公司变更与入账银行联动-->
+        $("#select_chargeCompany").click(function () {
+            for (var i = 0; i < chargeCompanyAndBankNameLength; i++) {
+                if (chargeCompanyAndBankName[i].chargeCompany == $(this).val()) {
+                    var tempBankNameList = chargeCompanyAndBankName[i].bankNameList;
+                    var tempBankNameLength = tempBankNameList.length;
+                    var bankNameNode = $("#bankName");
+                    bankNameNode.empty();
+                    bankNameNode.append("<option value='0' selected>全部</option>");
+                    for (var j = 0; j < tempBankNameLength; j++) {
+                        var bankName = tempBankNameList[j];
+                        bankNameNode.append("<option value='" + bankName + "'>" + bankName + "</option>");
+                    }
+                    break;
+                }
+            }
+        });
+
+        <!--进度条自动增长-->
+        function increment() {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
+
+        <!--导入按钮功能-->
+        $("#importRepaymentBtn").click(function () {
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/nonDeductionController/repaymentInfoImport.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                        } else if (data.length > 5) {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "4000"
+                            });
+
+                        } else {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    }
+                })
+            })
+        });
+
+        <!--更改上传状态-->
+        $("#modifyUploadStatusBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录更新上传状态', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/nonDeductionController/modifyUploadStatus.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout(query(), 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
+                    }
+                })
+            });
+
+
+        })
+
+        $(document).ready(function () {
+            $("#kvFileinputModal").css('display', 'none');
+
+        });
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

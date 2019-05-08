@@ -20,8 +20,9 @@ public class SecurityUtil {
      * MD5 加密
      */
     public static String MD5(String str) {
-        if (str == null)
+        if (str == null) {
             return null;
+        }
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(str.getBytes("UTF-8"));
@@ -256,41 +257,50 @@ public class SecurityUtil {
         //==========================================
 
         long t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             MD5(str);
+        }
         System.out.println("\nMD5:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             Base64Encode(str);
+        }
         System.out.println("Base64:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             AesEncrypt(str, PWD);
+        }
         System.out.println("Aes:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             desEncrypt(str, PWD);
+        }
         System.out.println("Des:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             threeDesEncrypt(str, PWD);
+        }
         System.out.println("3Des:" + (System.currentTimeMillis() - t1));
         //=======================================
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             Base64Decode(strBase64);
+        }
         System.out.println("\nBase64:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             AesDecrypt(strAes, PWD);
+        }
         System.out.println("Aes:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             desDecrypt(strDes, PWD);
+        }
         System.out.println("Des:" + (System.currentTimeMillis() - t1));
         t1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++) {
             threeDesDecrypt(str3Des, PWD);
+        }
         System.out.println("3Des:" + (System.currentTimeMillis() - t1));
 
 

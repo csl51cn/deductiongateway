@@ -38,7 +38,7 @@
                 </li>
                 <li><a href="/deduction.do">代扣</a></li>
             </ul>
-            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: none;">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -56,7 +56,7 @@
                 </div>
             </div>
 
-            <div class="modal fade" id="confirmModal">
+            <div class="modal fade" id="confirmModal" style="display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
                         <div class="modal-header">
@@ -99,13 +99,13 @@
                                         <td >
                                             <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
-                                            <input type="button" id="queryBtn" value="查询"/>
-                                            <input type="button" id="deductionBtn" value="银联快捷支付"/>
-                                            <input type="button" id="chinaPayNewDeductionBtn" value="银联代扣"/>
-                                            <input type="button" id="baoFuDeductionBtn" value="宝付协议支付"/>
-                                            <!--<input type="button" id="chinaPayClassicDeductionBtn" value="银联旧代扣"/>-->
-                                            <input type="button" id="baoFuClassicDeductionBtn" value="宝付代扣"/>
-                                            <input type="button" id="deleteBtn" value="删除"/>
+                                            <input type="button" id="queryBtn" class="btn"  value="查询"/>
+                                            <!--<input type="button" id="deductionBtn" class="btn"  value="银联快捷支付"/>-->
+                                            <!--<input type="button" id="chinaPayNewDeductionBtn"  class="btn"  value="银联代扣"/>-->
+                                            <!--<input type="button" id="baoFuDeductionBtn" class="btn"  value="宝付协议支付"/>-->
+                                            <input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>
+                                            <input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>
+                                            <input type="button" id="deleteBtn" class="btn"  value="删除"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -124,7 +124,7 @@
 
 <footer>
     <p>
-        <<span style="text-align:left;float:left" id="footer"></span>
+        <span style="text-align:left;float:left" id="footer"></span>
     </p>
 </footer>
 <!-- start: JavaScript-->
@@ -191,8 +191,8 @@
                 url: "/mortgageDeductionController/queryDeductionData.do",
                 queryParams: queryParams,
                 sidePagination: "server",
-                pageSize: 10,
-                pageList: [10, 20, 100, 200, 500, 1000],
+                pageSize: 300,
+                pageList: [10, 20, 100, 200, 300, 500, 1000],
                 clickToSelect: true, //单击选中行
                 smartDisplay: true,
                 cache: false,
@@ -275,10 +275,11 @@
                 query: queryParams()
             })
         });
-
+        var value;
         <!--执行代扣功能-->
         function executeDeduct(deductionMethod) {
             $('#confirmModal').modal();
+            $("#confirmdobtn").unbind("click");
             $("#confirmdobtn").click(function () {
                 var ids = [];
                 var rows = $('#table').bootstrapTable('getSelections');
@@ -319,25 +320,25 @@
         }
 
         <!--银联快捷支付-->
-        $("#deductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-            executeDeduct("0001");
-        });
-        <!--宝付协议支付代扣-->
-        $("#baoFuDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
-            executeDeduct("0002");
-        });
-        <!--银联旧代扣-->
-        // $("#chinaPayClassicDeductionBtn").click(function () {
+        // $("#deductionBtn").click(function () {
         //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-        //     executeDeduct("0003");
+        //     executeDeduct("0001");
         // });
-        <!--银联新代扣-->
-        $("#chinaPayNewDeductionBtn").click(function () {
+        <!--宝付协议支付代扣-->
+        // $("#baoFuDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
+        //     executeDeduct("0002");
+        // });
+        <!--银联旧代扣-->
+        $("#chinaPayClassicDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-            executeDeduct("0004");
+            executeDeduct("0003");
         });
+        <!--银联新代扣-->
+        // $("#chinaPayNewDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+        //     executeDeduct("0004");
+        // });
         <!--宝付旧代扣-->
         $("#baoFuClassicDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
@@ -348,12 +349,14 @@
         <!--删除按钮功能-->
         $("#deleteBtn").click(function () {
             $('#confirmModal').modal();
+            $(".btn-success").unbind("click");
             $(".btn-success").click(function () {
                 var ids = [];
                 var rows = $('#table').bootstrapTable('getSelections');
                 for (var i = 0; i < rows.length; i++) {
                     ids.push(rows[i].id);
                 }
+                value=0;
                 increment();
                 $('#myModal').modal('show');
 
@@ -384,9 +387,7 @@
                 })
             })
         })
-        
-
-
+        //进度条初始值
         var value = 0;
         <!--进度条自动增长-->
         function increment() {

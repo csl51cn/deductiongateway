@@ -120,9 +120,10 @@ public class UnionPayUtil {
 
         }
         //PayStat表示交易状态，只有"1001"表示支付成功，其他状态均表示未成功的交易。因此验证签名数据通过后，还需要判定交易状态代码是否为"1001"
-        if (map.get("PayStat") != null && "1001".equals(map.get("PayStat").toString()))
+        if (map.get("PayStat") != null && "1001".equals(map.get("PayStat").toString())) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -18,11 +19,8 @@ public interface MortgageDeductionService {
 
     /**
      * 导入扣款数据.
-     *
-     * @param uploadedFile
-     * @param staffId
      */
-    void importCustomerData(MultipartFile uploadedFile, int staffId);
+    public void importCustomerData(MultipartFile uploadedFile, int staffId);
 
 
     /**
@@ -64,7 +62,6 @@ public interface MortgageDeductionService {
      */
     void updateMortgageDeductions(List<MortgageDeduction> list);
 
-
     /**
      * 删除代扣数据
      *
@@ -74,9 +71,6 @@ public interface MortgageDeductionService {
 
     /**
      * 根据订单号查询代扣记录
-     *
-     * @param ordId
-     * @return
      */
     MortgageDeduction findByOrdId(String ordId);
 
@@ -88,4 +82,10 @@ public interface MortgageDeductionService {
     void updateMortgageDeduction(MortgageDeduction mortgageDeduction);
 
 
+    /**
+     * 自动上传代扣成功的记录
+     * @throws IOException 深复制异常时抛出
+     * @throws ClassNotFoundException 深复制异常时抛出
+     */
+    void uploadAutoAccountingFile() throws IOException, ClassNotFoundException;
 }

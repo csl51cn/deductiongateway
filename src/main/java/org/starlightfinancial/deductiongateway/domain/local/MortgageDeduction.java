@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.domain.local;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -13,8 +14,10 @@ import java.util.Date;
  * @author sili.chen
  */
 @Entity(name = "BU_MORTGAGEDEUCTION")
-public class MortgageDeduction {
+public class MortgageDeduction implements Serializable {
 
+
+    private static final long serialVersionUID = -8390682495500009884L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
@@ -129,6 +132,18 @@ public class MortgageDeduction {
     @Column(name = "channel")
     private String channel;
 
+
+    /**
+     * 是否上传自动入账文件:0-否,1-是
+     */
+    @Column(name = "is_uploaded")
+    private String isUploaded;
+
+    /**
+     * 手续费
+     */
+    @Column(name = "handling_charge")
+    private BigDecimal handlingCharge;
 
     public MortgageDeduction() {
     }
@@ -399,5 +414,21 @@ public class MortgageDeduction {
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+    public String getIsUploaded() {
+        return isUploaded;
+    }
+
+    public void setIsUploaded(String isUploaded) {
+        this.isUploaded = isUploaded;
+    }
+
+    public BigDecimal getHandlingCharge() {
+        return handlingCharge;
+    }
+
+    public void setHandlingCharge(BigDecimal handlingCharge) {
+        this.handlingCharge = handlingCharge;
     }
 }

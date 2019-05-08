@@ -3,6 +3,8 @@ package org.starlightfinancial.deductiongateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 /**
  * @author: Senlin.Deng
  * @Description: 银联配置
@@ -118,7 +120,7 @@ public class ChinaPayConfig {
     private String classicRunTongMemberId;
 
     /**
-     *白名单代扣铠岳分账商户号
+     * 白名单代扣铠岳分账商户号
      */
     @Value("${chinapay.classic.api.kaiyue.service.member.id}")
     private String classicKaiYueMemberId;
@@ -152,6 +154,25 @@ public class ChinaPayConfig {
      */
     @Value("${chinapay.classic.api.pg.ret.url}")
     private String classicPageRetUrl;
+
+
+    /**
+     * (0,1000)手续费
+     */
+    @Value("${chinapay.classic.api.less_than_1000.handling.charge}")
+    private BigDecimal levelOne;
+
+    /**
+     * [1000,5000)手续费
+     */
+    @Value("${chinapay.classic.api.over_and_included_1000_and_less_than_5000.handling.charge}")
+    private BigDecimal levelTwo;
+
+    /**
+     * ≥5000手续费
+     */
+    @Value("${chinapay.classic.api.over_and_included_5000.handling.charge}")
+    private BigDecimal levelThree;
 
 
     public String getExpressRealTimeUrl() {
@@ -336,5 +357,29 @@ public class ChinaPayConfig {
 
     public void setExpressRealTimeRunTongMemberId(String expressRealTimeRunTongMemberId) {
         this.expressRealTimeRunTongMemberId = expressRealTimeRunTongMemberId;
+    }
+
+    public BigDecimal getLevelOne() {
+        return levelOne;
+    }
+
+    public void setLevelOne(BigDecimal levelOne) {
+        this.levelOne = levelOne;
+    }
+
+    public BigDecimal getLevelTwo() {
+        return levelTwo;
+    }
+
+    public void setLevelTwo(BigDecimal levelTwo) {
+        this.levelTwo = levelTwo;
+    }
+
+    public BigDecimal getLevelThree() {
+        return levelThree;
+    }
+
+    public void setLevelThree(BigDecimal levelThree) {
+        this.levelThree = levelThree;
     }
 }

@@ -401,6 +401,7 @@ public class GoPayBean {
         this.rePlanId = rePlanId;
     }
 
+    @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         StringBuffer sb = new StringBuffer();

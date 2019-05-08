@@ -46,9 +46,12 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Override
     public void accountCheck(String[] result) {
-        String ordId = result[3]; //订单号
-        String ordAmt = result[5]; //订单金额
-        String ordState = result[10].split("-")[0]; //订单状态
+        //订单号
+        String ordId = result[3];
+        //订单金额
+        String ordAmt = result[5];
+        //订单状态
+        String ordState = result[10].split("-")[0];
         ordState = ErrorCodeEnum.getCodeByNewCode(ordState);
         if (ordState == null) {
             log.info("对账时订单状态未获取到,订单号:" + ordId);
@@ -72,7 +75,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 // 应对正常返回扣款后页面的情况
                 if (mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2()).doubleValue() == Double.valueOf(ordAmt)
                         && mortgageDeduction.getResult().equals(ordState)) {
-                    mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_SUCESS, ordId);
+                    mortgageDeductionRepository.setCheckStateFor(Constant.CHECK_SUCCESS, ordId);
                 } else {
                     if (StringUtils.equals(Constant.SUCCESS, ordState)) {
                         mortgageDeduction.setResult(Constant.SUCCESS);

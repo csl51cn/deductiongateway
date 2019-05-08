@@ -56,7 +56,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Message queryIsSigned(Integer id) {
-        AccountManager accountManager = accountManagerRepository.findById(id);
+        AccountManager accountManager = accountManagerRepository.getOne(id);
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("CardNo", accountManager.getAccount()));
         basicNameValuePairs.add(new BasicNameValuePair("CertType", ChinaPayCertTypeEnum.getCodeByDesc(accountManager.getCertificateType())));
@@ -154,7 +154,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
     @Override
     public Message sign(AccountManager accountManager) {
         Message message = null;
-        AccountManager accountManagerById = accountManagerRepository.findById(accountManager.getId());
+        AccountManager accountManagerById = accountManagerRepository.getOne(accountManager.getId());
         ArrayList<BasicNameValuePair> basicNameValuePairs = new ArrayList<>();
         basicNameValuePairs.add(new BasicNameValuePair("CardNo", accountManager.getAccount()));
         basicNameValuePairs.add(new BasicNameValuePair("CertType", ChinaPayCertTypeEnum.getCodeByDesc(accountManager.getCertificateType())));
@@ -297,5 +297,15 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
 
 
         return message;
+    }
+
+    /**
+     * 计算并设置手续费
+     *
+     * @param mortgageDeduction 代扣记录
+     */
+    @Override
+    public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
+
     }
 }

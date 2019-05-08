@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.utility;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,14 +55,14 @@ public class ExcelReader {
      * @param cell
      * @return
      */
-    public static String getCellFormatValue(HSSFCell cell) {
-        String cellvalue = "";
+    public static String getCellFormatValue(Cell cell) {
+        String cellValue = "";
         if (cell != null) {
             // 判断当前Cell的Type
-            switch (cell.getCellType()) {
+            switch (cell.getCellTypeEnum()) {
                 // 如果当前Cell的Type为NUMERIC
-                case HSSFCell.CELL_TYPE_NUMERIC:
-                case HSSFCell.CELL_TYPE_FORMULA: {
+                case NUMERIC:
+                case FORMULA: {
                     // 判断当前的cell是否为Date
                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
                         // 如果是Date类型则，转化为Data格式
@@ -72,29 +73,29 @@ public class ExcelReader {
                         //方法2：这样子的data格式是不带带时分秒的：2011-10-12
                         Date date = cell.getDateCellValue();
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        cellvalue = sdf.format(date);
+                        cellValue = sdf.format(date);
 
                     }
                     // 如果是纯数字
                     else {
                         // 取得当前Cell的数值
-                        cellvalue = String.valueOf(cell.getNumericCellValue());
+                        cellValue = String.valueOf(cell.getNumericCellValue());
                     }
                     break;
                 }
                 // 如果当前Cell的Type为STRIN
-                case HSSFCell.CELL_TYPE_STRING:
+                case STRING:
                     // 取得当前的Cell字符串
-                    cellvalue = cell.getRichStringCellValue().getString();
+                    cellValue = cell.getRichStringCellValue().getString();
                     break;
                 // 默认的Cell值
                 default:
-                    cellvalue = " ";
+                    cellValue = " ";
             }
         } else {
-            cellvalue = "";
+            cellValue = "";
         }
-        return cellvalue;
+        return cellValue;
     }
 
     /**
@@ -151,8 +152,9 @@ public class ExcelReader {
             Map<Integer, String> map = excelReader.readExcelContent(is2);
             System.out.println("获得Excel表格的内容:");
             for (int i = 3; i <= map.size(); i++) {
-                if (StringUtils.isNotBlank(map.get(i)))
+                if (StringUtils.isNotBlank(map.get(i))) {
                     System.out.println(Double.valueOf(map.get(i).split("    ")[5]));
+                }
             }
 
         } catch (FileNotFoundException e) {

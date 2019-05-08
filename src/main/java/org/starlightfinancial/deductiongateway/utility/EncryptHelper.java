@@ -15,14 +15,14 @@ public class EncryptHelper {
 
     public void setKey(String strKey) {
         try {
-            KeyGenerator _generator = KeyGenerator.getInstance("DES");
+            KeyGenerator generator = KeyGenerator.getInstance("DES");
             //防止linux下 随机生成key
             SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
             secureRandom.setSeed(strKey.getBytes());
 
-            _generator.init(56, secureRandom);
-            this.key = _generator.generateKey();
-            _generator = null;
+            generator.init(56, secureRandom);
+            this.key = generator.generateKey();
+            generator = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,25 +89,29 @@ public class EncryptHelper {
         return byteFina;
     }
 
-    public static String byte2hex(byte[] b) { // 一个字节的数，
+    public static String byte2hex(byte[] b) {
+        // 一个字节的数，
         // 转成16进制字符串
         String hs = "";
         String stmp = "";
         for (int n = 0; n < b.length; n++) {
             // 整数转成十六进制表示
             stmp = (Integer.toHexString(b[n] & 0XFF));
-            if (stmp.length() == 1)
+            if (stmp.length() == 1) {
                 hs = hs + "0" + stmp;
-            else
+            } else {
                 hs = hs + stmp;
+            }
         }
-        return hs.toUpperCase(); // 转成大写
+        // 转成大写
+        return hs.toUpperCase();
 
     }
 
     public static byte[] hex2byte(byte[] b) {
-        if ((b.length % 2) != 0)
+        if ((b.length % 2) != 0) {
             throw new IllegalArgumentException("长度不是偶数");
+        }
         byte[] b2 = new byte[b.length / 2];
         for (int n = 0; n < b.length; n += 2) {
             String item = new String(b, n, 2);
@@ -119,9 +123,11 @@ public class EncryptHelper {
 
     public static void main(String[] args) {
         EncryptHelper encryptHelper = new EncryptHelper();
-        String encString = encryptHelper.getEncString("qc852963");
+        String encString = encryptHelper.getEncString("123456");
         System.out.println(encString);
         System.out.println(encryptHelper.getDesString("8EE1509302691176"));
+        System.out.println(encryptHelper.getDesString("9AE330C02D990350889F2F606DA7D220"));
+        System.out.println(encryptHelper.getDesString("59989B36CEA2CD832CAC4E6A59A976F9"));
 
     }
 }

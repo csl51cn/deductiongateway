@@ -15,6 +15,7 @@ import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 import org.starlightfinancial.deductiongateway.utility.UnionPayUtil;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,15 +41,17 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
     @Autowired
     private ChinaPayConfig chinaPayConfig;
 
+    private static final BigDecimal ONE_THOUSAND = new BigDecimal(1000);
+    private static final BigDecimal FIVE_THOUSAND = new BigDecimal(5000);
 
     /**
      * 查询是否签约
      *
-     * @param Id 记录id
+     * @param id 记录id
      * @return 返回包含查询结果的Message对象
      */
     @Override
-    public Message queryIsSigned(Integer Id) {
+    public Message queryIsSigned(Integer id) {
         return null;
     }
 
@@ -91,13 +94,12 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setPlanNo(0);
             mortgageDeduction.setType("0");
             mortgageDeduction.setPayTime(new Date());
-            mortgageDeduction.setOrderDesc(goPayBean.getOrdDesc());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode());
 
-            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer(),chinaPayConfig.getClassicPfxFile());
+            String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer(), chinaPayConfig.getClassicPfxFile());
             if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
-                LOGGER.debug("银联报文签名异常,订单号:{},合同号:{}",mortgageDeduction.getOrdId(),mortgageDeduction.getContractNo() );
+                LOGGER.debug("银联报文签名异常,订单号:{},合同号:{}", mortgageDeduction.getOrdId(), mortgageDeduction.getContractNo());
                 mortgageDeduction.setErrorResult("银联报文签名异常");
                 mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 continue;
@@ -111,6 +113,8 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
                 mortgageDeduction.setResult(payStat);
                 if (StringUtils.equals(Constant.SUCCESS, payStat)) {
                     mortgageDeduction.setIssuccess("1");
+                    //计算并设置手续费
+                    calculateHandlingCharge(mortgageDeduction);
                 } else {
                     mortgageDeduction.setIssuccess("0");
                 }
@@ -133,6 +137,26 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
     @Override
     public Message queryPayResult(MortgageDeduction mortgageDeduction) {
         return null;
+    }
+
+    /**
+     * 计算并设置手续费
+     *
+     * @param mortgageDeduction 代扣记录
+     */
+    @Override
+    public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
+        BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        if (totalAmount.compareTo(ONE_THOUSAND) < 0) {
+            //代扣金额<1000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getLevelOne());
+        } else if (totalAmount.compareTo(FIVE_THOUSAND) < 0) {
+            //代扣金额≥1000 & 代扣金额 <5000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getLevelTwo());
+        } else {
+            //代扣金额≥5000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getLevelThree());
+        }
     }
 
 

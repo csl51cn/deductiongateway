@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title th:include="common :: #header" th:remove="tag"></title>
+    <title>资金代付信息</title>
+    <link href="/css/bootstrap-table.css" rel="stylesheet">
+    <link href="/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-datepicker.css" rel="stylesheet">
+    <link href="/css/jquery.noty.css" rel="stylesheet">
+    <link href="/css/uploadify.css" rel="stylesheet">
+    <link href="/css/fileinput.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- start: Header -->
+<div class="navbar">
+    <div th:include="common :: #navbar" th:remove="tag"></div>
+</div>
+<!-- start: Header -->
+<div class="container-fluid-full">
+    <div class="row-fluid">
+        <!-- start: Main Menu -->
+        <div th:include="common :: #menu" th:remove="tag"></div>
+        <!-- end: Main Menu -->
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <!-- start: Content -->
+        <div id="content" class="span10">
+
+
+            <ul class="breadcrumb">
+                <li>
+                    <i class="icon-home"></i>
+                    <a href="/main.do">主页</a>
+                    <i class="icon-angle-right"></i>
+                </li>
+                <li><a href="/loan-issue-page.do">资金代付</a></li>
+            </ul>
+            <div class="row-fluid sortable">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>资金代付信息</h2>
+                    </div>
+                    <div class="box-content">
+                        <div>
+                            <form id="form">
+                                <table class="table-bordered">
+                                    <tr>
+                                        <td><label for="startDate">保存开始日期</label></td>
+                                        <td><input size="16" type="text" id="startDate" class="form_datetime"
+                                                   name="startDate" style="width: 150px;"/></td>
+                                        <td><label for="endDate">结束日期</label></td>
+                                        <td>
+                                            <input size="16" type="text" id="endDate" class="form_datetime"
+                                                   name="endDate" style="width: 150px;"/></td>
+                                        <td><label for="accountName">收款人</label></td>
+                                        <td>
+                                            <input type="text" class="" id="accountName" name="accountName"
+                                                   style="width: 150px;"/>
+                                        </td>
+                                        <td><label for="contractNo">合同号</label></td>
+                                        <td>
+                                            <input type="text" class="" id="contractNo" name="contractNo"
+                                                   style="width: 150px;"/></td>
+                                        <td><label for="businessNo">业务编号</label></td>
+                                        <td>
+                                            <input type="text" class="" id="businessNo" name="businessNo"
+                                                   style="width: 150px;"/></td>
+                                    </tr>
+                                </table>
+                            </form>
+
+                            <table>
+                                <tr>
+                                    <td>操作</td>
+                                    <td>
+                                        <input type="button" class="btn btn-info" id="queryBtn" value="查询"/>
+                                        <input type="button" class="btn" id="addBtn" value="新增"/>
+                                        <input type="button" class="btn" id="issueBtn" value="放款(单次不超过5笔)"/>
+                                        <input type="button" class="btn" id="queryResultBtn" value="查询交易结果(单次不超过5笔)"/>
+                                        <input type="button" class="btn" id="queryRefundBtn" value="查询退款"/>
+                                        <input type="button" class="btn" id="exportBtn" value="导出"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <table id="table"></table>
+                    </div>
+                </div><!--/span-->
+
+            </div><!--/row-->
+
+            <div class="modal fade" id="confirmModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                            <span id="logoImage"></span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" id="confirmdobtn" data-dismiss="modal">确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
+
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 style="display: none;">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">执行进度</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="progress progress-striped progress-success active">
+                                <div id="prog" class="bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel"
+                 style="display: none;">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="modal-title" id="moreInfoModalLabel">代付信息</h4>
+                        </div>
+                        <div class="modal-body" id="moreInfoBody">
+                            <div id="tableInfo">
+                                <table class="table table-bordered table-hover">
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">收款人:</td>
+                                        <td id="text-toAccountName" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">商户订单号:</td>
+                                        <td id="text-transactionNo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">代付服务商订单号:</td>
+                                        <td id="text_serviceTransactionNo" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">代付服务商批次号:</td>
+                                        <td id="text_batchId" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">交易金额(元):</td>
+                                        <td id="text_issueAmount" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">费用(元):</td>
+                                        <td id="text_transactionFee" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">交易发起时间:</td>
+                                        <td id="text_transactionStartTime" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">交易完成时间:</td>
+                                        <td id="text_transactionEndTime" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">交易状态:</td>
+                                        <td id="text_transactionStatus" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 100px;text-align: right;">交易返回信息:</td>
+                                        <td id="text_transactionRemark" style="width: 200px;text-align: left;"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade " id="editModal" style="width:850px;display: none;">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title" id="editModalTitle">新增贷款发放信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editForm" class="modal-form">
+                                <input type="text" id="channel"
+                                       name="channel" value="1001" style="display: none">
+                                <table class="table">
+                                    <tbody>
+                                    <tr>
+                                        <td><label class="control-label" for="contract_no">合同编号</label></td>
+                                        <td><input type="text" id="contract_no" name="contractNo" placeholder="合同编号">
+                                        </td>
+                                        <td><label class="control-label" for="remark">备注</label></td>
+                                        <td><input type="text" name="remark" id="remark" placeholder="备注"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="to_account_type">收款人账户类型</label></td>
+                                        <td><select id="to_account_type" name="toAccountType">
+                                            <option value="1" selected>个人</option>
+                                            <option value="2">企业</option>
+                                        </select>
+                                        </td>
+                                        <td><label class="control-label" for="to_account_name">收款人</label></td>
+                                        <td><input type="text" name="toAccountName" id="to_account_name"
+                                                   placeholder="收款人"></td>
+
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="to_bank_name_id">收款银行</label></td>
+                                        <td><select id="to_bank_name_id" name="toBankNameId"></select></td>
+                                        <td><label class="control-label" for="to_acc_no">收款账户</label></td>
+                                        <td><input type="text" name="toAccountNo" id="to_acc_no" placeholder="收款账户">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="issue_amount">放款金额</label></td>
+                                        <td><input type="text" name="issueAmount" id="issue_amount" placeholder="放款金额">
+                                        </td>
+                                        <td><label class="control-label" for="identity_no">证件号</label></td>
+                                        <td><input type="text" name="identityNo" id="identity_no" placeholder="证件号">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="to_bank_province">收款人开户行省名</label></td>
+                                        <td><input type="text" id="to_bank_province" name="toBankProvince"
+                                                   placeholder="个人账户可不填"></td>
+                                        <td><label class="control-label" for="to_bank_city">收款人开户行市名</label></td>
+                                        <td><input type="text" name="toBankCity" id="to_bank_city"
+                                                   placeholder="个人账户可不填"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="to_bank_branch">收款人开户行(不含省市)</label></td>
+                                        <td><input type="text" name="toBankBranch" id="to_bank_branch"
+                                                   placeholder="个人账户可不填"></td>
+                                        <td><label class="control-label" for="mobile_no">手机号</label></td>
+                                        <td><input type="text" name="mobileNo" id="mobile_no" placeholder="手机号"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </div><!--/.fluid-container-->
+
+        <!-- end: Content -->
+    </div><!--/#content.span10-->
+</div><!--/fluid-row-->
+<footer>
+    <p>
+        <span style="text-align:left;float:left" id="footer"></span>
+    </p>
+</footer>
+<!-- start: JavaScript-->
+<div th:include="common :: #script" th:remove="tag"></div>
+<script src="/js/bootstrap-table.js"></script>
+<script src="/js/bootstrap-table-zh-CN.js"></script>
+<script src="/js/bootstrap-editable.js"></script>
+<script src="/js/bootstrap-table-editable.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/js/bootstrap-datepicker.js"></script>
+<script src="/js/piexif.min.js"></script>
+<script src="/js/sortable.min.js"></script>
+<script src="/js/purify.min.js"></script>
+<script src="/js/fileinput.min.js"></script>
+<script src="/js/theme.min.js"></script>
+<script src="/js/zh.js"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+
+    $(function () {
+        var host = "ws://" + window.location.host + "/websocket";
+        // web socket here
+        var socket = new WebSocket(host);
+        // 打开事件
+        socket.onmessage = function (msg) {
+            Lobibox.notify('info', {
+                title: "资金代付提示",
+                delay: false,
+                showAfterPrevious: false,
+                msg: msg.data,
+                closable: true
+            });
+            query();
+        };
+
+        window.onbeforeunload = function () {
+            socket.close();
+        };
+
+        <!-- 新增模态框中还款方式初始化-->
+        var bankNameIdNode = $("#to_bank_name_id");
+        bankNameIdNode.empty();
+        $.ajax({
+            url: "/loanIssueController/getAllBankNameId.do",
+            timeout: 1800000,
+            method: "POST",
+            dataType: 'JSON',
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    var code = data[i].code;
+                    var name = data[i].name;
+                    bankNameIdNode.append("<option value='" + code + "'>" + name + "</option>");
+                    bankNameIdMap[code] = name;
+                }
+            }
+        });
+
+        var bankNameIdMap = {};
+        var columns;
+        columns = [{
+            field: 'checked',
+            checkbox: true
+        }, {
+            field: 'number',
+            title: '序号',
+            formatter: function (value, row, index) {
+                var options = $('#table').bootstrapTable("getOptions");
+                return (options.pageNumber - 1) * (options.pageSize) + index + 1;
+            }
+        }, {
+            field: 'id',
+            title: 'id'
+        }, {
+            field: 'businessNo',
+            title: '业务编号'
+        }, {
+            field: 'contractNo',
+            title: '合同编号'
+        }, {
+            field: 'toAccountName',
+            title: '收款人',
+            editable: {
+                type: 'text',
+                title: '收款人编辑',
+                validate: function (v) {
+                    if (!v) return '收款人不能为空';
+                }
+            }
+
+        }, {
+            field: 'toAccountNo',
+            title: '收款账号',
+            editable: {
+                type: 'text',
+                title: '收款账号编辑',
+                validate: function (v) {
+                    if (!v) return '收款账号不能为空';
+                }
+            }
+        }, {
+            field: 'toBankNameId',
+            title: '银行名',
+            editable: {
+                type: 'select',
+                title: '银行名编辑',
+                validate: function (v) {
+                    if (!v) return '银行名不能为空';
+                },
+                source: function () {
+                    var sourceInfo = [];
+                    for (var bankNameId in  bankNameIdMap) {
+                        sourceInfo.push({"value": bankNameId, text: bankNameIdMap[bankNameId]})
+                    }
+                    return sourceInfo;
+                }
+            }
+        }, {
+            field: 'issueAmount',
+            title: '金额',
+            editable: {
+                type: 'text',
+                title: '金额编辑',
+                validate: function (v) {
+                    if (!v) {
+                        return '金额不能为空';
+                    } else if (!isNumberic(v)) {
+                        return "只能输入数字";
+                    }
+                }
+            }
+        }, {
+            field: 'loanIssues.0.acceptTransactionStatus',
+            title: '收单状态',
+            formatter: function (value, row, index) {
+                if (value == '1') {
+                    return '已收单';
+                } else if (value == '0') {
+                    return '未收单';
+                } else {
+                    return '未知状态'
+                }
+            }
+        }, {
+            field: 'loanIssues.0.transactionStatus',
+            title: '交易状态',
+            formatter: function (value, row, index) {
+                if (value == '0') {
+                    return '转账处理中';
+                } else if (value == '1') {
+                    return '转账成功';
+                } else if (value == '2') {
+                    return '转账失败'
+                } else if (value == '3') {
+                    return '转账退款'
+                } else if (value == '4') {
+                    return '部分成功'
+                }
+            }
+        }];
+
+
+        function initTable() {
+            $('#table').bootstrapTable({
+                method: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "/loanIssueController/queryLoanIssue.do",
+                queryParams: queryParams,
+                sidePagination: "server",
+                pageSize: 10,
+                pageList: [10, 20, 30, 40, 100, 200, 500],
+                smartDisplay: true,
+                cache: false,
+                height: $(window).height() - 300,
+                pagination: true,
+                columns: columns,
+                clickEdit: true,
+                escape: true,
+                rowStyle: function rowStyle(row, index) {
+                    if (index % 2 == 0) {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#fff"}
+                        };
+                    } else {
+                        return {
+                            classes: 'text-nowrap another-class',
+                            css: {"background": "#aaa"}
+                        };
+                    }
+
+                },
+                onEditableSave: function (field, row, oldValue, $el) {
+                    if (row.loanIssues[0].transactionStatus == "1") {
+                        noty({'text': '已经放款成功不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        setTimeout(query, 4000);
+                        return;
+                    }
+                    $.ajax({
+                        type: "post",
+                        url: "/loanIssueController/updateLoanIssue.do",
+                        data: {"loanIssueBasicInfoStr": JSON.stringify(row)},
+                        dataType: 'JSON',
+                        success: function (data) {
+                            setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                            if (data == "1") {
+                                noty({
+                                    'text': '执行完成',
+                                    'layout': 'center',
+                                    'type': 'information',
+                                    "timeout": "4000"
+                                });
+                            } else {
+                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            }
+                        },
+                        error: function () {
+                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        }
+                    })
+
+                },
+                onClickCell: function (field, value, row, $element) {
+                    if (field == "businessNo") {
+                        $("#text-toAccountName").html(row.toAccountName);
+                        $("#text-transactionNo").html(row.loanIssues[0].transactionNo);
+                        $("#text_serviceTransactionNo").html(row.loanIssues[0].serviceTransactionNo);
+                        $("#text_batchId").html(row.loanIssues[0].batchId);
+                        $("#text_transactionFee").html(row.loanIssues[0].transactionFee);
+                        $("#text_transactionStartTime").html(row.loanIssues[0].transactionStartTime);
+                        $("#text_transactionEndTime").html(row.loanIssues[0].transactionEndTime);
+                        $("#text_issueAmount").html(row.issueAmount);
+                        $("#text_transactionRemark").html(row.loanIssues[0].transactionRemark);
+
+                        var status = null;
+                        var loanIssue = row.loanIssues[0];
+                        if (loanIssue.transactionStatus == '0') {
+                            status = '转账处理中';
+                        } else if (loanIssue.transactionStatus == "1") {
+                            status = '转账成功';
+                        } else if (loanIssue.transactionStatus == "2") {
+                            status = '转账失败'
+                        } else if (loanIssue.transactionStatus == "3") {
+                            status = '转账退款'
+                        } else if (loanIssue.transactionStatus == "4") {
+                            status = '部分成功'
+                        }
+                        $("#text_transactionStatus").html(status);
+                        $("#moreInfoModal").modal();
+                    }
+                    return false;
+                }
+            });
+        }
+
+
+        var startDateNode = $("#startDate");
+        var endDateNode = $("#endDate");
+
+        <!--设置默认时间-->
+        startDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            startDateNode.datetimepicker("setEndDate", endDateNode.val())
+        });
+        endDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            todayBtn: true,
+            autoclose: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            endDateNode.datetimepicker("setStartDate", startDateNode.val())
+        });
+        <!--设置默认时间_当天-->
+        startDateNode.datetimepicker("setValue");
+        endDateNode.datetimepicker("setValue");
+
+
+        initTable();
+        $('#table').bootstrapTable('hideColumn', 'id');
+
+        function queryParams() {
+            var date = formatDate(new Date())
+            var startDate = startDateNode.val();
+            var endDate = endDateNode.val();
+            if (startDate == "") {
+                startDate = date;
+            }
+            if (endDate == "") {
+                endDate = date;
+            }
+            return {
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                startDate: startDate,
+                endDate: endDate,
+                accountName: $("#accountName").val(),
+                contractNo: $("#contractNo").val(),
+                businessNo: $("#businessNo").val()
+            }
+        }
+
+        <!--查询按钮功能-->
+        $("#queryBtn").click(function () {
+            query()
+        });
+
+
+        function query() {
+            $('#table').bootstrapTable('removeAll');
+            $('#table').bootstrapTable('refresh', {
+                url: '/loanIssueController/queryLoanIssue.do',
+                query: queryParams()
+            });
+        }
+
+        <!--新增按钮功能-->
+        $("#addBtn").click(function () {
+            $("#editForm")[0].reset();
+            $("#editModal").modal();
+        });
+
+        <!--新增模态框中的确认按钮功能-->
+        $("#editModal .btn-success").click(function () {
+            var sendData = $("#editForm").serializeObject();
+
+            if (!sendData.contractNo) {
+                noty({'text': '合同号为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if (!sendData.toAccountName) {
+                noty({'text': '收款人姓名为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if (!sendData.toAccountNo) {
+                noty({'text': '收款人账户为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if (!sendData.issueAmount || !isNumberic(sendData.issueAmount)) {
+                noty({'text': '还款金额为空或者不是数字', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            if (!sendData.identityNo) {
+                noty({'text': '证件号为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            <!--对公账户需要填写,开户行省名,市名,开户行名-->
+            if (sendData.toAccountType == '2') {
+                if (!sendData.toBankProvince) {
+                    noty({'text': '收款人开户行省名为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    return false;
+                } else {
+                    sendData.toBankProvince = trim(sendData.toBankProvince);
+                }
+                if (!sendData.toBankCity) {
+                    noty({'text': '收款人开户行市名为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    return false;
+                } else {
+                    sendData.toBankCity = trim(sendData.toBankCity);
+                }
+                if (!sendData.toBankBranch) {
+                    noty({'text': '收款人开户行(不含省市名)为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    return false;
+                } else {
+                    sendData.toBankBranch = trim(sendData.toBankBranch);
+                }
+            }
+            if (!sendData.mobileNo) {
+                noty({'text': '手机号为空', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return false;
+            }
+            sendData.contractNo = trim(sendData.contractNo);
+            sendData.toAccountName = trim(sendData.toAccountName);
+            sendData.toAccountNo = trim(sendData.toAccountNo);
+            sendData.identityNo = trim(sendData.identityNo);
+            sendData.mobileNo = trim(sendData.mobileNo);
+
+            $.ajax({
+                type: "post",
+                url: "/loanIssueController/saveLoanIssue.do",
+                data: sendData,
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data == "1") {
+                        setTimeout(query, 4000);
+                        noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                    } else {
+                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    }
+
+                },
+                error: function (data) {
+                    noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                }
+            });
+        });
+
+        $("#issueBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                var transactionStatus = rows[i].loanIssues[0].transactionStatus;
+                if (transactionStatus === '0') {
+                    noty({
+                        'text': "操作取消:" + rows[i].contractNo + "放款结果为未知不能进行放款操作",
+                        'layout': 'center',
+                        'type': 'warning',
+                        "timeout": "5000"
+                    });
+                    return;
+                } else if (transactionStatus === '1') {
+                    noty({
+                        'text': "操作取消:" + rows[i].contractNo + "已放款成功,不能进行放款操作",
+                        'layout': 'center',
+                        'type': 'warning',
+                        "timeout": "5000"
+                    });
+                    return;
+                } else if (transactionStatus === '4') {
+                    noty({
+                        'text': "操作取消:" + rows[i].contractNo + "已部分放款成功,不能进行放款操作",
+                        'layout': 'center',
+                        'type': 'warning',
+                        "timeout": "5000"
+                    });
+                    return;
+                } else {
+                    ids.push(rows[i].id);
+                }
+
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录放款', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            } else if (ids.length > 5) {
+                noty({'text': '一次放款不能超过五条记录', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/loanIssueController/loanIssue.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        setTimeout(query(), 4020);
+                        if (data.code == "0000") {
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': data.message,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        setTimeout(query(), 4020);
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
+                    }
+                })
+            });
+        });
+
+        <!--查询交易结果按钮 -->
+        $("#queryResultBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录查询', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            } else if (ids.length > 5) {
+                noty({'text': '一次查询不能超过五条记录', 'layout': 'center', 'type': 'error', "timeout": "4000"})
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/loanIssueController/queryLoanIssueResult.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if (data.code == "0000") {
+                            setTimeout(query(), 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': data.message,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+                    }
+                })
+            });
+        });
+        <!--查询退款按钮 -->
+        $("#queryRefundBtn").click(function () {
+            var startDate = startDateNode.val();
+            var endDate = endDateNode.val();
+            if (startDate != endDate) {
+                noty({'text': '开始日期和结束日期不一致,只能查询某一天内的退款信息', 'layout': 'center', 'type': 'warning', "timeout": "5000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/loanIssueController/queryLoanIssueRefund.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"queryDate": startDate},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if (data.code == "0000") {
+                            setTimeout(query(), 4020);
+                            noty({'text': data.message, 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': data.message,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+                    }
+                })
+            });
+
+        });
+
+        var value;
+        <!--导出结果按钮功能-->
+        $("#exportBtn").click(function () {
+            var startDate = startDateNode.val();
+            var endDate = endDateNode.val();
+            var contractNo = $("#contractNo").val();
+            var accountName = $("#accountName").val();
+            var businessNo = $("#businessNo").val();
+            location.href = "/loanIssueController/exportXLS.do?startDate=" + startDate + "&endDate=" + endDate +
+                "&contractNo=" + contractNo + "&accountName=" + accountName + "&businessNo=" + businessNo;
+        });
+
+
+        <!--进度条自动增长-->
+        function increment() {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
+
+        <!--去除字符串两端空格-->
+        function trim(str) {
+            return str.replace(/^\s+|\s+$/g, "");
+        }
+
+    })
+</script>
+<!-- end: JavaScript-->
+</body>
+</html>

@@ -87,13 +87,13 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
     /**
      * 用代扣金额未扣完的记录(当日扣款总金额<应还总金额)的合同号,代扣起止日期,查询扣款记录,更新状态及当期剩余本息,当期剩余服务费
      *
-     * @param failRecords  代扣金额未扣完的记录
+     * @param failRecords 代扣金额未扣完的记录
      * @param startDate
      * @param endDate
      */
-    public void updateDeductionStatus(List<DeductionTemplate> failRecords,Date startDate, Date endDate) {
+    public void updateDeductionStatus(List<DeductionTemplate> failRecords, Date startDate, Date endDate) {
         ArrayList<String> contractNos = new ArrayList<>();
-        for (DeductionTemplate deductionTemplate: failRecords){
+        for (DeductionTemplate deductionTemplate : failRecords) {
             contractNos.add(deductionTemplate.getContractNo());
         }
 
@@ -122,20 +122,20 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
         }
 
         //已扣本息总额
-        BigDecimal deductedBx = new BigDecimal(0);
+        BigDecimal deductedBx;
         //已扣服务费总额
-        BigDecimal deductedFwf = new BigDecimal(0);
+        BigDecimal deductedFwf;
         //剩余本息总额
-        BigDecimal remainBx = new BigDecimal(0);
+        BigDecimal remainBx;
         //剩余服务费总额
-        BigDecimal remainFwf = new BigDecimal(0);
+        BigDecimal remainFwf;
 
         //待更新的代扣模板记录
         ArrayList<DeductionTemplate> toBeUpdateDeductionTemplate = new ArrayList<>();
 
         for (DeductionTemplate deductionTemplate : failRecords) {
             //如果没有扣款成功的记录,跳过循环
-            if(!bxMap.containsKey(deductionTemplate.getContractNo())){
+            if (!bxMap.containsKey(deductionTemplate.getContractNo())) {
                 continue;
             }
             deductedBx = bxMap.get(deductionTemplate.getContractNo());
@@ -145,13 +145,13 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
             //应还本息+应还服务费 <= 已扣本息+已扣服务费,更新代扣状态为成功,未还本息/服务费为0
             if (deductionTemplate.getBxAmount().add(deductedFwf).doubleValue() <= deductedBx.add(deductedFwf).doubleValue()) {
                 deductionTemplate.setIsSuccess("1");
-                deductionTemplate.setBxRemain(new BigDecimal(0));
-                deductionTemplate.setFwfRemain(new BigDecimal(0));
+                deductionTemplate.setBxRemain(BigDecimal.ZERO);
+                deductionTemplate.setFwfRemain(BigDecimal.ZERO);
             } else {
                 //应还本息+应还服务费 > 已扣本息+已扣服务费,更新未还本息/服务费
 
                 //数据库中剩余的本息/服务费与新查询出来的剩余本息/服务费比较,相同时不需要做更新操作
-                if(deductionTemplate.getBxRemain().compareTo(remainBx) != 0 && deductionTemplate.getFwfRemain().compareTo(remainFwf) != 0 ){
+                if (deductionTemplate.getBxRemain().compareTo(remainBx) != 0 && deductionTemplate.getFwfRemain().compareTo(remainFwf) != 0) {
                     deductionTemplate.setBxRemain(deductionTemplate.getBxAmount().subtract(deductedBx));
                     deductionTemplate.setFwfRemain(deductionTemplate.getFwfAmount().subtract(deductedFwf));
                     toBeUpdateDeductionTemplate.add(deductionTemplate);
@@ -163,6 +163,8 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
 
     @Override
     public Workbook exportXLS(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
+        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, customerName, startDate, endDate);
+        List<DeductionTemplate> deductionTemplates = deductionTemplateRepository.findAll(specification);
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
         //表头
@@ -186,8 +188,6 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
         HSSFCellStyle numericStyle = workbook.createCellStyle();
         numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
         int i = 1;
-        Specification<DeductionTemplate> specification = getSpecification(isSuccess, contractNo, customerName, startDate, endDate);
-        List<DeductionTemplate> deductionTemplates = deductionTemplateRepository.findAll(specification);
         for (DeductionTemplate deductionTemplate : deductionTemplates) {
             row = sheet.createRow(i);
 
@@ -221,7 +221,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
 
 
     private Specification<DeductionTemplate> getSpecification(String isSuccess, String contractNo, String customerName, Date startDate, Date endDate) {
-        Specification<DeductionTemplate> specification = new Specification<DeductionTemplate>() {
+        return new Specification<DeductionTemplate>() {
             @Override
             public Predicate toPredicate(Root<DeductionTemplate> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 List<Predicate> predicates = new ArrayList<>();
@@ -243,6 +243,5 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
                 return cb.and(predicates.toArray(new Predicate[]{}));
             }
         };
-        return specification;
     }
 }

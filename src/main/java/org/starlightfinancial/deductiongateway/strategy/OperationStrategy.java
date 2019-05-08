@@ -44,7 +44,8 @@ public interface OperationStrategy {
 
     /**
      * 代扣
-     * @param mortgageDeductions  mortgageDeduction列表
+     *
+     * @param mortgageDeductions mortgageDeduction列表
      * @throws Exception 执行代扣异常
      */
     void pay(List<MortgageDeduction> mortgageDeductions) throws Exception;
@@ -57,5 +58,12 @@ public interface OperationStrategy {
      * @return 返回包含代扣查询结果Message对象
      */
     Message queryPayResult(MortgageDeduction mortgageDeduction);
+
+    /**
+     * 计算并设置手续费
+     *
+     * @param mortgageDeduction 代扣记录
+     */
+    void calculateHandlingCharge(MortgageDeduction mortgageDeduction);
 
 }

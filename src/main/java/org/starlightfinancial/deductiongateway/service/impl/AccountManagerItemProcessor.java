@@ -12,7 +12,7 @@ import org.starlightfinancial.deductiongateway.domain.local.AccountManagerReposi
  * @date: Created in 2018/5/3 9:42
  * @Modified By:
  */
-public class AccountManagerItemProcessor  implements ItemProcessor<AccountManager,AccountManager>{
+public class AccountManagerItemProcessor implements ItemProcessor<AccountManager, AccountManager> {
 
     @Autowired
     private AccountManagerRepository accountManagerRepository;
@@ -20,10 +20,10 @@ public class AccountManagerItemProcessor  implements ItemProcessor<AccountManage
     @Override
     public AccountManager process(AccountManager item) throws Exception {
         //在写入数据库之前,用date_id和银行卡号查询记录是否已经存在,如果已经存在就不保存,如果不存在就保存记录
-        AccountManager existAccountManager = accountManagerRepository.findByDateIdAndAccountAndAccountNameAndCertificateNo(item.getDateId(), item.getAccount(),item.getAccountName(),item.getCertificateNo());
-        if (existAccountManager == null){
+        AccountManager existAccountManager = accountManagerRepository.findByDateIdAndAccountAndAccountNameAndCertificateNo(item.getDateId(), item.getAccount(), item.getAccountName(), item.getCertificateNo());
+        if (existAccountManager == null) {
             return item;
-        }else{
+        } else {
             return null;
         }
     }

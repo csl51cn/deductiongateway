@@ -37,7 +37,7 @@
                         </div>
                         <div class="clearfix"></div>
 
-                        <label class="remember" for="remember"><input type="checkbox" id="remember" />下次自动登陆</label>
+                        <!--<label class="remember" for="remember"><input type="checkbox" id="remember" name="remember"  value="1"/>下次自动登陆</label>-->
 
                         <div class="button-login">
                             <button type="submit" class="btn btn-primary">Login</button>
@@ -46,10 +46,10 @@
                     </fieldset>
                 </form>
                 <hr>
-                <h3>Forgot Password?</h3>
-                <p>
-                    No problem, <a href="#">click here</a> to get a new password.
-                </p>
+                <!--<h3>Forgot Password?</h3>-->
+                <!--<p>-->
+                <!--No problem, <a href="#">click here</a> to get a new password.-->
+                <!--</p>-->
             </div><!--/span-->
         </div><!--/row-->
 
@@ -59,11 +59,11 @@
 </div><!--/fluid-row-->
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
-<script  type="text/javascript" th:inline="javascript">
+<script type="text/javascript" th:inline="javascript">
     $(function () {
         var msg = [[${session.msg}]];
         if (msg != null) {
-            noty({'text':msg, 'layout': 'center', 'type': 'error',"timeout":"3000"});
+            noty({'text': msg, 'layout': 'center', 'type': 'error', "timeout": "3000"});
         }
     })
 </script>

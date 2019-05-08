@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.BaofuConfig;
@@ -17,14 +18,18 @@ import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
-import org.starlightfinancial.deductiongateway.enums.ChinaPayCertTypeEnum;
-import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
+import org.starlightfinancial.deductiongateway.domain.remote.RepaymentInfo;
+import org.starlightfinancial.deductiongateway.enums.*;
+import org.starlightfinancial.deductiongateway.service.CacheService;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author: Senlin.Deng
@@ -51,6 +56,20 @@ public class BeanConverter {
 
     @Autowired
     private ServiceCompanyConfig serviceCompanyConfig;
+
+    private static final List<DeductionChannelEnum> CHINA_PAY;
+    private static final List<DeductionChannelEnum> BAO_FU;
+
+    static {
+        CHINA_PAY = new ArrayList<>();
+        CHINA_PAY.add(DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION);
+        CHINA_PAY.add(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME);
+        CHINA_PAY.add(DeductionChannelEnum.CHINA_PAY_EXPRESS_DELAY);
+
+        BAO_FU = new ArrayList<>();
+        BAO_FU.add(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION);
+        BAO_FU.add(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY);
+    }
 
     /**
      * 将MortgageDeduction转换为银联请求参数类  银联快捷支付
@@ -91,10 +110,10 @@ public class BeanConverter {
         chinaPayRealTimeRequestParams.setMerSplitMsg(merSplitMsg.toString());
         AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
         //首先判断协议号是否存在,如果不存在使用五要素进行交易,五要素:卡号，证件类型 ，证件号，姓名，手机号
-        if(StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())){
+        if (StringUtils.isNotBlank(accountManager.getUnionpayProtocolNo())) {
             //设置协议号
             chinaPayRealTimeRequestParams.setProtocolNo(accountManager.getUnionpayProtocolNo());
-        }else{
+        } else {
             //设置卡号
             chinaPayRealTimeRequestParams.setCardNo(mortgageDeduction.getParam3());
             //设置证件类型
@@ -119,7 +138,7 @@ public class BeanConverter {
         MortgageDeduction mortgageDeduction = new MortgageDeduction();
         //设置合同编号
         mortgageDeduction.setContractNo(autoBatchDeduction.getContractNo());
-        //设置银行名称,此时为中文
+        //设置银行名称,此时为中文,本方法后面会处理
         mortgageDeduction.setParam1(autoBatchDeduction.getBankName());
         //设置卡折类型
         mortgageDeduction.setParam2("0");
@@ -144,9 +163,8 @@ public class BeanConverter {
         mortgageDeduction.setTarget(autoBatchDeduction.getFwfCompamny());
         //证件类型
         mortgageDeduction.setParam5(autoBatchDeduction.getCertificateType());
-        //证件号
-        mortgageDeduction.setParam6(autoBatchDeduction.getCertificateNo());
-
+        //证件号:转换为大写,一般情况白名单中的身份证号末位的x是大写,自动代扣发起时也需要转换为大写,特殊情况手动处理
+        mortgageDeduction.setParam6(autoBatchDeduction.getCertificateNo().toUpperCase());
         //设置支付状态:0:失败,1:成功,2:暂无结果
         mortgageDeduction.setIssuccess("2");
         //是否发起过交易:0:是,1:否
@@ -159,6 +177,8 @@ public class BeanConverter {
         mortgageDeduction.setCreatId(113);
         mortgageDeduction.setParam1(handleBankName(mortgageDeduction.getParam1()));
         mortgageDeduction.setParam5(handleCertificateType(mortgageDeduction.getParam5()));
+        //设置是否上传自动入账表格
+        mortgageDeduction.setIsUploaded(String.valueOf(0));
         return mortgageDeduction;
     }
 
@@ -166,8 +186,8 @@ public class BeanConverter {
     /**
      * 将MortgageDeduction转换为BaoFuRequestParams
      *
-     * @param mortgageDeduction
-     * @return
+     * @param mortgageDeduction 代扣数据
+     * @return 宝付交易参数
      */
     public BaoFuRequestParams transToBaoFuRequestParams(MortgageDeduction mortgageDeduction) {
         BaoFuRequestParams baoFuRequestParams = new BaoFuRequestParams();
@@ -235,7 +255,7 @@ public class BeanConverter {
         //设置合同编号
         goPayBean.setContractNo(mortgageDeduction.getContractNo());
         //设置服务费的管理公司
-        goPayBean.setOrgManagerId(mortgageDeduction.getOrdId());
+        goPayBean.setOrgManagerId(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode()));
         //设置还款计划的id
         goPayBean.setRePlanId("");
         goPayBean.setSplitData1(mortgageDeduction.getSplitData1());
@@ -289,7 +309,7 @@ public class BeanConverter {
     /**
      * 将MortgageDeduction 转换为 RequestParams  宝付代扣
      *
-     * @param mortgageDeduction
+     * @param mortgageDeduction 代扣信息
      * @return 宝付代扣请求参数RequestParams
      */
     public RequestParams transToRequestParams(MortgageDeduction mortgageDeduction) throws UnsupportedEncodingException {
@@ -339,7 +359,7 @@ public class BeanConverter {
         shareInfo.append(baofuConfig.getClassicMemberId()).append(",").append(m1);
         if (mortgageDeduction.getSplitData2().doubleValue() > 0) {
             shareInfo.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode()))
-                    .append(m2);
+                    .append(",").append(m2);
         }
         dataContent.setShareInfo(shareInfo.toString());
         // 分账手续费从本息账户扣除
@@ -353,12 +373,17 @@ public class BeanConverter {
         dataContent.setPayCm(baofuConfig.getClassicPayCm());
         dataContent.setNotifyUrl(baofuConfig.getClassicNotifyUrl());
 
+        AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(), dataContent.getAccNo(), dataContent.getIdHolder(), dataContent.getIdCard());
+        if (Objects.nonNull(accountManager)){
+            //手机号
+            dataContent.setMobile(accountManager.getMobile());
+        }
         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(dataContent);
         String contentData = jsonObject.toString();
         log.info("宝付代扣contentData:{}", contentData);
         String base64str = SecurityUtil.Base64Encode(contentData);
-        String data_content = RsaCodingUtil.encryptByPriPfxFile(base64str, baofuConfig.getClassicPfxFile(), baofuConfig.getClassicPriKey());
-        requestParams.setDataContent(data_content);
+        String dataContentEncrypted = RsaCodingUtil.encryptByPriPfxFile(base64str, baofuConfig.getClassicPfxFile(), baofuConfig.getClassicPriKey());
+        requestParams.setDataContent(dataContentEncrypted);
         requestParams.setContent(dataContent);
 
         return requestParams;
@@ -368,8 +393,8 @@ public class BeanConverter {
     /**
      * 将MortgageDeduction转换为银联请求参数类  银联新无卡代扣
      *
-     * @param mortgageDeduction
-     * @return
+     * @param mortgageDeduction 代扣信息
+     * @return 银联请求参数类
      */
     public ChinaPayDelayRequestParams transToChinaPayDelayRequestParams(MortgageDeduction mortgageDeduction) {
 
@@ -416,7 +441,117 @@ public class BeanConverter {
         return chinaPayDelayRequestParams;
     }
 
+    /**
+     * 将代扣数据转换为自动入账excel表格行元素对应实体类
+     *
+     * @param mortgageDeduction 代扣数据
+     * @return 自动入账excel表格行元素对应实体类
+     */
+    public AutoAccountingExcelRow transToAutoAccountingExcelRow(MortgageDeduction mortgageDeduction) {
+        AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
+        //客户名称
+        autoAccountingExcelRow.setCustomerName(mortgageDeduction.getCustomerName());
+        //合同编号
+        autoAccountingExcelRow.setContractNo(mortgageDeduction.getContractNo());
+        //还款日期
+        autoAccountingExcelRow.setRepaymentTermDate(Utility.convertToString(mortgageDeduction.getPayTime(), "yyyy/MM/dd"));
+        //入账日期
+        autoAccountingExcelRow.setAccountingDate(autoAccountingExcelRow.getRepaymentTermDate());
+        //本息
+        autoAccountingExcelRow.setPrincipalAndInterest(mortgageDeduction.getSplitData1());
+        //服务费
+        autoAccountingExcelRow.setServiceFee(mortgageDeduction.getSplitData2());
+        //调查评估费设置为0
+        autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
+        //服务费入账公司
+        //处理服务费管理公司:最初数据库保存的是ChinaPayClassicDeduction 对应的服务费公司商户号(数字), 对接银联新无卡重构代码后保存的是公司名称(汉字)
+        if (mortgageDeduction.getTarget() != null && StringUtils.isNumeric(mortgageDeduction.getTarget())) {
+            //为数字的时候需要转换
+            if (chinaPayConfig.getClassicKaiYueMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                autoAccountingExcelRow.setServiceFeeChargeCompany("铠岳");
+            } else if (chinaPayConfig.getClassicRunKunMemberId().equals(mortgageDeduction.getTarget().trim())) {
+                autoAccountingExcelRow.setServiceFeeChargeCompany("润坤");
+            }
+        } else {
+            //为汉字的情况,直接设置
+            autoAccountingExcelRow.setServiceFeeChargeCompany(mortgageDeduction.getTarget());
+        }
+        //是否代扣
+        autoAccountingExcelRow.setIsDeduction("是");
+        //还款方式
+        String repaymentMethod = DeductionChannelEnum.getDescByCode(mortgageDeduction.getChannel());
+        if (repaymentMethod == null) {
+            repaymentMethod = DeductionChannelEnum.getOrderDescByCode(mortgageDeduction.getChannel()) + "代扣";
+        }
+        autoAccountingExcelRow.setRepaymentMethod(repaymentMethod);
 
+        return autoAccountingExcelRow;
+    }
+
+    /**
+     * 将非代扣还款数据转换为自动入账excel表格行元素对应实体类
+     *
+     * @param nonDeductionRepaymentInfo 非代扣还款数据
+     * @return 自动入账excel表格行元素对应实体类
+     */
+    public AutoAccountingExcelRow transToAutoAccountingExcelRow(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
+        AutoAccountingExcelRow autoAccountingExcelRow = new AutoAccountingExcelRow();
+        CacheService.refresh();
+        BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
+        //客户名称
+        autoAccountingExcelRow.setCustomerName(businessTransaction.getSubject());
+        //合同编号
+        autoAccountingExcelRow.setContractNo(nonDeductionRepaymentInfo.getContractNo());
+        //还款日期
+        autoAccountingExcelRow.setRepaymentTermDate(Utility.convertToString(nonDeductionRepaymentInfo.getRepaymentTermDate(), "yyyy/MM/dd"));
+        //入账日期
+        autoAccountingExcelRow.setAccountingDate(Utility.convertToString(nonDeductionRepaymentInfo.getAccountingDate(), "yyyy/MM/dd"));
+
+        if (RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //本息
+            autoAccountingExcelRow.setPrincipalAndInterest(nonDeductionRepaymentInfo.getRepaymentAmount());
+            autoAccountingExcelRow.setServiceFee(BigDecimal.ZERO);
+            autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
+        }
+
+        if (RepaymentTypeEnum.SERVICE_FEE.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //服务费
+            autoAccountingExcelRow.setServiceFee(nonDeductionRepaymentInfo.getRepaymentAmount());
+            autoAccountingExcelRow.setServiceFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+
+            autoAccountingExcelRow.setPrincipalAndInterest(BigDecimal.ZERO);
+            autoAccountingExcelRow.setEvaluationFee(BigDecimal.ZERO);
+        }
+
+        if (RepaymentTypeEnum.EVALUATION_FEE.getDesc().equals(nonDeductionRepaymentInfo.getRepaymentType())) {
+            //调查评估费
+            autoAccountingExcelRow.setEvaluationFee(nonDeductionRepaymentInfo.getRepaymentAmount());
+            autoAccountingExcelRow.setEvaluationFeeChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+
+            autoAccountingExcelRow.setPrincipalAndInterest(BigDecimal.ZERO);
+            autoAccountingExcelRow.setServiceFee(BigDecimal.ZERO);
+
+        }
+        //是否代扣
+        autoAccountingExcelRow.setIsDeduction("否");
+        //还款方式
+        StringBuilder repaymentMethod = new StringBuilder(nonDeductionRepaymentInfo.getRepaymentMethod());
+        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getBankName())) {
+            repaymentMethod.append("-").append(nonDeductionRepaymentInfo.getBankName());
+        }
+        autoAccountingExcelRow.setRepaymentMethod(repaymentMethod.toString());
+        autoAccountingExcelRow.setReason(nonDeductionRepaymentInfo.getRemark());
+        return autoAccountingExcelRow;
+
+
+    }
+
+    /**
+     * 处理银行参数
+     *
+     * @param bankName 银行名称
+     * @return 银行代码
+     */
     private String handleBankName(String bankName) {
         List<SysDict> openBankList = sysDictRepository.findByDicType(DictionaryType.MERID_SOURCE);
         for (SysDict sysDict : openBankList) {
@@ -428,6 +563,12 @@ public class BeanConverter {
         return "";
     }
 
+    /**
+     * 处理证件类型
+     *
+     * @param certificateType 证件类型汉字描述
+     * @return 证件类型代码
+     */
     private String handleCertificateType(String certificateType) {
         List<SysDict> cTypeLst = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
         for (SysDict sysDict : cTypeLst) {
@@ -437,6 +578,234 @@ public class BeanConverter {
         }
 
         return "";
+    }
+
+    /**
+     * 将代扣还款信息MortgageDeduction转换为还款信息RepaymentInfo
+     *
+     * @param mortgageDeduction 代扣还款信息
+     * @return 还款信息RepaymentInfo
+     */
+    public List<RepaymentInfo> transToRepaymentInfo(MortgageDeduction mortgageDeduction) {
+        ArrayList<RepaymentInfo> repaymentInfos = new ArrayList<>();
+        RepaymentInfo principalAndInterestRepaymentInfo = new RepaymentInfo();
+        BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(mortgageDeduction.getContractNo());
+        if (Objects.nonNull(businessTransaction)) {
+            //设置dateId
+            principalAndInterestRepaymentInfo.setDateId(businessTransaction.getDateId());
+            //设置客户名称
+            principalAndInterestRepaymentInfo.setCustomerName(businessTransaction.getSubject());
+        } else {
+            //设置客户名称
+            principalAndInterestRepaymentInfo.setCustomerName("客户");
+        }
+
+        //设置合同号
+        principalAndInterestRepaymentInfo.setContractNo(mortgageDeduction.getContractNo());
+        //设置还款日期
+        principalAndInterestRepaymentInfo.setRepaymentTermDate(Utility.convertToDate(mortgageDeduction.getPayTime().toString(), "yyyy-MM-dd"));
+
+        //设置还款方式
+        principalAndInterestRepaymentInfo.setRepaymentMethod(DeductionChannelEnum.getOrderDescByCode(mortgageDeduction.getChannel()) + "代扣");
+        //设置创建时间
+        principalAndInterestRepaymentInfo.setGmtCreate(new Date());
+        //设置创建人
+        principalAndInterestRepaymentInfo.setCreateId(14);
+        //设置修改时间
+        principalAndInterestRepaymentInfo.setGmtModified(principalAndInterestRepaymentInfo.getGmtCreate());
+        //设置最后一个修改人id
+        principalAndInterestRepaymentInfo.setModifiedId(principalAndInterestRepaymentInfo.getCreateId());
+        //设置是否是代扣
+        principalAndInterestRepaymentInfo.setIsDeduction(ConstantsEnum.SUCCESS.getCode());
+        //设置原始id
+        principalAndInterestRepaymentInfo.setOriginalId(Long.valueOf(mortgageDeduction.getId()));
+        //设置入账公司
+        principalAndInterestRepaymentInfo.setChargeCompany(ChargeCompanyEnum.RUN_TONG.getValue());
+        //设置本息还款金额
+        principalAndInterestRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData1());
+        //设置还款类别
+        principalAndInterestRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.PRINCIPAL_AND_INTEREST.getCode()));
+        //设置是否是从其他记录拆分出来的:否-0
+        principalAndInterestRepaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
+        //判断是否是银联代扣
+        boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
+        if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
+            //如果存在服务费,分两种情况处理:1.银联两个入账账户按比例扣除手续费;2.宝付是润通账户扣除手续费
+            //创建服务费还款记录
+            RepaymentInfo serviceFeeRepaymentInfo = new RepaymentInfo();
+            BeanUtils.copyProperties(principalAndInterestRepaymentInfo, serviceFeeRepaymentInfo);
+            //设置服务费金额
+            serviceFeeRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData2());
+            //设置服务费入账公司
+            serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
+            //设置服务费入账银行:铠岳和润坤的银联,宝付渠道各自都是使用的相同银行进行商户开户的
+            if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
+                //铠岳
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+            } else {
+                //润坤
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+            }
+            //设置还款类别
+            serviceFeeRepaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.SERVICE_FEE.getCode()));
+
+            if (isChinaPay) {
+                //设置本息手续费
+                BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+                //本息占总金额中的比例,保留五位小数,四舍五入
+                BigDecimal principalAndInterestProportion = mortgageDeduction.getSplitData1().divide(totalAmount, 5, BigDecimal.ROUND_HALF_UP);
+                //本息入账方手续费,保留两位小数,四舍五入
+                BigDecimal principalAndInterestHandlingCharge = mortgageDeduction.getHandlingCharge().multiply(principalAndInterestProportion).setScale(2, BigDecimal.ROUND_HALF_UP);
+                principalAndInterestRepaymentInfo.setHandlingCharge(principalAndInterestHandlingCharge);
+                //设置本息入账银行账户
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                //设置服务费入账公司手续费
+                serviceFeeRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge().subtract(principalAndInterestHandlingCharge).setScale(2, BigDecimal.ROUND_HALF_UP));
+            } else {
+                //宝付只在润通账户扣除手续费
+                principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
+                //设置本息入账银行账户
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+                serviceFeeRepaymentInfo.setHandlingCharge(BigDecimal.ZERO);
+            }
+            repaymentInfos.add(serviceFeeRepaymentInfo);
+
+        } else {
+            //不存在服务费,直接设置手续费
+            principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
+            //设置本息入账银行账户
+            if (isChinaPay) {
+                //银联
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+            } else {
+                //宝付
+                principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+            }
+
+        }
+        if (principalAndInterestRepaymentInfo.getRepaymentAmount().compareTo(BigDecimal.ZERO) > 0) {
+            //如果本息还款大于0
+            repaymentInfos.add(principalAndInterestRepaymentInfo);
+        }
+
+        return repaymentInfos;
+    }
+
+    /**
+     * 非代扣还款数据NonDeductionRepaymentInfo转换为还款数据RepaymentInfo
+     *
+     * @param nonDeductionRepaymentInfo 非代扣还款数据 NonDeductionRepaymentInfo
+     * @return 返回还款数据
+     */
+    public RepaymentInfo transToRepaymentInfo(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
+        RepaymentInfo repaymentInfo = new RepaymentInfo();
+        BusinessTransaction businessTransaction = CacheService.getBusinessTransactionCacheMap().get(nonDeductionRepaymentInfo.getContractNo());
+        //设置入账公司
+        repaymentInfo.setChargeCompany(nonDeductionRepaymentInfo.getChargeCompany());
+        //设置dateId
+        repaymentInfo.setDateId(nonDeductionRepaymentInfo.getDateId());
+        //设置合同号
+        repaymentInfo.setContractNo(nonDeductionRepaymentInfo.getContractNo());
+        //设置还款日期
+        repaymentInfo.setRepaymentTermDate(nonDeductionRepaymentInfo.getRepaymentTermDate());
+        //设置客户名称
+        if (businessTransaction != null) {
+            //如果匹配到业务信息的
+            repaymentInfo.setCustomerName(businessTransaction.getSubject());
+        } else {
+            //如果没有匹配到业务信息
+            repaymentInfo.setCustomerName("客户");
+        }
+        //设置还款方式
+        repaymentInfo.setRepaymentMethod(nonDeductionRepaymentInfo.getRepaymentMethod());
+        //设置还款类别
+        repaymentInfo.setRepaymentType(String.valueOf(RepaymentTypeEnum.getCodeByDesc(nonDeductionRepaymentInfo.getRepaymentType())));
+        //设置入账银行:现金不用设置,银行转账,收银宝,POS刷卡需要设置
+        if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.BANK_TRANSFER.getValue())
+                || StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(),
+                NonDeductionRepaymentMethodEnum.POS.getValue())) {
+            //银行转账或者POS机刷卡
+            repaymentInfo.setBankName(AccountBankEnum.getCodeByValue(nonDeductionRepaymentInfo.getBankName()));
+        } else if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentMethod(), NonDeductionRepaymentMethodEnum.THIRD_PARTY_PAYMENT.getValue())) {
+            //收银宝,需要根据入账公司来确定入账银行
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_TONG.getValue())) {
+                //润通
+                repaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0356.getCode());
+            }
+
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
+                //铠岳
+                repaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
+            }
+
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())) {
+                //润坤
+                repaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
+            }
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.THIRD_PARTY_CONSULT.getValue())) {
+                //第三方咨询公司
+                repaymentInfo.setBankName(AccountBankEnum.THIRD_PARTY_CONSULT_BCQ_6559.getCode());
+            }
+        }
+
+        //设置还款金额
+        repaymentInfo.setRepaymentAmount(nonDeductionRepaymentInfo.getRepaymentAmount());
+        //设置手续费
+        if (Objects.isNull(nonDeductionRepaymentInfo.getHandlingCharge())) {
+            repaymentInfo.setHandlingCharge(BigDecimal.ZERO);
+        } else {
+            repaymentInfo.setHandlingCharge(nonDeductionRepaymentInfo.getHandlingCharge());
+        }
+        //设置是否是被拆分出来生成的的:如果originalId不为空,说明当前记录是从其他记录拆分出来的.如果为空,说明不是
+        if(Objects.nonNull(nonDeductionRepaymentInfo.getOriginalId())){
+            repaymentInfo.setCreateFromAnother(ConstantsEnum.SUCCESS.getCode());
+        }else{
+            repaymentInfo.setCreateFromAnother(ConstantsEnum.FAIL.getCode());
+        }
+        //设置创建时间
+        repaymentInfo.setGmtCreate(new Date());
+        //设置创建人
+        repaymentInfo.setCreateId(14);
+        //设置修改时间
+        repaymentInfo.setGmtModified(repaymentInfo.getGmtCreate());
+        //设置最后一个修改人id
+        repaymentInfo.setModifiedId(repaymentInfo.getCreateId());
+        //设置是否是代扣
+        repaymentInfo.setIsDeduction(ConstantsEnum.FAIL.getCode());
+        //设置原始id
+        repaymentInfo.setOriginalId(nonDeductionRepaymentInfo.getId());
+        return repaymentInfo;
+    }
+
+    public static List<LoanIssueBasicInfoExcelRow> transToLoanIssueBasicInfoExcelRowList(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
+        ArrayList<LoanIssueBasicInfoExcelRow> loanIssueBasicInfoExcelRows = new ArrayList<>();
+        for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
+            List<LoanIssue> loanIssues = loanIssueBasicInfo.getLoanIssues();
+            for (LoanIssue loanIssue : loanIssues) {
+                LoanIssueBasicInfoExcelRow loanIssueBasicInfoExcelRow = new LoanIssueBasicInfoExcelRow();
+                loanIssueBasicInfoExcelRow.setBusinessNo(loanIssueBasicInfo.getBusinessNo());
+                loanIssueBasicInfoExcelRow.setContractNo(loanIssueBasicInfo.getContractNo());
+                loanIssueBasicInfoExcelRow.setToAccountName(loanIssueBasicInfo.getToAccountName());
+                loanIssueBasicInfoExcelRow.setToAccountNo(loanIssueBasicInfo.getToAccountNo());
+                loanIssueBasicInfoExcelRow.setIssueAmount(loanIssueBasicInfo.getIssueAmount());
+                loanIssueBasicInfoExcelRow.setToBankNameId(loanIssueBasicInfo.getToBankNameId());
+                loanIssueBasicInfoExcelRow.setToBankProvince(loanIssueBasicInfo.getToBankProvince());
+                loanIssueBasicInfoExcelRow.setToBankCity(loanIssueBasicInfo.getToBankCity());
+                loanIssueBasicInfoExcelRow.setToBankBranch(loanIssueBasicInfo.getToBankBranch());
+                loanIssueBasicInfoExcelRow.setIdentityNo(loanIssueBasicInfo.getIdentityNo());
+                loanIssueBasicInfoExcelRow.setMobileNo(loanIssueBasicInfo.getMobileNo());
+                loanIssueBasicInfoExcelRow.setChannel(loanIssueBasicInfo.getChannel());
+                loanIssueBasicInfoExcelRow.setTransactionNo(loanIssue.getTransactionNo());
+                loanIssueBasicInfoExcelRow.setTransactionStatus(loanIssue.getTransactionStatus());
+                loanIssueBasicInfoExcelRow.setTransactionStartTime(loanIssue.getTransactionStartTime());
+                loanIssueBasicInfoExcelRow.setTransactionEndTime(loanIssue.getTransactionEndTime());
+                loanIssueBasicInfoExcelRow.setGmtCreate(loanIssue.getGmtCreate());
+                loanIssueBasicInfoExcelRows.add(loanIssueBasicInfoExcelRow);
+            }
+        }
+        return loanIssueBasicInfoExcelRows;
+
+
     }
 
 

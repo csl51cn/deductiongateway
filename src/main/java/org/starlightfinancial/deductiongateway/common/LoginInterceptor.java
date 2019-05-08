@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.common;
 
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,12 +18,25 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        Object loginUser = request.getSession().getAttribute("loginUser");
+        SysUser loginUser = (SysUser) request.getSession().getAttribute("loginUser");
         if (loginUser == null) {
             response.sendRedirect("/login");
             return false;
         }
+        if (!UserContext.hasUser()){
+            UserContext.setUser(loginUser);
+        }
 
         return true;
     }
+
+
+    @Override
+    public void afterCompletion(
+            HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
+        //清除线程数据
+        UserContext.clear();
+    }
+
 }
