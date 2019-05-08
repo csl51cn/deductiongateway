@@ -16,16 +16,20 @@ import org.starlightfinancial.deductiongateway.baofu.domain.BaoFuRequestParams;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
+import org.starlightfinancial.deductiongateway.domain.local.ChinaPayDelayRequestParams;
 import org.starlightfinancial.deductiongateway.domain.local.ErrorCodeEnum;
 import org.starlightfinancial.deductiongateway.domain.local.GoPayBean;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 import org.starlightfinancial.deductiongateway.utility.*;
 import org.starlightfinancial.rpc.hessian.entity.common.RequestResult;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2011Req;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2511Req;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.response.Tx2011Res;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.response.Tx2511Res;
 import org.starlightfinancial.rpc.hessian.service.cpcn.BaseService;
 
 import java.io.UnsupportedEncodingException;
@@ -99,41 +103,44 @@ public class Delivery extends Decorator {
 
     }
 
+    /**
+     * 银联新代扣
+     * @param  list
+     */
+    private void deliveryUnionPayDelay(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
 
-//    private void deliveryUnionPayDelay(List<MortgageDeduction> list) {
-//        for (MortgageDeduction mortgageDeduction : list) {
-//
-//            ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
-//            mortgageDeduction.setOrdId(chinaPayDelayRequestParams.getMerOrderNo());
-//            mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
-//            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
-//            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getOrderDesc());
-//            mortgageDeduction.setPlanNo(0);
-//            //type为0表示已发起过代扣，type为1时未发起过代扣
-//            mortgageDeduction.setType("0");
-//            mortgageDeduction.setPayTime(new Date());
-//            mortgageDeduction.setSplitType(chinaPayDelayRequestParams.getSplitType());
-//            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
-//
-//            // 应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
-//            try {
-//                Map map = httpClientUtil.send(chinaPayConfig.getExpressDelayUrl(), chinaPayDelayRequestParams.transToNvpList());
-//                String returnData = (String) map.get("returnData");
-//                JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
-//                String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
-//                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
-//                mortgageDeduction.setResult(jsonObject.getString("error_code"));
-//                //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
-//                if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
-//                    mortgageDeduction.setIssuccess("0");
-//                }
-//                result.add(mortgageDeduction);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                result.add(mortgageDeduction);
-//            }
-//        }
-//    }
+            ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
+            mortgageDeduction.setOrdId(chinaPayDelayRequestParams.getMerOrderNo());
+            mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
+            mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getOrderDesc());
+            mortgageDeduction.setPlanNo(0);
+            //type为0表示已发起过代扣，type为1时未发起过代扣
+            mortgageDeduction.setType("0");
+            mortgageDeduction.setPayTime(new Date());
+            mortgageDeduction.setSplitType(chinaPayDelayRequestParams.getSplitType());
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
+
+            // 应对httpClientUtil返回抛异常的情况,将订单号保存,以保证我方数据库记录和银联的记录一致,方便排查错误
+            try {
+                Map map = HttpClientUtil.send(chinaPayConfig.getExpressDelayUrl(), chinaPayDelayRequestParams.transToNvpList());
+                String returnData = (String) map.get("returnData");
+                JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+                String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
+                mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
+                mortgageDeduction.setResult(jsonObject.getString("error_code"));
+                //返回0014表示数据接收成功,如果不为0014可以交易设置为失败
+                if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
+                    mortgageDeduction.setIssuccess("0");
+                }
+                result.add(mortgageDeduction);
+            } catch (Exception e) {
+                e.printStackTrace();
+                result.add(mortgageDeduction);
+            }
+        }
+    }
 
     /**
      * 银联白名单代扣
@@ -319,6 +326,60 @@ public class Delivery extends Decorator {
         }
     }
 
+
+    /**
+     * 中金支付快捷支付
+     *
+     * @param list 待代扣的MortgageDeduction数据
+     */
+    private void deliveryChinaPayClearNetQuick(List<MortgageDeduction> list) {
+        for (MortgageDeduction mortgageDeduction : list) {
+            Tx2511Req tx2511Request = beanConverter.transToTx2511Req(mortgageDeduction);
+            mortgageDeduction.setOrdId(tx2511Request.getPaymentNo());
+            mortgageDeduction.setMerId(tx2511Request.getInstitutionID());
+            mortgageDeduction.setCuryId("156");
+            mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getOrderDesc());
+            mortgageDeduction.setPlanNo(0);
+            //type为0表示已发起过代扣，type为1时未发起过代扣
+            mortgageDeduction.setType("0");
+            mortgageDeduction.setIsoffs("0");
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getCode());
+            mortgageDeduction.setPayTime(new Date());
+
+            try {
+                LOGGER.debug("中金快捷支付请求:{}", JSONObject.toJSONString(tx2511Request));
+                BaseService tx2511Service = HessianProxyFactoryUtils.getHessianClientBean(BaseService.class,
+                        chinaPayClearNetConfig.getQuickRealTimeUrl());
+                RequestResult requestResult = tx2511Service.doBusiness(tx2511Request);
+                LOGGER.debug("中金快捷支付返回:{}", JSONObject.toJSONString(requestResult));
+                if (StringUtils.equals(requestResult.getErrorCode(), RsbCodeEnum.ERROR_CODE_01.getCode())) {
+                    Tx2511Res tx2511Response = (Tx2511Res) requestResult.getResult().get(0);
+                    int status = tx2511Response.getStatus();
+                    //交易状态 10=处理中 20=支付成功 30=支付失败
+                    if (status == 20) {
+                        mortgageDeduction.setIssuccess("1");
+                        mortgageDeduction.setResult(tx2511Response.getCode());
+                        mortgageDeduction.setErrorResult("交易成功");
+
+                        //计算并设置手续费
+                        operationStrategyContext.getOperationStrategy(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getCode()).calculateHandlingCharge(mortgageDeduction);
+                    } else if (status == 30) {
+                        //代扣失败
+                        JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2511Response.getResponsePlainText());
+                        JSONObject body = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                        mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
+                        mortgageDeduction.setResult(body.getString("ResponseCode"));
+                        mortgageDeduction.setIssuccess("0");
+                    }
+                }
+                result.add(mortgageDeduction);
+            } catch (Exception e) {
+                LOGGER.error("中金快捷支付异常,记录id"+mortgageDeduction.getId(),e);
+                //保存订单号
+                result.add(mortgageDeduction);
+            }
+        }
+    }
     public List<MortgageDeduction> getResult() {
         return result;
     }

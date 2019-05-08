@@ -280,6 +280,7 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
                     mortgageDeduction.setIssuccess("1");
                     mortgageDeduction.setResult(BFErrorCodeEnum.BF00000.getCode());
                     mortgageDeduction.setErrorResult("支付成功");
+                    calculateHandlingCharge(mortgageDeduction);
                     mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 } else if (!StringUtils.equals(BFErrorCodeEnum.BF00113.getCode(), result.getString("biz_resp_code"))) {
                     //订单状态不为"BF00113,交易处理中，请稍后查询"为失败,状态为BF00113不处理

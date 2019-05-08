@@ -141,6 +141,19 @@ public class AccountManager {
     private Date createTime;
 
     /**
+     * 中金支付是否签约,0:未签约,1:已签约
+     */
+    @Column(name="cpcn_is_signed")
+    private Integer chinaPayClearNetIsSigned;
+
+    /**
+     * 中金支付绑定流水号
+     */
+    @Column(name = "cpcn_protocol_no")
+    private  String  chinaPayClearNetProtocolNo;
+
+
+    /**
      * 签约短信验证码
      */
     @Transient
@@ -327,6 +340,22 @@ public class AccountManager {
         this.merOrderNo = merOrderNo;
     }
 
+    public Integer getChinaPayClearNetIsSigned() {
+        return chinaPayClearNetIsSigned;
+    }
+
+    public void setChinaPayClearNetIsSigned(Integer chinaPayClearNetIsSigned) {
+        this.chinaPayClearNetIsSigned = chinaPayClearNetIsSigned;
+    }
+
+    public String getChinaPayClearNetProtocolNo() {
+        return chinaPayClearNetProtocolNo;
+    }
+
+    public void setChinaPayClearNetProtocolNo(String chinaPayClearNetProtocolNo) {
+        this.chinaPayClearNetProtocolNo = chinaPayClearNetProtocolNo;
+    }
+
     @Override
     public String toString() {
         return "AccountManager{" +
@@ -350,6 +379,10 @@ public class AccountManager {
                 ", baofuProtocolNo='" + baofuProtocolNo + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", createTime=" + createTime +
+                ", chinaPayClearNetIsSigned=" + chinaPayClearNetIsSigned +
+                ", chinaPayClearNetProtocolNo='" + chinaPayClearNetProtocolNo + '\'' +
+                ", smsCode='" + smsCode + '\'' +
+                ", merOrderNo='" + merOrderNo + '\'' +
                 '}';
     }
 }

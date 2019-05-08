@@ -74,7 +74,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
      * @return 返回签约结果的Message对象
      */
     @Override
-    public Message Sign(AccountManager accountManager, String channel) {
+    public Message sign(AccountManager accountManager, String channel) {
         OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
         Message message;
         if (operationStrategy != null) {

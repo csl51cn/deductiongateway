@@ -152,6 +152,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param accountManager 代扣卡相关信息
      * @return 返回签约结果的Message对象
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message sign(AccountManager accountManager) {
         Message message = null;
@@ -209,6 +210,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param mortgageDeductions mortgageDeduction列表
      * @throws Exception 执行代扣异常
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void pay(List<MortgageDeduction> mortgageDeductions) throws Exception {
         for (MortgageDeduction mortgageDeduction : mortgageDeductions) {
@@ -252,6 +254,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param mortgageDeduction 代扣记录
      * @return 返回包含代扣查询结果Message对象
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message queryPayResult(MortgageDeduction mortgageDeduction) {
         Message message = null;
@@ -277,6 +280,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
                     mortgageDeduction.setIssuccess("1");
                     mortgageDeduction.setResult(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode());
                     mortgageDeduction.setErrorResult("支付成功");
+                    calculateHandlingCharge(mortgageDeduction);
                     mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 } else if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_008.getCode(), result.getString("OrderStatus"))) {
                     //订单状态不为"0014,数据接收成功"为失败

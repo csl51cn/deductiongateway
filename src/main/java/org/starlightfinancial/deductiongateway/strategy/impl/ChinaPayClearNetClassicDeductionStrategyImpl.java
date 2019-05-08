@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.ChinaPayClearNetConfig;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.common.Message;
@@ -31,12 +32,12 @@ import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description: 中金支付渠道
+ * @Description: 中金支付单笔代扣渠道
  * @date: Created in 2019/4/16 14:54
  * @Modified By:
  */
 @Service("0006")
-public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy {
+public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationStrategy {
 
     @Autowired
     private BeanConverter beanConverter;
@@ -50,10 +51,12 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
     @Autowired
     private ChinaPayClearNetConfig chinaPayClearNetConfig;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChinaPayClearNetDeductionStrategyImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChinaPayClearNetClassicDeductionStrategyImpl.class);
 
-
-    private static final BigDecimal Twenty_THOUSAND = new BigDecimal(20000);
+    /**
+     * 计算手续费时使用的界限值
+     */
+    private static final BigDecimal TWENTY_THOUSAND = new BigDecimal(20000);
 
 
     /**
@@ -95,6 +98,7 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
      * @param mortgageDeductions mortgageDeduction列表
      * @throws Exception 执行代扣异常
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void pay(List<MortgageDeduction> mortgageDeductions) throws Exception {
         for (MortgageDeduction mortgageDeduction : mortgageDeductions) {
@@ -202,7 +206,7 @@ public class ChinaPayClearNetDeductionStrategyImpl implements OperationStrategy 
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-        if (totalAmount.compareTo(Twenty_THOUSAND) <= 0) {
+        if (totalAmount.compareTo(TWENTY_THOUSAND) <= 0) {
             //代扣金额<=20000
             mortgageDeduction.setHandlingCharge(chinaPayClearNetConfig.getLevelOne());
         } else {

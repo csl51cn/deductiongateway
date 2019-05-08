@@ -5,6 +5,7 @@
     <title>代扣结果统计</title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
 </head>
 <body>
 <!-- start: Header -->
@@ -149,54 +150,61 @@
                         </div>
                         <div class="modal-body">
                             <input type="text" style="display:none;" id="rowId">
-                            <table>
-                                <!--<tr>-->
-                                <!--<td>-->
-                                <!--<img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small" style='margin-right:15px;'>银联快捷支付</button>-->
-                                <!--</td>-->
-                                <!--<td>-->
-                                <!--<img src="/img/unionpay.png" style="max-width:40%;"><button type="button" id="chinaPayNewDeductionBtn" class="deduction btn btn-primary   btn-small" style="margin-right:15px;">银联代扣</button>-->
-                                <!--</td>-->
-                                <!--</tr>-->
-                                <tr>
-                                    <td>
-                                        <img src="/img/unionpay.png" style="max-width:40%;">
+                            <!--<div class="flex-container">-->
+                                <!--<span style="width: 50%"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
+                                        <!--type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small"-->
+                                        <!--style='margin-right:15px;'>银联快捷支付</button></span>-->
+                                <!--<span style="width: 50%"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
+                                        <!--type="button" id="chinaPayNewDeductionBtn"-->
+                                        <!--class="deduction btn btn-primary   btn-small"-->
+                                        <!--style="margin-right:15px;">银联代扣</button></span>-->
+                            <!--</div>-->
+                            <div class="flex-container">
+                                 <span class="half-width-span"> <img src="/img/unionpay.png" style="max-width:40%;">
                                         <button type="button" id="chinaPayClassicDeductionBtn"
                                                 class="deduction btn btn-primary  btn-small" style="margin-right:15px;">
                                             银联旧代扣
-                                        </button>
-                                        <!--<img src="/img/baofu.png" style="max-width:40%;"><button type="button" id="baoFuDeductionBtn" class="deduction btn btn-info  btn-small" style="margin-right:15px;">宝付协议支付</button>-->
-                                    </td>
-                                    <td>
-                                        <img src="/img/baofu.png" style="max-width:40%;">
+                                        </button></span>
+                                <span class="half-width-span"> <img src="/img/baofu.png" style="max-width:40%;">
                                         <button type="button" id="baoFuClassicDeductionBtn"
                                                 class="deduction btn btn-info  btn-small" style="margin-right:15px;">
                                             宝付代扣
+                                        </button></span>
+
+                            </div>
+
+                            <div class="flex-container">
+                                <span >
+                                      <img src="/img/cpcn.png" style="max-width:40%;">
+                                    <button type="button" id="chinaPayClearNetClassicDeductionBtn"
+                                            class="deduction btn btn-info  btn-small" style="margin-right:15px;">
+                                        中金代扣
+                                    </button>
+                                </span>
+
+                                <span>
+                                      <button type="button" id="manualConfirmBtn"
+                                              class="manualConfirm btn btn-default  btn-small"
+                                              style="margin-right:15px;">人工确认成功
                                         </button>
-                                    </td>
-                                    <td>
-                                        <img src="/img/cpcn.png" style="max-width:45%;">
-                                        <button type="button" id="chinaPayClearNetClassicDeductionBtn"
-                                                class="deduction btn btn-info  btn-small" style="margin-right:15px;">
-                                            中金代扣
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button type="button" id="manualConfirmBtn"
-                                                class="manualConfirm btn btn-default  btn-small"
-                                                style="margin-right:15px;">人工确认成功
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <button type="button" id="queryResultBtn"
-                                                class="manualConfirm btn btn-default  btn-small"
-                                                style="margin-right:15px;">查询扣款结果
-                                        </button>
-                                    </td>
-                                </tr>
-                            </table>
+                                </span>
+                                <span> <button type="button" id="queryResultBtn"
+                                               class=" btn btn-default  btn-small"
+                                               style="margin-right:15px;">查询扣款结果 </button></span>
+                            </div>
+                            <!--<div class="flex-container">-->
+                                   <!--<span class="half-width-span">-->
+                                     <!--<img src="/img/baofu.png" style="max-width:40%;"><button type="button"-->
+                                                                                              <!--id="baoFuDeductionBtn"-->
+                                                                                              <!--class="deduction btn btn-info  btn-small"-->
+                                                                                              <!--style="margin-right:15px;">宝付协议支付</button>-->
+                                <!--</span>-->
+                                 <!--<span class="half-width-span">  <img src="/img/cpcn.png" style="max-width:40%;">-->
+                                    <!--<button type="button" id="chinaPayClearNetClassicQuickBtn"-->
+                                            <!--class="deduction btn btn-info  btn-small" style="margin-right:15px;">-->
+                                        <!--中金协议支付-->
+                                    <!--</button></span>-->
+                            <!--</div>-->
                         </div>
                         <div class="modal-footer">
                         </div>
@@ -279,7 +287,7 @@
             $('#actionModal').modal();
             $(".btn-success").unbind("click");
             $("#rowId").val(row.id);
-            if (row.channel == "0006" && (row.issuccess != "0" || row.issuccess != "1")) {
+            if ((row.channel == "0006" || row.channel == "0007") && (row.issuccess != "0" || row.issuccess != "1")) {
                 $("#queryResultBtn").show();
             } else {
                 $("#queryResultBtn").hide();
@@ -512,8 +520,8 @@
         // });
         <!--宝付协议支付按钮功能-->
         $("#baoFuDeductionBtn").click(function () {
-            var url  ="/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0002"},url);
+            var url = "/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0002"}, url);
         });
 
         <!--银联白名单-->
@@ -536,6 +544,12 @@
             var url = "/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0006"}, url);
         });
+        <!--中金协议支付-->
+        $("#chinaPayClearNetClassicQuickBtn").click(function () {
+            var url = "/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0007"}, url);
+        });
+
         var value;
         <!--查询扣款结果按钮功能-->
         $("#queryResultBtn").click(function () {

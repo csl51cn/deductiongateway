@@ -40,7 +40,7 @@ public interface ChannelDispatchService {
      * @param channel        渠道
      * @return 返回签约结果的Message对象
      */
-    Message Sign(AccountManager accountManager, String channel);
+    Message sign(AccountManager accountManager, String channel);
 
     /**
      * 执行代扣

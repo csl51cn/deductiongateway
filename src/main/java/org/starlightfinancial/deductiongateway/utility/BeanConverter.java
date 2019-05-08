@@ -24,6 +24,7 @@ import org.starlightfinancial.deductiongateway.domain.remote.RepaymentInfo;
 import org.starlightfinancial.deductiongateway.enums.*;
 import org.starlightfinancial.deductiongateway.service.CacheService;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2011Req;
+import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Tx2511Req;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -78,6 +79,7 @@ public class BeanConverter {
 
         CHINA_PAY_CLEAR_NET = new ArrayList<>();
         CHINA_PAY_CLEAR_NET.add(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION);
+        CHINA_PAY_CLEAR_NET.add(DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK);
 
     }
 
@@ -194,7 +196,7 @@ public class BeanConverter {
 
 
     /**
-     * 将MortgageDeduction转换为BaoFuRequestParams
+     * 将MortgageDeduction转换为宝付协议支付BaoFuRequestParams
      *
      * @param mortgageDeduction 代扣数据
      * @return 宝付交易参数
@@ -203,7 +205,6 @@ public class BeanConverter {
         BaoFuRequestParams baoFuRequestParams = new BaoFuRequestParams();
         //设置订单号
         baoFuRequestParams.setTransId(MerSeq.tickOrder());
-        //设置订单金额
 
         //设置订单金额
         String amount1 = mortgageDeduction.getSplitData1().toString();
@@ -228,7 +229,9 @@ public class BeanConverter {
 
         //设置协议号
         AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
-        baoFuRequestParams.setProtocolNo(accountManager.getBaofuProtocolNo());
+        if (Objects.nonNull(accountManager)) {
+            baoFuRequestParams.setProtocolNo(accountManager.getBaofuProtocolNo());
+        }
 
         //设置报文发送时间
         baoFuRequestParams.setSendTime(Utility.convertToString(new Date(), "yyyy-MM-dd HH:mm:ss"));
@@ -655,10 +658,10 @@ public class BeanConverter {
             //设置服务费入账银行:铠岳的银联,宝付渠道各自都是使用的相同银行进行商户开户的,润坤的银联,宝付渠道一致.中金支付的铠岳与润坤都是另外的卡
             if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
                 //铠岳
-                if(isChinaPayClearNet){
+                if (isChinaPayClearNet) {
                     //中金支付
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CMBC_0202.getCode());
-                }else{
+                } else {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
                 }
 
@@ -906,4 +909,57 @@ public class BeanConverter {
     }
 
 
+    /**
+     * 转换为中金支付快捷支付请求参数
+     *
+     * @param mortgageDeduction 代扣数据
+     * @return 转换后的请求参数
+     */
+    public Tx2511Req transToTx2511Req(MortgageDeduction mortgageDeduction) {
+        Tx2511Req tx2511Request = new Tx2511Req();
+        // 创建交易请求对象
+
+        tx2511Request.setInstitutionID(chinaPayClearNetConfig.getClassicMemberId());
+        tx2511Request.setPaymentNo(MerSeq.tickOrder());
+
+        //设置订单金额
+        String amount1 = mortgageDeduction.getSplitData1().toString();
+        String amount2 = mortgageDeduction.getSplitData2().toString();
+        int m1 = 0;
+        if (StringUtils.isNotBlank(amount1)) {
+            m1 = new BigDecimal(amount1).movePointRight(2).intValue();
+        }
+        int m2 = 0;
+        if (StringUtils.isNotBlank(amount2)) {
+            m2 = new BigDecimal(amount2).movePointRight(2).intValue();
+        }
+        tx2511Request.setAmount(m1 + m2);
+
+        //设置协议号
+        AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(), 1, mortgageDeduction.getContractNo());
+        if (Objects.nonNull(accountManager)) {
+            tx2511Request.setTxSNBinding(accountManager.getChinaPayClearNetProtocolNo());
+        }
+
+        //设置分账两个相关参数splitType,settlementFlag
+        //设置分账方式:按金额分账,10不分账,20按比例分账,30按金额分账
+        if (m2 != 0) {
+            tx2511Request.setSplitType("30");
+        } else {
+            tx2511Request.setSplitType("10");
+        }
+        //不分账settlementFlag格式为0001
+        StringBuilder settlementFlag = new StringBuilder("0001");
+        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
+            //设置分账信息:格式0001_5000,0002_1000,0003_4000，总金额是10000分，0001结算标识分账5000分，0002结算标识分账1000分，0003结算标识分账4000分
+            settlementFlag.append("_").append(m1);
+            settlementFlag.append(",").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode())).append("_").append(m2);
+        }
+        tx2511Request.setSettlementFlag(settlementFlag.toString());
+        tx2511Request.setRemark("");
+        tx2511Request.setValidDate("");
+        tx2511Request.setCvn2("");
+        tx2511Request.setSharedInstitutionID("");
+        return tx2511Request;
+    }
 }

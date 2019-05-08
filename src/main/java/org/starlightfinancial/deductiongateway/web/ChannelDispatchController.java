@@ -79,8 +79,8 @@ public class ChannelDispatchController {
      */
     @RequestMapping(value = "/sign.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Message Sign(AccountManager accountManager, String channel) {
-        Message message = channelDispatchService.Sign(accountManager, channel);
+    public Message sign(AccountManager accountManager, String channel) {
+        Message message = channelDispatchService.sign(accountManager, channel);
         return message;
     }
 

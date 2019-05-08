@@ -35,12 +35,12 @@ public interface AccountManagerRepository extends JpaRepository<AccountManager, 
 
     /**
      * 根据合同号,银行卡号,账户名和身份证号查询代扣卡信息
-     * @param contractNo 合同号
-     * @param account 银行卡号
-     * @param accountName 账户名
+     *
+     * @param contractNo      合同号
+     * @param account         银行卡号
+     * @param accountName     账户名
      * @param certificationNo 身份证号
      * @return
      */
     AccountManager findByContractNoAndAccountAndAccountNameAndCertificateNo(String contractNo, String account, String accountName, String certificationNo);
-
 }
