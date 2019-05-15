@@ -6,3 +6,8 @@
 .half-width-span{
     width: 50%
 }
+
+mark {
+    background-color: #00ff90;
+    font-weight: bold;
+}

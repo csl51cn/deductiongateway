@@ -145,5 +145,15 @@ public class ChannelDispatchController {
         return message;
     }
 
+    /**
+     * 获取手续费最少的渠道
+     * @param id 主键
+     * @return
+     */
+    @RequestMapping(value = "/getHandlingChargeLowestChannel.do")
+    @ResponseBody
+    public Message getHandlingChargeLowestChannel(Integer id){
+        return channelDispatchService.getHandlingChargeLowestChannel(id);
+    }
 
 }

@@ -4,10 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
-import org.starlightfinancial.deductiongateway.domain.local.MD5ValueRepository;
-import org.starlightfinancial.deductiongateway.domain.local.SysUser;
-import org.starlightfinancial.deductiongateway.domain.local.SysUserRepository;
+import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.service.SystemService;
 import org.starlightfinancial.deductiongateway.utility.EncryptHelper;
 
@@ -23,6 +20,10 @@ public class SystemServiceImpl implements SystemService {
 
     @Autowired
     MD5ValueRepository md5ValueRepository;
+
+
+    @Autowired
+    SysDictRepository sysDictRepository;
 
     /**
      * 根据登录名和密码查询用户
@@ -80,5 +81,16 @@ public class SystemServiceImpl implements SystemService {
     public void resetPassword(String password, SysUser user) {
         user.setLoginPassword(EncryptHelper.Instance.getEncString(password));
         sysUserRepository.saveAndFlush(user);
+    }
+
+    /**
+     * 根据字典类型查找字典值
+     *
+     * @param dicType 字典类型
+     * @return
+     */
+    @Override
+    public List<SysDict> findByDicType(String dicType) {
+        return sysDictRepository.findByDicType(dicType);
     }
 }

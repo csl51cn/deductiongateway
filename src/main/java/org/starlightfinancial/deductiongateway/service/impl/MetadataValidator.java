@@ -45,7 +45,7 @@ public class MetadataValidator extends Decorator implements Validator, Initializ
         if (constraintViolationSet.size() > 0) {
             StringBuilder message = new StringBuilder(autoBatchDeduction.getDateId());
             for (ConstraintViolation<AutoBatchDeduction> constraintViolation : constraintViolationSet) {
-                message.append(constraintViolation.getMessage() + "\n");
+                message.append(constraintViolation.getMessage()).append("\n");
             }
             throw new ValidationException(message.toString());
         }

@@ -14,7 +14,7 @@ import java.util.Date;
  * @author sili.chen
  */
 @Entity(name = "BU_MORTGAGEDEUCTION")
-public class MortgageDeduction implements Serializable {
+public class MortgageDeduction implements Serializable, Cloneable {
 
 
     private static final long serialVersionUID = -8390682495500009884L;
@@ -430,5 +430,21 @@ public class MortgageDeduction implements Serializable {
 
     public void setHandlingCharge(BigDecimal handlingCharge) {
         this.handlingCharge = handlingCharge;
+    }
+
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return  super.clone();
+    }
+
+    public MortgageDeduction cloneSelf(){
+        MortgageDeduction o  =null;
+        try {
+            o= (MortgageDeduction) clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return o;
     }
 }

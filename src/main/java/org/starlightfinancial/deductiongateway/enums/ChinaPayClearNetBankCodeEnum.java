@@ -15,7 +15,7 @@ public enum ChinaPayClearNetBankCodeEnum {
     BANK_CODE_02("0103", "103", "中国农业银行"),
     BANK_CODE_03("0105", "105", "中国建设银行"),
     BANK_CODE_04("0104", "104", "中国银行"),
-    BANK_CODE_05("", "301", "中国交通银行"),
+    BANK_CODE_05("0301", "301", "交通银行"),
     BANK_CODE_06("0309", "309", "兴业银行"),
     BANK_CODE_07("0302", "302", "中信银行"),
     BANK_CODE_08("0303", "303", "中国光大银行"),
@@ -28,7 +28,8 @@ public enum ChinaPayClearNetBankCodeEnum {
     BANK_CODE_15("0306", "306", "广东发展银行"),
     BANK_CODE_16("920", "304", "华夏银行"),
     BANK_CODE_17("910", "441", "重庆银行"),
-    BANK_CODE_18("777", "321", "三峡银行");
+    BANK_CODE_18("777", "321", "三峡银行"),
+    BANK_CODE_19("0910", "1413", "重庆农村商业银行");
 
     /**
      * 银联银行编码

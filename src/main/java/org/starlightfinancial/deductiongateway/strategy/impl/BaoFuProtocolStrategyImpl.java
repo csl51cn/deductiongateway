@@ -231,7 +231,6 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode());
             mortgageDeduction.setPayTime(Utility.convertToDate(baoFuRequestParams.getSendTime(), "yyyy-MM-dd HH:mm:ss"));
-
             try {
                 Map map = HttpClientUtil.send(baofuConfig.getProtocolUrl(), baoFuRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
@@ -239,11 +238,8 @@ public class BaoFuProtocolStrategyImpl implements OperationStrategy {
                 String errorCodeDesc = BFErrorCodeEnum.getValueByCode(jsonObject.getString("error_code"));
                 mortgageDeduction.setErrorResult( StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
                 mortgageDeduction.setResult(jsonObject.getString("error_code"));
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
-                //保存订单号
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
     }

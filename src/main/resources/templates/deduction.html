@@ -100,12 +100,13 @@
                                             <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" class="btn"  value="查询"/>
+                                            <input type="button" id="DeductionBtn" class="btn"  value="代扣"/>
                                             <!--<input type="button" id="deductionBtn" class="btn"  value="银联快捷支付"/>-->
                                             <!--<input type="button" id="chinaPayNewDeductionBtn"  class="btn"  value="银联代扣"/>-->
                                             <!--<input type="button" id="baoFuDeductionBtn" class="btn"  value="宝付协议支付"/>-->
-                                            <input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>
-                                            <input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>
-                                            <input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>
+                                            <!--<input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>-->
+                                            <!--<input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>-->
+                                            <!--<input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>-->
                                             <!--<input type="button" id="chinaPayClearNetDeductionBtn" class="btn"  value="中金快捷支付"/>-->
                                             <input type="button" id="deleteBtn" class="btn"  value="删除"/>
                                         </td>
@@ -332,31 +333,34 @@
         //     executeDeduct("0002");
         // });
         <!--银联旧代扣-->
-        $("#chinaPayClassicDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-            executeDeduct("0003");
-        });
+        // $("#chinaPayClassicDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+        //     executeDeduct("0003");
+        // });
         <!--银联新代扣-->
         // $("#chinaPayNewDeductionBtn").click(function () {
         //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
         //     executeDeduct("0004");
         // });
         <!--宝付旧代扣-->
-        $("#baoFuClassicDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
-            executeDeduct("0005");
-        });
+        // $("#baoFuClassicDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
+        //     executeDeduct("0005");
+        // });
 
         <!--中金支付单笔代扣-->
-        $("#chinaPayClearNetClassicDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
-            executeDeduct("0006");
-        });
+        // $("#chinaPayClearNetClassicDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
+        //     executeDeduct("0006");
+        // });
 
         <!--中金支付单笔代扣-->
         $("#chinaPayClearNetDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
             executeDeduct("0007");
+        });
+        $("#DeductionBtn").click(function () {
+            executeDeduct("");
         });
 
 

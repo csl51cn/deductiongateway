@@ -326,7 +326,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 nonDeductionRepaymentInfo.setBankName(null);
             }
         }
-        String differenceFieldValue = Utility.compareObjectFieldValue(nonDeductionRepaymentInfo, nonDeductionRepaymentInfoInDataBase);
+        String differenceFieldValue = Utility.compareObjectFieldValue(nonDeductionRepaymentInfoInDataBase, nonDeductionRepaymentInfo);
         nonDeductionRepaymentInfoRepository.saveAndFlush(nonDeductionRepaymentInfo);
         LOGGER.info("更新非代扣还款信息,操作人:[{}],非代扣还款记录id:[{}],更新情况:{}", Utility.getLoginUserName(session),
                 nonDeductionRepaymentInfo.getId(), differenceFieldValue);

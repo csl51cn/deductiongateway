@@ -254,11 +254,9 @@ public class ChinaPayClearNetQuickStrategyImpl implements OperationStrategy {
                         mortgageDeduction.setResult(body.getString("ResponseCode"));
                         mortgageDeduction.setIssuccess("0");
                     }
-                    mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 }
             } catch (Exception e) {
                 LOGGER.error("中金快捷支付异常,记录id"+mortgageDeduction.getId(),e);
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
 
@@ -322,4 +320,6 @@ public class ChinaPayClearNetQuickStrategyImpl implements OperationStrategy {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
         mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getQuickRealTimeCharge()));
     }
+
+
 }

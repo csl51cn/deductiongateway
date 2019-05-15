@@ -32,7 +32,7 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChinaPayClassicDeductionStrategyImpl.class);
 
     @Autowired
-    private MortgageDeductionRepository mortgageDeductionRepository;
+    private LimitManagerRepository limitManagerRepository;
 
     @Autowired
     private BeanConverter beanConverter;
@@ -96,12 +96,10 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setPayTime(new Date());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_CLASSIC_DEDUCTION.getCode());
-
             String chkValue = UnionPayUtil.sign(goPayBean.getMerId(), goPayBean.createStringBuffer(), chinaPayConfig.getClassicPfxFile());
             if (StringUtils.isEmpty(chkValue) || chkValue.length() != 256) {
                 LOGGER.debug("银联报文签名异常,订单号:{},合同号:{}", mortgageDeduction.getOrdId(), mortgageDeduction.getContractNo());
                 mortgageDeduction.setErrorResult("银联报文签名异常");
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
                 continue;
             }
             goPayBean.setChkValue(chkValue);
@@ -119,11 +117,8 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
                     mortgageDeduction.setIssuccess("0");
                 }
                 mortgageDeduction.setErrorResult(ErrorCodeEnum.getValueByCode(payStat));
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
-                //保存订单号
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
     }
@@ -158,6 +153,8 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setHandlingCharge(chinaPayConfig.getLevelThree());
         }
     }
+
+
 
 
 }

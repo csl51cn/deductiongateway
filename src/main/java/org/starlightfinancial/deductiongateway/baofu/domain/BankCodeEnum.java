@@ -8,7 +8,7 @@ public enum BankCodeEnum {
     BANK_CODE_02("0103", "ABC", "中国农业银行"),
     BANK_CODE_03("0105", "CCB", "中国建设银行"),
     BANK_CODE_04("0104", "BOC", "中国银行"),
-    BANK_CODE_05("", "BCOM", "中国交通银行"),
+    BANK_CODE_05("0301", "BCOM", "交通银行"),
     BANK_CODE_06("0309", "CIB", "兴业银行"),
     BANK_CODE_07("0302", "CITIC", "中信银行"),
     BANK_CODE_08("0303", "CEB", "中国光大银行"),

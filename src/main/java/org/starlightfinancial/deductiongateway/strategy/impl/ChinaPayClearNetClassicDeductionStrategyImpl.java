@@ -141,11 +141,8 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
                     mortgageDeduction.setResult(requestResult.getErrorCode());
                     mortgageDeduction.setIssuccess("0");
                 }
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
-                //保存订单号
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
     }
@@ -215,5 +212,6 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
         }
 
     }
+
 }
 

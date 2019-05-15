@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <div class="modal fade" id="editModal" style="width: 600px">
+            <div class="modal fade" id="editModal" style="width: 600px;display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
                         <div class="modal-header">
@@ -69,14 +69,15 @@
                             <form id="editForm">
                                 <table class="table">
                                     <tbody>
-                                    <tr>
+                                    <tr style="display:none">
                                         <td><label class="control-label" for="txt_bankcode">银行代码</label></td>
                                         <td><input type="text" name="bankCode" id="txt_bankcode" placeholder="银行代码">
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><label class="control-label" for="txt_bankname">银行名称</label></td>
-                                        <td><input type="text" name="bankName" id="txt_bankname" placeholder="银行名称">
+                                        <td><select name="bankName" id="txt_bankname">
+                                        </select>
                                         </td>
                                     </tr>
                                     <tr>
@@ -100,6 +101,18 @@
                                         <td><input type="text" name="singleDayLimit" id="txt_singledaylimit"
                                                    placeholder="单日单卡限额"></td>
                                     </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_channel">渠道</label></td>
+                                        <td><select name="channel" id="txt_channel">
+                                        </select></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_enabled">启用状态</label></td>
+                                        <td><select name="enabled" id="txt_enabled">
+                                            <option value="1">启用</option>
+                                            <option value="0">停用</option>
+                                        </select></td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </form>
@@ -119,13 +132,20 @@
                     <div class="box-content">
                         <div>
                             <form class="form-horizontal" id="form">
-                                <table class="table-bordered">
-                                    <tr with="33%">
-                                        <td>
-                                            <input type="button" id="addBtn" class="btn" value="新增"/>
-                                        </td>
-                                    </tr>
-                                </table>
+                                <div class="flex-container">
+                                    <input type="button" id="addBtn" class="btn" value="新增"/>
+                                    <div>银行: <select id="query_bank">
+                                    </select></div>
+                                    <div>代扣渠道:<select id="query_channel">
+                                    </select></div>
+                                    <div>启用状态<select id="query_enabled">
+                                        <option value="">所有</option>
+                                        <option value="1">启用</option>
+                                        <option value="0">停用</option>
+                                    </select></div>
+
+                                </div>
+
                             </form>
                         </div>
                         <table id="table"></table>
@@ -152,7 +172,14 @@
 
 
 <script type="text/javascript" th:inline="javascript">
+    var channel = ["银联快捷支付", "宝付协议支付", "银联白名单代扣", "银联新无卡代扣", "宝付代扣", "中金代扣", "中金快捷支付"];
+    var bank = [[${@systemServiceImpl.findByDicType('726')}]];
     var staffId = [[${session.loginUser.staffId}]];
+    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
+        $("#addBtn").show();
+    } else {
+        $("#addBtn").hide();
+    }
     var columns = [{
         field: 'state',
         checkbox: true
@@ -166,9 +193,6 @@
     }, {
         field: 'id',
         title: 'id'
-    }, {
-        field: 'bankCode',
-        title: '银行代码'
     }, {
         field: 'bankName',
         title: '银行名称'
@@ -218,6 +242,24 @@
             }
             return value;
         }
+    }, {
+        field: 'channel',
+        title: '支付渠道',
+        formatter: function (value, row, index) {
+            return channel[parseInt(value) - 1];
+        }
+    }, {
+        field: 'enabled',
+        title: "启用状态",
+        editable: {
+            type: 'select',
+            title: '启用状态',
+            source: [{value: 1, text: "启用"}, {value: 0, text: "停用"}],
+            validate: function (v) {
+                if (!v) return '不能为空';
+            }
+        }
+
     }];
     $(function () {
         function initTable() {
@@ -227,8 +269,8 @@
                 url: "/limitManagerController/queryLimit.do",
                 queryParams: queryParams,
                 sidePagination: "server",
-                pageSize: 10,
-                pageList: [10, 20, 100, 200, 500],
+                pageSize: 20,
+                pageList: [10, 20, 50, 100, 200, 500],
                 smartDisplay: true,
                 cache: false,
                 height: $(window).height() - 300,
@@ -250,7 +292,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 ||  staffId == 1211 || staffId == 7523 ) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
                         $.ajax({
                             type: "post",
                             url: "/limitManagerController/saveOrUpdateLimit.do",
@@ -285,36 +327,119 @@
         };
         initTable();
         $('#table').bootstrapTable('hideColumn', 'id');
+
+
+        function initEditModal() {
+            //初始化添加限额记录的渠道下拉框
+            var channelSelect = $("#txt_channel");
+            var queryChannel = $("#query_channel");
+            queryChannel.append("<option value=''> 所有</option>")
+            for (var i = 0, channelSize = channel.length; i < channelSize; i++) {
+                var value = ("0000" + (i + 1)).substr(-4);
+                channelSelect.append("<option value='" + value + "'>" + channel[i] + "</option>");
+                queryChannel.append("<option value='" + value + "'>" + channel[i] + "</option>")
+            }
+
+            var bankName = $("#txt_bankname");
+            var queryBank = $("#query_bank");
+            queryBank.append("<option value=''> 所有</option>");
+            //初始化支持的银行
+            for (var j = 0, bankSize = bank.length; j < bankSize; j++) {
+                bankName.append("<option value='" + bank[j].dicValue + "'>" + bank[j].dicValue + "</option>");
+                queryBank.append("<option value='" + bank[j].dicValue + "'>" + bank[j].dicValue + "</option>");
+            }
+            bankName.first().prop("selected", true);
+            var bankCode = $("#txt_bankcode");
+            bankCode.val(bank[0].dicKey);
+            bankName.change(function () {
+                //bankName变化时,修改bankCode
+                var selectedBankName = $(this).children('option:selected').val();
+                for (var j = 0, bankSize = bank.length; j < bankSize; j++) {
+                    if (bank[j].dicValue === selectedBankName) {
+                        bankCode.val(bank[j].dicKey);
+                    }
+                }
+            });
+        }
+
+        initEditModal();
+        //查询条件银行名变化时
+        $("#query_bank").change(function () {
+            query()
+        });
+        //查询条件渠道变化时
+        $("#query_channel").change(function () {
+            query()
+        });
+        //查询启用状态变化时
+        $("#query_enabled").change(function () {
+            query()
+        });
+
+        function query() {
+            $('#table').bootstrapTable('removeAll');
+            $('#table').bootstrapTable('refresh', {
+                url: '/limitManagerController/queryLimit.do',
+                query: queryParams()
+            });
+        }
+
         function queryParams() {
+
             return {
                 pageNumber: this.pageNumber,
-                pageSize: this.pageSize
+                pageSize: this.pageSize,
+                bankName: $("#query_bank").val(),
+                channel: $("#query_channel").val(),
+                enabled: $("#query_enabled").val()
             }
         };
         <!--新增按钮功能-->
         $("#addBtn").click(function () {
-            $("#editForm")[0].reset();
+            $("#txt_singledaylimit").attr("value", "");
+            $("#txt_singlelimit").attr("value", "");
             $("#editModal").modal();
 
         });
         <!--新增限额模态框中的确认按钮功能-->
         $(".btn-success").click(function () {
+
+
             $.ajax({
                 type: "post",
-                url: "/limitManagerController/saveOrUpdateLimit.do",
-                data: $("#editForm").serialize(),
+                url: "/limitManagerController/isExisted.do",
+                data: {"bankCode": $("#txt_bankcode").val(), "channel": $("#txt_channel").val()},
                 dataType: 'JSON',
                 success: function (data) {
-                    if (data == "1") {
-                        setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                        if (data == "1") {
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                        } else {
-                            noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                        }
+                    if (data.code === "0000") {
+                        $.ajax({
+                            type: "post",
+                            url: "/limitManagerController/saveOrUpdateLimit.do",
+                            data: $("#editForm").serialize(),
+                            dataType: 'JSON',
+                            success: function (data) {
+                                if (data == "1") {
+                                    setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                    if (data == "1") {
+                                        noty({
+                                            'text': '执行完成',
+                                            'layout': 'center',
+                                            'type': 'information',
+                                            "timeout": "4000"
+                                        });
+                                    } else {
+                                        noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
                     }
                 }
             });
+
+
         });
 
 

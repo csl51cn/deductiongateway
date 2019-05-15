@@ -37,7 +37,7 @@ public class BusinessTransactionServiceImpl implements BusinessTransactionServic
         //为使用并行流,将List转换为线程安全的List
         List<Map<String, Object>> synchronizedAllData = Collections.synchronizedList(allData);
         //合同号-BusinessTransaction映射的Map
-        ConcurrentHashMap<String, BusinessTransaction> concurrentHashMap = new ConcurrentHashMap<>(8000);
+        ConcurrentHashMap<String, BusinessTransaction> concurrentHashMap = new ConcurrentHashMap<>(9500);
         //使用并行流处理原始的放款业务信息,如果同一个合同号有多条数据,合并成到一个BusinessTransaction对象中
         synchronizedAllData.parallelStream().forEach(map -> {
             //通过合同编号获取BusinessTransaction对象
@@ -55,7 +55,6 @@ public class BusinessTransactionServiceImpl implements BusinessTransactionServic
             //添加企业共借人和担保人
             businessTransaction.getCompanyCoBorrowerAndGuarantor().add((String) map.get("companyCoBorrowerAndGuarantor"));
         });
-
         return concurrentHashMap;
     }
 }

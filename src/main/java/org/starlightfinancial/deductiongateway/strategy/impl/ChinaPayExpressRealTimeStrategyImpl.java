@@ -226,7 +226,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
             mortgageDeduction.setIsoffs("0");
             mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
             mortgageDeduction.setPayTime(new Date());
-
             try {
                 Map map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeUrl(), chinaPayRealTimeRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
@@ -239,11 +238,8 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
                 if (!StringUtils.equals(jsonObject.getString("error_code"), "0014")) {
                     mortgageDeduction.setIssuccess("0");
                 }
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
-                //保存订单号
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
     }
@@ -321,4 +317,5 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
             mortgageDeduction.setHandlingCharge(charge);
         }
     }
+
 }

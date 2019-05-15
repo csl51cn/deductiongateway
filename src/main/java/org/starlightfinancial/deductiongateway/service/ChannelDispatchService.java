@@ -5,6 +5,7 @@ import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -59,4 +60,20 @@ public interface ChannelDispatchService {
      * @return 返回包含代扣查询结果Message对象
      */
     Message queryPayResult(Integer id);
+
+    /**
+     * 如果没有指定代扣渠道,计算花费最少的代扣渠道来拆分.如果指定了代扣渠道,使用指定的代扣渠道拆分
+     *
+     * @param mortgageDeduction 待拆分的代扣记录
+     * @param channel           指定的代扣渠道
+     * @return 返回结果, 包含了代扣渠道以及拆分出来的代扣记录
+     */
+    Map<String, List<MortgageDeduction>> split(MortgageDeduction mortgageDeduction, String channel);
+
+    /**
+     * 获取手续费最少的渠道
+     * @param id 记录主键
+     * @return
+     */
+    Message getHandlingChargeLowestChannel(Integer id);
 }

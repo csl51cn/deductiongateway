@@ -1,10 +1,15 @@
 package org.starlightfinancial.deductiongateway.strategy;
 
+import org.springframework.beans.BeanUtils;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
+import org.starlightfinancial.deductiongateway.domain.local.LimitManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -66,4 +71,54 @@ public interface OperationStrategy {
      */
     void calculateHandlingCharge(MortgageDeduction mortgageDeduction);
 
+    /**
+     * 根据单笔限额拆分记录
+     *
+     * @param candidateMap      候选的拆分方案
+     * @param mortgageDeduction 代扣信息
+     * @param limitManager      限额
+     * @return
+     */
+    default void split(Map<BigDecimal, List<MortgageDeduction>> candidateMap, MortgageDeduction mortgageDeduction, LimitManager limitManager) {
+        //由于原始mortgageDeduction可能还有渠道需要使用,不能直接对原始的mortgageDeduction对象修改属性,
+        MortgageDeduction copyMortgageDeduction = mortgageDeduction.cloneSelf();
+        List<MortgageDeduction> result = new ArrayList<>();
+        copyMortgageDeduction.setChannel(limitManager.getChannel());
+        BigDecimal drawDownBxAmount = copyMortgageDeduction.getSplitData1();
+        BigDecimal drawDownFwfAmount = copyMortgageDeduction.getSplitData2();
+        BigDecimal totalAmount = drawDownBxAmount.add(drawDownFwfAmount);
+        BigDecimal singleLimit = limitManager.getSingleLimit();
+        BigDecimal bxAmount;
+        BigDecimal fwfAmount;
+
+        while (totalAmount.compareTo(singleLimit) > 0) {
+            if (drawDownFwfAmount.compareTo(singleLimit) >= 0) {
+                bxAmount = BigDecimal.ZERO;
+                fwfAmount = singleLimit;
+            } else {
+                bxAmount = singleLimit.subtract(drawDownFwfAmount);
+                fwfAmount = drawDownFwfAmount;
+            }
+
+            MortgageDeduction newMortgageDeduction = new MortgageDeduction();
+            BeanUtils.copyProperties(copyMortgageDeduction, newMortgageDeduction);
+            newMortgageDeduction.setId(null);
+            newMortgageDeduction.setSplitData1(bxAmount);
+            newMortgageDeduction.setSplitData2(fwfAmount);
+            calculateHandlingCharge(newMortgageDeduction);
+
+            drawDownBxAmount = drawDownBxAmount.subtract(bxAmount);
+            drawDownFwfAmount = drawDownFwfAmount.subtract(fwfAmount);
+            totalAmount = drawDownBxAmount.add(drawDownFwfAmount);
+            copyMortgageDeduction.setSplitData1(drawDownBxAmount);
+            copyMortgageDeduction.setSplitData2(drawDownFwfAmount);
+            result.add(newMortgageDeduction);
+        }
+        calculateHandlingCharge(copyMortgageDeduction);
+        result.add(copyMortgageDeduction);
+
+        BigDecimal handlingCharge = result.stream().map(MortgageDeduction::getHandlingCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        candidateMap.put(handlingCharge, result);
+
+    }
 }

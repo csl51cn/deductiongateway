@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.service;
 
 import org.starlightfinancial.deductiongateway.domain.local.MD5Value;
+import org.starlightfinancial.deductiongateway.domain.local.SysDict;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 
 import java.util.List;
@@ -36,8 +37,17 @@ public interface SystemService {
 
     /**
      * 更新密码
+     *
      * @param password 新密码
-     * @param user 用户
+     * @param user     用户
      */
-    void resetPassword(String password,SysUser user);
+    void resetPassword(String password, SysUser user);
+
+    /**
+     * 根据字典类型查找字典值
+     *
+     * @param dicType 字典类型
+     * @return
+     */
+    List<SysDict> findByDicType(String dicType);
 }

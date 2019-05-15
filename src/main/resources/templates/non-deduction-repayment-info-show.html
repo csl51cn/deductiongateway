@@ -13,10 +13,7 @@
     <link href="/css/uploadify.css" rel="stylesheet">
     <link href="/css/fileinput.min.css" rel="stylesheet">
     <style>
-        mark {
-            background-color: #00ff90;
-            font-weight: bold;
-        }
+
     </style>
 </head>
 <body>
@@ -664,7 +661,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7523) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7523) {
                         if (row.isUploaded == "1") {
                             noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             setTimeout(query, 4000);

@@ -105,7 +105,6 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setPayTime(new Date());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode());
-
             try {
                 Map map = HttpClientUtil.send(baofuConfig.getClassicUrl(), requestParams.switchToNvpList());
                 String returnData = (String) map.get("returnData");
@@ -123,11 +122,8 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
                 String respCode = parse.getObject("resp_code", String.class);
                 mortgageDeduction.setResult(respCode);
                 mortgageDeduction.setErrorResult(respMsg);
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             } catch (Exception e) {
                 e.printStackTrace();
-                //保存订单号
-                mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
             }
         }
     }
@@ -162,6 +158,7 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setHandlingCharge(baofuConfig.getLevelThree());
         }
     }
+
 
 
 }

@@ -49,6 +49,19 @@ public class LimitManager {
     @Column(name = "singledaylimit")
     private BigDecimal singleDayLimit;
 
+    /**
+     * 支付渠道
+     */
+    @Column(name = "channel")
+    private String channel;
+
+    /**
+     * 是否启用支付渠道:0-否,1-是
+     */
+    @Column(name = "enabled")
+    private String enabled;
+
+
     public Integer getId() {
         return id;
     }
@@ -95,5 +108,21 @@ public class LimitManager {
 
     public void setSingleDayLimit(BigDecimal singleDayLimit) {
         this.singleDayLimit = singleDayLimit;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public String getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(String enabled) {
+        this.enabled = enabled;
     }
 }
