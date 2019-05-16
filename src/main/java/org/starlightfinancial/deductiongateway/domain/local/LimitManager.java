@@ -1,7 +1,16 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 限额管理实体类
@@ -9,6 +18,7 @@ import java.math.BigDecimal;
  * @author senlin.deng
  */
 @Entity(name = "BU_LIMITMANAGER")
+@EntityListeners(AuditingEntityListener.class)
 public class LimitManager {
 
     /**
@@ -58,9 +68,40 @@ public class LimitManager {
     /**
      * 是否启用支付渠道:0-否,1-是
      */
-    @Column(name = "enabled")
+    @Column(name = "is_enabled")
     private String enabled;
 
+
+    /**
+     * 创建人
+     */
+    @Column(name = "create_by")
+    @CreatedBy
+    private Integer createBy;
+
+    /**
+     * 修改人
+     */
+    @Column(name = "last_modified_by")
+    @LastModifiedBy
+    private Integer lastModifiedBy;
+    /**
+     * 创建时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "GMT+8")
+    @Column(name = "gmt_create")
+    @CreatedDate
+    private Date gmtCreate;
+
+    /**
+     * 修改时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "GMT+8")
+    @Column(name = "gmt_modified")
+    @LastModifiedDate
+    private Date gmtModified;
 
     public Integer getId() {
         return id;
@@ -124,5 +165,37 @@ public class LimitManager {
 
     public void setEnabled(String enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(Integer createBy) {
+        this.createBy = createBy;
+    }
+
+    public Integer getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(Integer lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public Date getGmtCreate() {
+        return gmtCreate;
+    }
+
+    public void setGmtCreate(Date gmtCreate) {
+        this.gmtCreate = gmtCreate;
+    }
+
+    public Date getGmtModified() {
+        return gmtModified;
+    }
+
+    public void setGmtModified(Date gmtModified) {
+        this.gmtModified = gmtModified;
     }
 }

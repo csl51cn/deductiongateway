@@ -325,14 +325,14 @@ public class NonDeductionRepaymentInfoController {
     @ResponseBody
     public String modifyUploadStatus(String ids, HttpSession session) {
         if (StringUtils.isEmpty(ids)) {
-            return "请选择一条记录上传";
+            return "请选择一条记录修改";
         }
         try {
             nonDeductionRepaymentInfoService.modifyUploadStatus(ids, session);
             return "1";
         } catch (Exception e) {
             LOGGER.error("修改上传入账文件状态失败", e);
-            return "修改上传入账文件状态";
+            return "修改上传入账文件状态失败";
         }
     }
 }

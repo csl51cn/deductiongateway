@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.starlightfinancial.deductiongateway.service.LimitManagerService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 /**
@@ -42,21 +44,42 @@ public class LimitManagerController {
 
 
     /**
-     * 保存或更新记录
+     * 保存记录
      * @param limitManager
      * @return
      */
-    @RequestMapping(value = "/saveOrUpdateLimit.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/saveLimit.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public String saveOrUpdateLimit(LimitManager limitManager) {
+    public String saveLimit(LimitManager limitManager) {
         try {
-            limitManagerService.saveOrUpdateLimit(limitManager);
+            limitManagerService.saveLimit(limitManager);
             return "1";
         } catch (Exception e) {
-            log.debug("更新/保存限额管理记录失败", e);
+            log.debug("保存限额管理记录失败", e);
             return "0";
         }
     }
+
+     /**
+     * 更新记录
+     * @param limitManager
+     * @return
+     */
+    @RequestMapping(value = "/updateLimit.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String updateLimit(LimitManager limitManager) {
+        try {
+            limitManagerService.updateLimit(limitManager);
+            return "1";
+        } catch (Exception e) {
+            log.debug("更新限额管理记录失败", e);
+            return "0";
+        }
+    }
+
+
+
+
 
     /**
      * 判断传入的银行在传入渠道是否存在限额记录
@@ -75,6 +98,25 @@ public class LimitManagerController {
         }
 
     }
-
+    /**
+     * 修改上传入账文件状态
+     *
+     * @param ids 一个或多个记录的id
+     * @return 返回操作结果
+     */
+    @RequestMapping(value = "/modifyEnabledStatus.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String modifyEnabledStatus(String ids) {
+        if (StringUtils.isEmpty(ids)) {
+            return "请选择一条记录修改";
+        }
+        try {
+            limitManagerService.modifyEnabledStatus(ids);
+            return "1";
+        } catch (Exception e) {
+            log.error("修改启用状态失败", e);
+            return "修改启用状态失败";
+        }
+    }
 
 }

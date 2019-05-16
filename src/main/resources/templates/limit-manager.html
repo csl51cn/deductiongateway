@@ -56,7 +56,26 @@
                     </div>
                 </div>
             </div>
-
+            <div class="modal fade" id="confirmModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要执行吗？</p>
+                            <span id="logoImage"></span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" id="confirmdobtn" data-dismiss="modal">确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
             <div class="modal fade" id="editModal" style="width: 600px;display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content message_align">
@@ -134,6 +153,7 @@
                             <form class="form-horizontal" id="form">
                                 <div class="flex-container">
                                     <input type="button" id="addBtn" class="btn" value="新增"/>
+                                    <input type="button" id="modifyEnabledStatusBtn" class="btn" value="变更启用状态"/>
                                     <div>银行: <select id="query_bank">
                                     </select></div>
                                     <div>代扣渠道:<select id="query_channel">
@@ -177,8 +197,10 @@
     var staffId = [[${session.loginUser.staffId}]];
     if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
         $("#addBtn").show();
+        $("#modifyEnabledStatusBtn").show();
     } else {
         $("#addBtn").hide();
+        $("#modifyEnabledStatusBtn").hide();
     }
     var columns = [{
         field: 'state',
@@ -295,7 +317,7 @@
                     if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
                         $.ajax({
                             type: "post",
-                            url: "/limitManagerController/saveOrUpdateLimit.do",
+                            url: "/limitManagerController/updateLimit.do",
                             data: row,
                             dataType: 'JSON',
                             success: function (data) {
@@ -403,8 +425,6 @@
         });
         <!--新增限额模态框中的确认按钮功能-->
         $(".btn-success").click(function () {
-
-
             $.ajax({
                 type: "post",
                 url: "/limitManagerController/isExisted.do",
@@ -414,7 +434,7 @@
                     if (data.code === "0000") {
                         $.ajax({
                             type: "post",
-                            url: "/limitManagerController/saveOrUpdateLimit.do",
+                            url: "/limitManagerController/saveLimit.do",
                             data: $("#editForm").serialize(),
                             dataType: 'JSON',
                             success: function (data) {
@@ -442,6 +462,72 @@
 
         });
 
+        <!--进度条自动增长-->
+        function increment() {
+            value += 1;
+            if (value == 80) {
+                clearTimeout(st);
+                return;
+            }
+            $("#prog").css("width", value + "%")
+            st = setTimeout(increment, 500);
+        }
+        <!--更改上传状态-->
+        $("#modifyEnabledStatusBtn").click(function () {
+            var ids = [];
+            var rows = $('#table').bootstrapTable('getSelections');
+            for (var i = 0; i < rows.length; i++) {
+                ids.push(rows[i].id);
+            }
+            if (ids.length <= 0) {
+                noty({'text': '请选择一条记录更新启用状态', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                return;
+            }
+            $('#confirmModal').modal();
+            var confirmdobtn = $("#confirmdobtn");
+            confirmdobtn.unbind("click");
+            confirmdobtn.click(function () {
+                value = 0;
+                increment();
+                $('#myModal').modal('show');
+
+                $.ajax({
+                    url: "/limitManagerController/modifyEnabledStatus.do",
+                    timeout: 1800000,
+                    method: "POST",
+                    data: {"ids": ids.toString()},
+                    dataType: 'JSON',
+                    success: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        if ("1" == data) {
+                            setTimeout(query(), 4020);
+                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
+                        } else {
+                            noty({
+                                'text': '执行失败,' + data,
+                                'layout': 'center',
+                                'type': 'error',
+                                "timeout": "6000"
+                            });
+                        }
+
+                    },
+                    error: function (data) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': '执行失败,' + data.responseText,
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
+                    }
+                })
+            });
+
+
+        })
 
     })
 </script>

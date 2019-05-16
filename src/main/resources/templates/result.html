@@ -146,11 +146,23 @@
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                     aria-hidden="true">×</span></button>
                             <h4 class="modal-title" id="actionModalLabel">操作</h4>
-                            <mark id="recommendChannel" style=""></mark>
+                            <div class="flex-container">
+
+                                <span>
+                                      <button type="button" id="manualConfirmBtn"
+                                              class="manualConfirm btn btn-default  btn-small"
+                                              style="margin-right:15px;">人工确认成功
+                                        </button>
+                                </span>
+                                <span> <button type="button" id="queryResultBtn"
+                                               class=" btn btn-default  btn-small"
+                                               style="margin-right:15px;">查询扣款结果 </button></span>
+                            </div>
+
                         </div>
                         <div class="modal-body">
+                            <mark id="recommendChannel" style=""></mark>
                             <input type="text" style="display:none;" id="rowId">
-
                             <div class="flex-container">
                                  <span class="half-width-span"> <img src="/img/unionpay.png" style="max-width:30%;">
                                         <button type="button" id="chinaPayClassicDeductionBtn"
@@ -193,18 +205,7 @@
                                 <!--中金协议支付-->
                                 <!--</button></span>-->
                             </div>
-                            <div class="flex-container">
 
-                                <span>
-                                      <button type="button" id="manualConfirmBtn"
-                                              class="manualConfirm btn btn-default  btn-small"
-                                              style="margin-right:15px;">人工确认成功
-                                        </button>
-                                </span>
-                                <span> <button type="button" id="queryResultBtn"
-                                               class=" btn btn-default  btn-small"
-                                               style="margin-right:15px;">查询扣款结果 </button></span>
-                            </div>
 
                         </div>
                         <div class="modal-footer">
