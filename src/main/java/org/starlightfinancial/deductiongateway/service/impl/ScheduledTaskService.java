@@ -17,6 +17,7 @@ import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
 import org.starlightfinancial.deductiongateway.service.CacheService;
 import org.starlightfinancial.deductiongateway.service.FinancialVoucherService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.utility.SpringContextUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -119,8 +120,12 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从12点-23点每小时处理一次
      */
-//    @Scheduled(cron = "0 55 12-23 * * ?")
+    @Scheduled(cron = "0 55 12-23 * * ?")
     public void uploadAutoAccountingFile() {
+        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(),"prod")){
+            //如果不是生产环境,不执行
+            return;
+        }
         LOGGER.info("**********开始处理代扣自动入账excel文档**********");
         try {
             mortgageDeductionService.uploadAutoAccountingFile();
@@ -144,8 +149,12 @@ public class ScheduledTaskService {
     /**
      * 导入昨天的还款数据:成功代扣的和非代扣还款的,设置为9:30
      */
-//    @Scheduled(cron = "00 40 9 * * ? ")
+    @Scheduled(cron = "00 40 9 * * ? ")
     public void importRepaymentInfo() {
+        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(),"prod")){
+            //如果不是生产环境,不执行
+            return;
+        }
         LOGGER.info("**********开始导入昨天还款信息到业务系统**********");
         try {
             financialVoucherService.importRepaymentData();
