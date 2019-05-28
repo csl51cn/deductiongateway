@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
+import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.service.impl.Splitter;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
@@ -45,7 +46,9 @@ public class Delivery extends Decorator {
                     operationStrategy.pay(Collections.singletonList(mortgageDeduction));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    LOGGER.error("自动代扣时异常:");
+                    LOGGER.error("自动代扣时异常:合同号{},客户名称{},卡号{},渠道{}"
+                            ,mortgageDeduction.getContractNo(),mortgageDeduction.getCustomerName(),mortgageDeduction.getParam3()
+                            , DeductionChannelEnum.getDescByCode(mortgageDeduction.getChannel()));
                 }
             }
             result.addAll(list);

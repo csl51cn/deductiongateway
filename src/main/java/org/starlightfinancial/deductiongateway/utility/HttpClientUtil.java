@@ -145,15 +145,14 @@ public class HttpClientUtil {
                 LOGGER.info("get请求提交成功:" + url);
             } else {
                 LOGGER.error("get请求提交失败:" + url);
-                throw new IOException("get请求提交失败:"+url);
+                throw new IOException("get请求提交失败:" + url);
             }
         } catch (IOException e) {
             LOGGER.error("get请求提交失败:" + url, e);
-            throw new IOException("get请求提交失败:"+url);
+            throw new IOException("get请求提交失败:" + url);
         } finally {
             request.releaseConnection();
         }
         return resultString;
     }
-
 }
