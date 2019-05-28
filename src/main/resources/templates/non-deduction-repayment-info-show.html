@@ -685,8 +685,9 @@
                                     noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                                 }
                             },
-                            error: function () {
-                                noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                            error: function (data) {
+                                setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
+                                noty({'text': '执行失败 '+ data.responseText, 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             }
                         })
                     } else {

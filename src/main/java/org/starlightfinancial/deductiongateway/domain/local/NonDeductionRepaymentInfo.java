@@ -376,4 +376,33 @@ public class NonDeductionRepaymentInfo implements Serializable {
     public void setIsOnTime(String isOnTime) {
         this.isOnTime = isOnTime;
     }
+
+    @Override
+    public String toString() {
+        return "NonDeductionRepaymentInfo{" +
+                "id=" + id +
+                ", dateId=" + dateId +
+                ", contractNo='" + contractNo + '\'' +
+                ", repaymentTermDate=" + repaymentTermDate +
+                ", accountingDate=" + accountingDate +
+                ", repaymentOriginalInfo='" + repaymentOriginalInfo + '\'' +
+                ", customerName='" + customerName + '\'' +
+                ", repaymentMethod='" + repaymentMethod + '\'' +
+                ", repaymentType='" + repaymentType + '\'' +
+                ", repaymentAmount=" + repaymentAmount +
+                ", bankName='" + bankName + '\'' +
+                ", chargeCompany='" + chargeCompany + '\'' +
+                ", isIntegrated='" + isIntegrated + '\'' +
+                ", isUploaded='" + isUploaded + '\'' +
+                ", gmtCreate=" + gmtCreate +
+                ", gmtModified=" + gmtModified +
+                ", createId=" + createId +
+                ", modifiedId=" + modifiedId +
+                ", handlingCharge=" + handlingCharge +
+                ", isAutoMatched='" + isAutoMatched + '\'' +
+                ", originalId=" + originalId +
+                ", remark='" + remark + '\'' +
+                ", isOnTime='" + isOnTime + '\'' +
+                '}';
+    }
 }

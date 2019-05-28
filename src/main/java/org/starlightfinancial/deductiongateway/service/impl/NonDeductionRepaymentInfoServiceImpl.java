@@ -20,6 +20,7 @@ import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymen
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.enums.*;
+import org.starlightfinancial.deductiongateway.exception.nondeduction.AlreadyUploadedUpdateException;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
 import org.starlightfinancial.deductiongateway.service.AutoAccountUploadService;
 import org.starlightfinancial.deductiongateway.service.CacheService;
@@ -293,7 +294,9 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
         NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
-
+        if (StringUtils.equals(nonDeductionRepaymentInfoInDataBase.getIsUploaded(),ConstantsEnum.SUCCESS.getCode())){
+            throw  new AlreadyUploadedUpdateException();
+        }
 
         trim(nonDeductionRepaymentInfo);
         if (!StringUtils.equals(ConstantsEnum.SUCCESS.getCode(), nonDeductionRepaymentInfo.getIsUploaded())) {

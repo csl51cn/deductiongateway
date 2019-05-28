@@ -15,6 +15,7 @@ import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
+import org.starlightfinancial.deductiongateway.exception.nondeduction.AlreadyUploadedUpdateException;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
 import org.starlightfinancial.deductiongateway.service.CacheService;
 import org.starlightfinancial.deductiongateway.service.FinancialVoucherService;
@@ -26,7 +27,10 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -141,6 +145,10 @@ public class NonDeductionRepaymentInfoController {
         } catch (NumberFormatException e) {
             LOGGER.error("保存非代扣还款信息失败,数字格式化失败", e);
             return "数字格式不正确";
+        } catch (AlreadyUploadedUpdateException e) {
+            LOGGER.error("已上传记录提交更新:操作人:[{}],非代扣还款记录信息:[{}],禁止更新", Utility.getLoginUserName(session),
+                    nonDeductionRepaymentInfo, e);
+            return "此记录已上传,不允许更新";
         } catch (Exception e) {
             LOGGER.error("保存非代扣还款信息失败", e);
             return "0";
@@ -164,7 +172,7 @@ public class NonDeductionRepaymentInfoController {
             List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos = nonDeductionRepaymentInfoService.listNonDeductions(ids);
             //判断是否存在已上传的记录
             boolean anyMatch = nonDeductionRepaymentInfos.stream().anyMatch(nonDeductionRepaymentInfo -> StringUtils.equals(nonDeductionRepaymentInfo.getIsUploaded(), ConstantsEnum.SUCCESS.getCode()));
-            if(anyMatch){
+            if (anyMatch) {
                 return "选中了包含已上传的记录";
             }
             nonDeductionRepaymentInfoService.uploadAutoAccountingFile(nonDeductionRepaymentInfos, session);
