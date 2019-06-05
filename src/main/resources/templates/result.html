@@ -164,44 +164,46 @@
                             <mark id="recommendChannel" style=""></mark>
                             <input type="text" style="display:none;" id="rowId">
                             <div class="flex-container">
-                                 <span class="half-width-span"> <img src="/img/unionpay.png" style="max-width:30%;">
+                                 <span class="half-width-span" id="0003"> <img src="/img/unionpay.png"
+                                                                               style="max-width:30%;">
                                         <button type="button" id="chinaPayClassicDeductionBtn"
                                                 class="deduction btn btn-primary  btn-small" style="margin-right:10px;">
                                             银联旧代扣
                                         </button></span>
-                                <!--<span class="half-width-span"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
-                                        <!--type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small"-->
-                                        <!--style='margin-right:15px;'>银联快捷支付</button></span>-->
-                                <!--<span  class="half-width-span"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
-                                        <!--type="button" id="chinaPayNewDeductionBtn"-->
-                                        <!--class="deduction btn btn-primary   btn-small"-->
-                                        <!--style="margin-right:15px;">银联代扣</button></span>-->
+                                <!--<span class="half-width-span" id="0001"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
+                                <!--type="button" id="deductionBtn" class="deduction btn btn-primary  btn-small"-->
+                                <!--style='margin-right:15px;'>银联快捷支付</button></span>-->
+                                <!--<span  class="half-width-span" id="0004"><img src="/img/unionpay.png" style="max-width:40%;"><button-->
+                                <!--type="button" id="chinaPayNewDeductionBtn"-->
+                                <!--class="deduction btn btn-primary   btn-small"-->
+                                <!--style="margin-right:15px;">银联代扣</button></span>-->
 
                             </div>
                             <div class="flex-container">
-                                    <span class="half-width-span"> <img src="/img/baofu.png" style="max-width:30%;">
+                                    <span class="half-width-span" id="0005"> <img src="/img/baofu.png"
+                                                                                  style="max-width:30%;">
                                         <button type="button" id="baoFuClassicDeductionBtn"
                                                 class="deduction btn btn-info  btn-small" style="margin-right:15px;">
                                             宝付代扣
                                         </button></span>
-                                <!--<span class="half-width-span">-->
+                                <!--<span class="half-width-span" id="0002">-->
                                 <!--<img src="/img/baofu.png" style="max-width:40%;"><button type="button"-->
-                                                                                         <!--id="baoFuDeductionBtn"-->
-                                                                                         <!--class="deduction btn btn-info  btn-small"-->
-                                                                                         <!--style="margin-right:15px;">宝付协议支付</button>-->
+                                <!--id="baoFuDeductionBtn"-->
+                                <!--class="deduction btn btn-info  btn-small"-->
+                                <!--style="margin-right:15px;">宝付协议支付</button>-->
                                 <!--</span>-->
                             </div>
                             <div class="flex-container">
-                                 <span  class="half-width-span">
+                                 <span class="half-width-span" id="0006">
                                       <img src="/img/cpcn.png" style="max-width:30%;">
                                     <button type="button" id="chinaPayClearNetClassicDeductionBtn"
                                             class="deduction btn btn-info  btn-small" style="margin-right:15px;">
                                         中金代扣
                                     </button>
                                 </span>
-                                <!--<span class="half-width-span">  <img src="/img/cpcn.png" style="max-width:40%;">-->
+                                <!--<span class="half-width-span" id="0007">  <img src="/img/cpcn.png" style="max-width:40%;">-->
                                 <!--<button type="button" id="chinaPayClearNetClassicQuickBtn"-->
-                                        <!--class="deduction btn btn-info  btn-small" style="margin-right:15px;">-->
+                                <!--class="deduction btn btn-info  btn-small" style="margin-right:15px;">-->
                                 <!--中金协议支付-->
                                 <!--</button></span>-->
                             </div>
@@ -282,21 +284,20 @@
     } else {
         $("#uploadBtn").hide();
     }
-
+    var deductionChannelSpanArray = ["", "0001", "0002", "0003", "0004", "0005", "0006", "0007"];
     window.operateEvents = {
 
         'click .action': function (e, value, row, index) {
             $("#rowId").val(row.id);
-            var  recommendChannel =  $("#recommendChannel");
+            var recommendChannel = $("#recommendChannel");
             recommendChannel.html("");
             $.ajax({
                 url: "/channelDispatchController/getHandlingChargeLowestChannel.do",
                 timeout: 900000,
                 method: "POST",
-                data: {"id":row.id},
+                data: {"id": row.id},
                 success: function (data) {
                     recommendChannel.html(data.data);
-                    $('#actionModal').modal();
                     $(".btn-success").unbind("click");
                     if ((row.channel == "0006" || row.channel == "0007") && (row.issuccess != "0" || row.issuccess != "1")) {
                         $("#queryResultBtn").show();
@@ -305,7 +306,37 @@
                     }
                 }
             });
+            $.ajax({
+                url: "/channelDispatchController/getEnabledChannel.do",
+                timeout: 900000,
+                method: "POST",
+                data: {"id": row.id},
+                success: function (response) {
+                    //后台返回来的渠道编码,通过编码换取按钮ID
+                    var showChannelSpan = response.data;
+                    var length = showChannelSpan.length;
+                    if (length === 0) {
+                        noty({'text': "暂无支持渠道", 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                    } else {
+                        var hideChannelSpan = deductionChannelSpanArray.concat();
+                        for (var i = 0, length1 = hideChannelSpan.length; i < length1; i++){
+                            for(var j = 0; j < length;j++){
+                                if(hideChannelSpan[i] ===  showChannelSpan[j]){
+                                    hideChannelSpan.splice(i, 1);
+                                }
+                            }
+                        }
+                        showChannelSpan.forEach(function (channelID, index) {
+                            $("#" + channelID).show();
+                        });
+                        hideChannelSpan.forEach(function (channelID, index1) {
+                            $("#" + channelID).hide();
+                        });
+                        $('#actionModal').modal();
+                    }
 
+                }
+            });
 
 
         }

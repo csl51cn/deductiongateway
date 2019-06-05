@@ -13,6 +13,7 @@ import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author: Senlin.Deng
@@ -101,10 +102,14 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
     @Override
     public void doPay(List<MortgageDeduction> list, String channel) throws Exception {
         if (StringUtils.isNotBlank(channel)) {
-            //选择了代扣渠道,使用指定的代扣渠道进行代扣
-            OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
-            operationStrategy.pay(list);
-            mortgageDeductionRepository.save(list);
+            //选择了代扣渠道,使用指定的代扣渠道先进行拆分,然后进行代扣
+            for (MortgageDeduction mortgageDeduction : list) {
+                Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, channel);
+                OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
+                List<MortgageDeduction> mortgageDeductions = split.get(channel);
+                operationStrategy.pay(mortgageDeductions);
+                mortgageDeductionRepository.save(mortgageDeductions);
+            }
         } else {
             //未选择代扣渠道,计算手续费最低的渠道进行代扣.首次进行代扣时,用此分支
             for (MortgageDeduction mortgageDeduction : list) {
@@ -212,10 +217,25 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, null);
         if (split.size() == 1) {
             message = Message.success();
-            message.setData("手续费最少渠道:"+DeductionChannelEnum.getDescByCode(split.keySet().iterator().next()));
+            message.setData("手续费最少渠道:" + DeductionChannelEnum.getDescByCode(split.keySet().iterator().next()));
         } else {
-            message=Message.fail("暂无手续费最少渠道") ;
+            message = Message.fail("暂无手续费最少渠道");
         }
+        return message;
+    }
+
+    /**
+     * 获取启用的支持当前记录银行的的渠道
+     *
+     * @param id 记录主键
+     * @return
+     */
+    @Override
+    public Message getEnabledChannel(Integer id) {
+        MortgageDeduction mortgageDeduction = mortgageDeductionRepository.findOne(id);
+        List<LimitManager> byBankCodeAndEnabled = limitManagerRepository.findByBankCodeAndEnabled(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode());
+        Message message = Message.success();
+        message.setData(byBankCodeAndEnabled.stream().map(LimitManager::getChannel).collect(Collectors.toList()));
         return message;
     }
 

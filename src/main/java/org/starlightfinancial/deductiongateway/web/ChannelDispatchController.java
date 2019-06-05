@@ -114,6 +114,7 @@ public class ChannelDispatchController {
                     MortgageDeduction newMortgageDeduction = new MortgageDeduction();
                     BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
                     newMortgageDeduction.setId(null);
+                    newMortgageDeduction.setOrdId(null);
                     newMortgageDeduction.setIssuccess("2");
                     newMortgageDeduction.setErrorResult(null);
                     newMortgageDeduction.setType("1");
@@ -154,6 +155,19 @@ public class ChannelDispatchController {
     @ResponseBody
     public Message getHandlingChargeLowestChannel(Integer id){
         return channelDispatchService.getHandlingChargeLowestChannel(id);
+    }
+
+
+
+    /**
+     * 获取启用的支持当前记录银行的的渠道
+     * @param id 主键
+     * @return
+     */
+    @RequestMapping(value = "/getEnabledChannel.do")
+    @ResponseBody
+    public Message getEnabledChannel(Integer id){
+        return channelDispatchService.getEnabledChannel(id);
     }
 
 }

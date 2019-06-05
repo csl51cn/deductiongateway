@@ -72,8 +72,17 @@ public interface ChannelDispatchService {
 
     /**
      * 获取手续费最少的渠道
+     *
      * @param id 记录主键
      * @return
      */
     Message getHandlingChargeLowestChannel(Integer id);
+
+    /**
+     * 获取启用的支持当前记录银行的的渠道
+     *
+     * @param id  记录主键
+     * @return
+     */
+    Message getEnabledChannel(Integer id);
 }
