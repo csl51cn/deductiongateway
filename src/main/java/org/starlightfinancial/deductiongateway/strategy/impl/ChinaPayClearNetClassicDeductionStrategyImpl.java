@@ -131,7 +131,7 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
                     } else if (status == 40) {
                         //代扣失败
                         JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2011Response.getResponsePlainText());
-                        JSONObject body   = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                        JSONObject body = (JSONObject) jsonObject.getJSONArray("Body").get(0);
                         mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
                         mortgageDeduction.setResult(body.getString("ResponseCode"));
                         mortgageDeduction.setIssuccess("0");
@@ -177,7 +177,7 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
                 } else if (status == 40) {
                     //代扣失败
                     JSONObject jsonObject = XmlUtils.documentToJSONObject(tx2020Response.getResponsePlainText());
-                    JSONObject body   = (JSONObject) jsonObject.getJSONArray("Body").get(0);
+                    JSONObject body = (JSONObject) jsonObject.getJSONArray("Body").get(0);
                     mortgageDeduction.setErrorResult(body.getString("ResponseMessage"));
                     mortgageDeduction.setResult(body.getString("ResponseCode"));
                     mortgageDeduction.setIssuccess("0");
@@ -203,6 +203,12 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+        //对于工行特殊处理
+        if (StringUtils.equals("0102", mortgageDeduction.getParam1())) {
+            mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getIcbcCharge()));
+            return;
+        }
+
         if (totalAmount.compareTo(TWENTY_THOUSAND) <= 0) {
             //代扣金额<=20000
             mortgageDeduction.setHandlingCharge(chinaPayClearNetConfig.getLevelOne());

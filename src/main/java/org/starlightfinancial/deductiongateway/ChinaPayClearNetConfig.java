@@ -24,7 +24,7 @@ public class ChinaPayClearNetConfig {
      * 单笔代扣地址
      */
     @Value("${cpcn.classic.api.deduction.url}")
-    private String  classicDeductionUrl;
+    private String classicDeductionUrl;
 
     /**
      * 单笔代扣结果查询地址
@@ -81,6 +81,13 @@ public class ChinaPayClearNetConfig {
      */
     @Value("${cpcn.quick.realtime.api.charge}")
     private BigDecimal quickRealTimeCharge;
+
+
+    /**
+     * 工行 单笔(2011)和批量(1610)代扣费率
+     */
+    @Value("${cpcn.classic.api.ICBC.handling.charge}")
+    private BigDecimal icbcCharge;
 
 
     public String getClassicMemberId() {
@@ -169,5 +176,13 @@ public class ChinaPayClearNetConfig {
 
     public void setQuickRealTimeCharge(BigDecimal quickRealTimeCharge) {
         this.quickRealTimeCharge = quickRealTimeCharge;
+    }
+
+    public BigDecimal getIcbcCharge() {
+        return icbcCharge;
+    }
+
+    public void setIcbcCharge(BigDecimal icbcCharge) {
+        this.icbcCharge = icbcCharge;
     }
 }
