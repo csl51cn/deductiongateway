@@ -4,6 +4,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
+import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
+import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -30,6 +32,7 @@ public class Utility {
 
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(PATTERN);
 
+    private static FIFOCache<String, Boolean> holidayMap = new FIFOCache<>(3);
 
     /**
      * 将PageBean中的总记录数和数据放到map中
@@ -383,6 +386,29 @@ public class Utility {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * 判断传入的日期是否是节假日
+     *
+     * @param localDate 需要判断的日期
+     * @return 是否是节假日:true--是节假日,false--不是节假日
+     */
+    public static boolean isHoliday(LocalDate localDate) {
+        if (holidayMap.containsKey(localDate.toString())) {
+            return holidayMap.get(localDate.toString());
+        } else {
+            HolidayRepository holidayRepository = SpringContextUtil.getBean(HolidayRepository.class);
+            Holiday holiday = holidayRepository.findByNonOverTime(localDate.toString());
+            if (Objects.nonNull(holiday)) {
+                holidayMap.put(localDate.toString(), true);
+                return true;
+            } else {
+                holidayMap.put(localDate.toString(), false);
+                return false;
+            }
+
+        }
     }
 
 }
