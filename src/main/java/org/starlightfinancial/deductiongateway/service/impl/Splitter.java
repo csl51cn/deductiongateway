@@ -47,7 +47,7 @@ public class Splitter extends Decorator {
             boolean isICBC = StringUtils.equals(mortgageDeduction.getParam1(), "0102");
             boolean isHoliday = Utility.isHoliday(LocalDate.now());
             BigDecimal total = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-            boolean matchLimit = total.compareTo(BigDecimal.valueOf(50000)) > 0 && total.compareTo(BigDecimal.valueOf(100000)) < 0;
+            boolean matchLimit = total.compareTo(BigDecimal.valueOf(50000)) >= 0 && total.compareTo(BigDecimal.valueOf(100000)) <= 0;
             Map<String, List<MortgageDeduction>> split;
             if (isICBC && isHoliday & matchLimit) {
                 split = channelDispatchService.split(mortgageDeduction, DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
