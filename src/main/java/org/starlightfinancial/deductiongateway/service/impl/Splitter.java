@@ -11,6 +11,7 @@ import org.starlightfinancial.deductiongateway.service.Decorator;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +46,10 @@ public class Splitter extends Decorator {
             //如果在节假日中,工商银行扣款金额在[5万,10万]范围,使用中金代扣
             boolean isICBC = StringUtils.equals(mortgageDeduction.getParam1(), "0102");
             boolean isHoliday = Utility.isHoliday(LocalDate.now());
+            BigDecimal total = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+            boolean matchLimit = total.compareTo(BigDecimal.valueOf(50000)) > 0 && total.compareTo(BigDecimal.valueOf(100000)) < 0;
             Map<String, List<MortgageDeduction>> split;
-            if (isICBC && isHoliday) {
+            if (isICBC && isHoliday & matchLimit) {
                 split = channelDispatchService.split(mortgageDeduction, DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
             } else {
                 split = channelDispatchService.split(mortgageDeduction, null);
