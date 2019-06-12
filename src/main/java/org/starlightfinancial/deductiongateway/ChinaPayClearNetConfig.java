@@ -91,10 +91,10 @@ public class ChinaPayClearNetConfig {
 
 
     /**
-     * 建行 单笔(2011)和批量(1610)代扣费率
+     * 中国银行 单笔(2011)和批量(1610)代扣费率
      */
-    @Value("${cpcn.classic.api.CCB.handling.charge}")
-    private BigDecimal ccbCharge;
+    @Value("${cpcn.classic.api.BOC.handling.charge}")
+    private BigDecimal bocCharge;
 
     public String getClassicMemberId() {
         return classicMemberId;
@@ -192,11 +192,11 @@ public class ChinaPayClearNetConfig {
         this.icbcCharge = icbcCharge;
     }
 
-    public BigDecimal getCcbCharge() {
-        return ccbCharge;
+    public BigDecimal getBocCharge() {
+        return bocCharge;
     }
 
-    public void setCcbCharge(BigDecimal ccbCharge) {
-        this.ccbCharge = ccbCharge;
+    public void setBocCharge(BigDecimal bocCharge) {
+        this.bocCharge = bocCharge;
     }
 }
