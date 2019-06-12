@@ -90,6 +90,12 @@ public class ChinaPayClearNetConfig {
     private BigDecimal icbcCharge;
 
 
+    /**
+     * 建行 单笔(2011)和批量(1610)代扣费率
+     */
+    @Value("${cpcn.classic.api.CCB.handling.charge}")
+    private BigDecimal ccbCharge;
+
     public String getClassicMemberId() {
         return classicMemberId;
     }
@@ -184,5 +190,13 @@ public class ChinaPayClearNetConfig {
 
     public void setIcbcCharge(BigDecimal icbcCharge) {
         this.icbcCharge = icbcCharge;
+    }
+
+    public BigDecimal getCcbCharge() {
+        return ccbCharge;
+    }
+
+    public void setCcbCharge(BigDecimal ccbCharge) {
+        this.ccbCharge = ccbCharge;
     }
 }
