@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @author: Senlin.Deng
- * @Description: 银联新无卡代扣
+ * @Description: 银联新无卡代扣/银联商委代扣
  * @date: Created in 2018/6/6 9:14
  * @Modified By:
  */
@@ -61,6 +61,11 @@ public class ChinaPayDelayRequestParams {
      * 账户名
      */
     private String accName;
+
+    /**
+     * 接口版本
+     */
+    private String version;
 
 
     public String getMerOrderNo() {
@@ -135,6 +140,14 @@ public class ChinaPayDelayRequestParams {
         this.accName = accName;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     /**
      * 转换为BasicNameValuePair集合
      *
@@ -151,6 +164,7 @@ public class ChinaPayDelayRequestParams {
         basicNameValuePairs.add(new BasicNameValuePair("CertType", this.certType));
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", this.certNo));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", this.accName));
+        basicNameValuePairs.add(new BasicNameValuePair("Version", this.version));
         return basicNameValuePairs;
     }
 

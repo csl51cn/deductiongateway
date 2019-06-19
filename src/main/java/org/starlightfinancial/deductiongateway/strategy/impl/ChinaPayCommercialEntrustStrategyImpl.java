@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.*;
@@ -25,28 +24,30 @@ import java.util.Map;
 
 /**
  * @author: Senlin.Deng
- * @Description: 银联快捷支付
- * @date: Created in 2018/6/5 11:20
+ * @Description: 银联商业委托代扣
+ * @date: Created in 2019/6/18 10:47
  * @Modified By:
  */
-@Service("0001")
-public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
+@Service("0008")
+public class ChinaPayCommercialEntrustStrategyImpl implements OperationStrategy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChinaPayExpressRealTimeStrategyImpl.class);
-
-    @Autowired
-    private AccountManagerRepository accountManagerRepository;
+    private static final Logger log = LoggerFactory.getLogger(ChinaPayExpressRealTimeStrategyImpl.class);
 
     @Autowired
     private MortgageDeductionRepository mortgageDeductionRepository;
 
     @Autowired
-    private BeanConverter beanConverter;
-
+    private AccountManagerRepository accountManagerRepository;
 
     @Autowired
-    private ChinaPayConfig chinaPayConfig;
+    BeanConverter beanConverter;
 
+    @Autowired
+    ChinaPayConfig chinaPayConfig;
+
+
+    private static final BigDecimal ONE_THOUSAND = new BigDecimal(1000);
+    private static final BigDecimal FIVE_THOUSAND = new BigDecimal(5000);
 
     /**
      * 查询是否签约
@@ -54,7 +55,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param id 记录id
      * @return 返回包含查询结果的Message对象
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message queryIsSigned(Integer id) {
         AccountManager accountManager = accountManagerRepository.getOne(id);
@@ -64,13 +64,13 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", accountManager.getCertificateNo()));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", accountManager.getAccountName()));
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", accountManager.getMobile()));
-        basicNameValuePairs.add(new BasicNameValuePair("OriTranType", "9904"));
+        basicNameValuePairs.add(new BasicNameValuePair("OriTranType", "9910"));
         Message message;
         Map map = null;
         try {
             map = HttpClientUtil.send(chinaPayConfig.getExpressRealtimeSignStatusUrl(), basicNameValuePairs);
         } catch (Exception e) {
-            LOGGER.error("银联签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            log.error("银联签约状态查询异常,记录id:" + id + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("银联签约状态查询异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
@@ -109,7 +109,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param accountManager 代扣卡相关信息
      * @return 返回包含短信发送结果的Message对象
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message sendSignSmsCode(AccountManager accountManager) {
         Message message = null;
@@ -119,7 +118,7 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
         basicNameValuePairs.add(new BasicNameValuePair("CertNo", accountManager.getCertificateNo()));
         basicNameValuePairs.add(new BasicNameValuePair("AccName", accountManager.getAccountName()));
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", accountManager.getMobile()));
-        basicNameValuePairs.add(new BasicNameValuePair("TranType", "0608"));
+        basicNameValuePairs.add(new BasicNameValuePair("TranType", "0610"));
         Map map = null;
         try {
             map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeSignSmsCodeUrl(), basicNameValuePairs);
@@ -139,13 +138,12 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
                 message = Message.fail("未获得银联返回信息", ConstantsEnum.NO_DATA_RESPONSE.getCode());
             }
         } catch (Exception e) {
-            LOGGER.error("发送银联签约短信异常,记录id:" + accountManager.getId() + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            log.error("发送银联签约短信异常,记录id:" + accountManager.getId() + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("银联签约短信发送异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
 
         return message;
-
     }
 
     /**
@@ -154,7 +152,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param accountManager 代扣卡相关信息
      * @return 返回签约结果的Message对象
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message sign(AccountManager accountManager) {
         Message message = null;
@@ -167,12 +164,12 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
         basicNameValuePairs.add(new BasicNameValuePair("MobileNo", accountManager.getMobile()));
         basicNameValuePairs.add(new BasicNameValuePair("MerOrderNo", accountManager.getMerOrderNo()));
         basicNameValuePairs.add(new BasicNameValuePair("MobileAuthCode", accountManager.getSmsCode()));
-        basicNameValuePairs.add(new BasicNameValuePair("TranType", "9904"));
+        basicNameValuePairs.add(new BasicNameValuePair("TranType", "9910"));
         Map map = null;
         try {
             map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeSignUrl(), basicNameValuePairs);
         } catch (Exception e) {
-            LOGGER.error("银联签约异常,记录id:" + accountManager.getId() + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
+            log.error("银联签约异常,记录id:" + accountManager.getId() + ",账户名:" + accountManager.getAccountName() + ",账户:" + accountManager.getAccount(), e);
             message = Message.fail("银联签约异常", ConstantsEnum.REQUEST_FAIL.getCode());
             return message;
         }
@@ -213,13 +210,13 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param mortgageDeductions mortgageDeduction列表
      * @throws Exception 执行代扣异常
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void pay(List<MortgageDeduction> mortgageDeductions) throws Exception {
         for (MortgageDeduction mortgageDeduction : mortgageDeductions) {
 
-            ChinaPayRealTimeRequestParams chinaPayRealTimeRequestParams = beanConverter.transToChinaPayRealTimeRequestParams(mortgageDeduction);
-            mortgageDeduction.setOrdId(chinaPayRealTimeRequestParams.getMerOrderNo());
+            ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
+            chinaPayDelayRequestParams.setVersion("20140728");
+            mortgageDeduction.setOrdId(chinaPayDelayRequestParams.getMerOrderNo());
             mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
             mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
             mortgageDeduction.setOrderDesc(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getOrderDesc());
@@ -227,12 +224,11 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
             //type为0表示已发起过代扣，type为1时未发起过代扣
             mortgageDeduction.setType("0");
             mortgageDeduction.setIsoffs("0");
-            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode());
+            mortgageDeduction.setChannel(DeductionChannelEnum.CHINA_PAY_EXPRESS_DELAY.getCode());
             mortgageDeduction.setPayTime(new Date());
             try {
-                Map map = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeUrl(), chinaPayRealTimeRequestParams.transToNvpList());
+                Map map = HttpClientUtil.send(chinaPayConfig.getExpressDelayUrl(), chinaPayDelayRequestParams.transToNvpList());
                 String returnData = (String) map.get("returnData");
-
                 JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
                 String errorCodeDesc = ChinaPayReturnCodeEnum.getValueByCode(jsonObject.getString("error_code"));
                 mortgageDeduction.setErrorResult(StringUtils.isEmpty(errorCodeDesc) ? jsonObject.getString("reason") : errorCodeDesc);
@@ -253,7 +249,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
      * @param mortgageDeduction 代扣记录
      * @return 返回包含代扣查询结果Message对象
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message queryPayResult(MortgageDeduction mortgageDeduction) {
         Message message = null;
@@ -299,7 +294,6 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
             message = Message.fail("代扣状态查询失败");
         }
 
-
         return message;
     }
 
@@ -311,14 +305,15 @@ public class ChinaPayExpressRealTimeStrategyImpl implements OperationStrategy {
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-        BigDecimal charge = totalAmount.multiply(chinaPayConfig.getExpressRealtimeCharge());
-        BigDecimal min = BigDecimal.valueOf(0.08);
-        if (charge.compareTo(min) < 0) {
-            //手续费按照费率计算小于8分钱时,需要设置为8分钱
-            mortgageDeduction.setHandlingCharge(min);
+        if (totalAmount.compareTo(ONE_THOUSAND) < 0) {
+            //代扣金额<1000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getCommercialEntrustLevelOne());
+        } else if (totalAmount.compareTo(FIVE_THOUSAND) < 0) {
+            //代扣金额≥1000 & 代扣金额 <5000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getCommercialEntrustLevelTwo());
         } else {
-            mortgageDeduction.setHandlingCharge(charge);
+            //代扣金额≥5000
+            mortgageDeduction.setHandlingCharge(chinaPayConfig.getCommercialEntrustLevelThree());
         }
     }
-
 }

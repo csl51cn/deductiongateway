@@ -154,6 +154,21 @@ public class AccountManager {
 
 
     /**
+     *  银联商业委托是否签约,0:未签约,1:已签约
+     */
+//    @Column(name="cpcn_is_signed")
+    @Transient
+    private Integer unionpayCommercialEntrustIsSigned;
+
+    /**
+     * 银联商业委托绑定流水号
+     */
+//    @Column(name = "cpcn_protocol_no")
+    @Transient
+    private  String  unionpayCommercialEntrustProtocolNo;
+
+
+    /**
      * 签约短信验证码
      */
     @Transient
@@ -356,6 +371,15 @@ public class AccountManager {
         this.chinaPayClearNetProtocolNo = chinaPayClearNetProtocolNo;
     }
 
+    public Integer getUnionpayCommercialEntrustIsSigned() {
+        return unionpayCommercialEntrustIsSigned;
+    }
+
+    public void setUnionpayCommercialEntrustIsSigned(Integer unionpayCommercialEntrustIsSigned) {
+        this.unionpayCommercialEntrustIsSigned = unionpayCommercialEntrustIsSigned;
+    }
+
+
     @Override
     public String toString() {
         return "AccountManager{" +
@@ -381,6 +405,8 @@ public class AccountManager {
                 ", createTime=" + createTime +
                 ", chinaPayClearNetIsSigned=" + chinaPayClearNetIsSigned +
                 ", chinaPayClearNetProtocolNo='" + chinaPayClearNetProtocolNo + '\'' +
+                ", unionpayCommercialEntrustIsSigned=" + unionpayCommercialEntrustIsSigned +
+                ", unionpayCommercialEntrustProtocolNo='" + unionpayCommercialEntrustProtocolNo + '\'' +
                 ", smsCode='" + smsCode + '\'' +
                 ", merOrderNo='" + merOrderNo + '\'' +
                 '}';

@@ -2,6 +2,7 @@ package org.starlightfinancial.deductiongateway.strategy.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.ChinaPayConfig;
@@ -12,11 +13,13 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
+import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
+import org.starlightfinancial.deductiongateway.utility.Utility;
 
-import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +33,7 @@ import java.util.Map;
 @Service("0004")
 public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
 
-    @Resource(name = "0001")
-    private OperationStrategy operationStrategy;
+
 
     @Autowired
     BeanConverter beanConverter;
@@ -87,6 +89,7 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
         for (MortgageDeduction mortgageDeduction : mortgageDeductions) {
 
             ChinaPayDelayRequestParams chinaPayDelayRequestParams = beanConverter.transToChinaPayDelayRequestParams(mortgageDeduction);
+            chinaPayDelayRequestParams.setVersion("20140728");
             mortgageDeduction.setOrdId(chinaPayDelayRequestParams.getMerOrderNo());
             mortgageDeduction.setMerId(chinaPayConfig.getExpressRealTimeMemberId());
             mortgageDeduction.setCuryId(chinaPayConfig.getCuryId());
@@ -123,7 +126,50 @@ public class ChinaPayExpressDelayStrategyImpl implements OperationStrategy {
      */
     @Override
     public Message queryPayResult(MortgageDeduction mortgageDeduction) {
-        return operationStrategy.queryPayResult(mortgageDeduction);
+        Message message = null;
+        List<BasicNameValuePair> list = new ArrayList<>();
+        list.add(new BasicNameValuePair("MerOrderNo", mortgageDeduction.getOrdId()));
+        list.add(new BasicNameValuePair("TranDate", Utility.convertToString(mortgageDeduction.getPayTime(), "yyyyMMdd")));
+        Map send = null;
+        try {
+            send = HttpClientUtil.send(chinaPayConfig.getExpressRealTimeQueryResultUrl(), list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Message.fail("代扣状态查询失败");
+        }
+        //有返回结果
+        if (send.containsKey("returnData")) {
+            String returnData = (String) send.get("returnData");
+            JSONObject jsonObject = (JSONObject) JSONObject.parse(returnData);
+            if (StringUtils.equals(RsbCodeEnum.ERROR_CODE_01.getCode(), jsonObject.getString("error_code"))) {
+                //查询成功
+                JSONObject result = (JSONObject) jsonObject.getJSONArray("result").get(0);
+                if (StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode(), result.getString("OrderStatus"))) {
+                    //支付成功
+                    mortgageDeduction.setIssuccess("1");
+                    mortgageDeduction.setResult(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_001.getCode());
+                    mortgageDeduction.setErrorResult("支付成功");
+                    calculateHandlingCharge(mortgageDeduction);
+                    mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+                } else if (!StringUtils.equals(ChinaPayReturnCodeEnum.CHINA_PAY_CODE_008.getCode(), result.getString("OrderStatus"))) {
+                    //订单状态不为"0014,数据接收成功"为失败
+                    mortgageDeduction.setIssuccess("0");
+                    mortgageDeduction.setResult(result.getString("OrderStatus"));
+                    mortgageDeduction.setErrorResult(ChinaPayReturnCodeEnum.getValueByCode(result.getString("OrderStatus")));
+                    mortgageDeductionRepository.saveAndFlush(mortgageDeduction);
+                }
+                message = Message.success();
+
+            } else {
+                //查询失败
+                message = Message.fail("代扣状态查询失败");
+            }
+        } else {
+            //无返回结果
+            message = Message.fail("代扣状态查询失败");
+        }
+
+        return message;
     }
 
     /**

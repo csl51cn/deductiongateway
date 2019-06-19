@@ -181,7 +181,24 @@ public class ChinaPayConfig {
     private BigDecimal expressRealtimeCharge;
 
 
+    /**
+     * 商委代扣(0,1000)手续费
+     */
+    @Value("${chinapay.express.commercial.entrust.less_than_1000.handling.charge}")
+    private BigDecimal  commercialEntrustLevelOne;
 
+
+    /**
+     * 商委代扣[1000,5000)手续费
+     */
+    @Value("${chinapay.express.commercial.entrust.over_and_included_1000_and_less_than_5000.handling.charge}")
+    private BigDecimal   commercialEntrustLevelTwo;
+
+    /**
+     * 商委代扣≥5000手续费
+     */
+    @Value("${chinapay.classic.api.over_and_included_5000.handling.charge}")
+    private BigDecimal commercialEntrustLevelThree;
 
     public String getExpressRealTimeUrl() {
         return expressRealTimeUrl;
@@ -397,5 +414,29 @@ public class ChinaPayConfig {
 
     public void setExpressRealtimeCharge(BigDecimal expressRealtimeCharge) {
         this.expressRealtimeCharge = expressRealtimeCharge;
+    }
+
+    public BigDecimal getCommercialEntrustLevelOne() {
+        return commercialEntrustLevelOne;
+    }
+
+    public void setCommercialEntrustLevelOne(BigDecimal commercialEntrustLevelOne) {
+        this.commercialEntrustLevelOne = commercialEntrustLevelOne;
+    }
+
+    public BigDecimal getCommercialEntrustLevelTwo() {
+        return commercialEntrustLevelTwo;
+    }
+
+    public void setCommercialEntrustLevelTwo(BigDecimal commercialEntrustLevelTwo) {
+        this.commercialEntrustLevelTwo = commercialEntrustLevelTwo;
+    }
+
+    public BigDecimal getCommercialEntrustLevelThree() {
+        return commercialEntrustLevelThree;
+    }
+
+    public void setCommercialEntrustLevelThree(BigDecimal commercialEntrustLevelThree) {
+        this.commercialEntrustLevelThree = commercialEntrustLevelThree;
     }
 }

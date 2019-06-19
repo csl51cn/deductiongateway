@@ -319,9 +319,9 @@
                         noty({'text': "暂无支持渠道", 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     } else {
                         var hideChannelSpan = deductionChannelSpanArray.concat();
-                        for (var i = 0, length1 = hideChannelSpan.length; i < length1; i++){
-                            for(var j = 0; j < length;j++){
-                                if(hideChannelSpan[i] ===  showChannelSpan[j]){
+                        for (var i = hideChannelSpan.length - 1; i >= 0; i--) {
+                            for (var j = 0; j < length; j++) {
+                                if (hideChannelSpan[i] === showChannelSpan[j]) {
                                     hideChannelSpan.splice(i, 1);
                                 }
                             }

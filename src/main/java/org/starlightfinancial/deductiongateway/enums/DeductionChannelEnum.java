@@ -40,7 +40,12 @@ public enum DeductionChannelEnum {
     /**
      * 中金支付快捷支付
      */
-    CHINA_PAY_CLEAR_NET_QUICK("0007", "中金", "中金快捷支付");
+    CHINA_PAY_CLEAR_NET_QUICK("0007", "中金", "中金快捷支付"),
+
+    /**
+     * 银联商委代扣
+     */
+    CHINA_PAY_COMMERCIAL_ENTRUST("0008", "银联", "银联商委代扣");
 
 
     /**

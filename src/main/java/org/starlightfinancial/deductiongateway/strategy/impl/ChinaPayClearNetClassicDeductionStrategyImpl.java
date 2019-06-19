@@ -213,6 +213,11 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
             mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getBocCharge()));
             return;
         }
+        //对中国建设银行特殊处理
+        if(StringUtils.equals("0105", mortgageDeduction.getParam1())){
+            mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getCcbCharge()));
+            return;
+        }
         if (totalAmount.compareTo(TWENTY_THOUSAND) <= 0) {
             //代扣金额<=20000
             mortgageDeduction.setHandlingCharge(chinaPayClearNetConfig.getLevelOne());
