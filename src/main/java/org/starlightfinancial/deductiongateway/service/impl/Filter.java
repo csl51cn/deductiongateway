@@ -33,11 +33,11 @@ public class Filter extends Decorator {
 
 
     private void filter() {
-        //如果是建行,并且扣款金额>10万,剔除掉不进行自动代扣
+        //如果是建行,并且扣款金额>5万,剔除掉不进行自动代扣
         boolean exclude = StringUtils.equals(BankCodeEnum.BANK_CODE_03.getBankName(), autoBatchDeduction.getBankName())
-                && autoBatchDeduction.getBxAmount().add(autoBatchDeduction.getFwfAmount()).compareTo(BigDecimal.valueOf(100000)) > 0;
+                && autoBatchDeduction.getBxAmount().add(autoBatchDeduction.getFwfAmount()).compareTo(BigDecimal.valueOf(50000)) > 0;
         if (exclude) {
-            log.info("自动代扣剔除建行超过10万记录,合同编号:{},客户名称:{}",autoBatchDeduction.getContractNo(),autoBatchDeduction.getCustomerName());
+            log.info("自动代扣剔除建行超过5万记录,合同编号:{},客户名称:{}",autoBatchDeduction.getContractNo(),autoBatchDeduction.getCustomerName());
             autoBatchDeduction = null;
             return;
         }
