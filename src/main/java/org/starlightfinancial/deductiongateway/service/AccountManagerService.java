@@ -46,5 +46,10 @@ public interface AccountManagerService {
      */
     Message addAccount(String bizNo);
 
-
+    /**
+     * 根据id查询卡信息
+     * @param id
+     * @return
+     */
+    AccountManager findById(Integer id);
 }

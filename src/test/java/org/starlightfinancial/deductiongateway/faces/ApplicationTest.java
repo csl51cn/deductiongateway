@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ResourceUtils;
-import org.starlightfinancial.deductiongateway.ChinaPayConfig;
+import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
 import org.starlightfinancial.deductiongateway.domain.local.SysDictRepository;

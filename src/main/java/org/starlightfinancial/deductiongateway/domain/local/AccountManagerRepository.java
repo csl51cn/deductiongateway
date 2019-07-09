@@ -43,4 +43,6 @@ public interface AccountManagerRepository extends JpaRepository<AccountManager, 
      * @return
      */
     AccountManager findByContractNoAndAccountAndAccountNameAndCertificateNo(String contractNo, String account, String accountName, String certificationNo);
+
+
 }

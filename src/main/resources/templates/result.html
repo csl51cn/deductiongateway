@@ -207,7 +207,15 @@
                                 <!--中金协议支付-->
                                 <!--</button></span>-->
                             </div>
-
+                            <div class="flex-container">
+                                 <span class="half-width-span" id="0009">
+                                      <img src="/img/pingan.png" style="max-width:30%;">
+                                    <button type="button" id="pingAnDeductionBtn"
+                                            class="deduction btn btn-info  btn-small" style="margin-right:15px;">
+                                        平安代扣
+                                    </button>
+                                </span>
+                            </div>
 
                         </div>
                         <div class="modal-footer">
@@ -299,7 +307,7 @@
                 success: function (data) {
                     recommendChannel.html(data.data);
                     $(".btn-success").unbind("click");
-                    if ((row.channel == "0006" || row.channel == "0007") && (row.issuccess != "0" || row.issuccess != "1")) {
+                    if ((row.channel == "0006" || row.channel == "0007" ||row.channel == "0009") && (row.issuccess != "0" || row.issuccess != "1")) {
                         $("#queryResultBtn").show();
                     } else {
                         $("#queryResultBtn").hide();
@@ -594,6 +602,11 @@
         $("#chinaPayClearNetClassicQuickBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
             executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0007"}, url);
+        });
+        <!--平安商委支付-->
+        $("#pingAnDeductionBtn").click(function () {
+            var url = "/channelDispatchController/doPay.do";
+            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0009"}, url);
         });
 
         var value;

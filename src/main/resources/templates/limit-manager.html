@@ -192,10 +192,13 @@
 
 
 <script type="text/javascript" th:inline="javascript">
-    var channel = ["银联快捷支付", "宝付协议支付", "银联白名单代扣", "银联新无卡代扣", "宝付代扣", "中金代扣", "中金快捷支付"];
+    var channelObj = {
+        "0001": "银联快捷支付", "0002": "宝付协议支付", "0003": "银联白名单代扣", "0004": "银联新无卡代扣", "0005": "宝付代扣", "0006": "中金代扣"
+        , "0007": "中金快捷支付", "0009": "平安代扣"
+    };
     var bank = [[${@systemServiceImpl.findByDicType('726')}]];
     var staffId = [[${session.loginUser.staffId}]];
-    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
+    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7524) {
         $("#addBtn").show();
         $("#modifyEnabledStatusBtn").show();
     } else {
@@ -268,7 +271,7 @@
         field: 'channel',
         title: '支付渠道',
         formatter: function (value, row, index) {
-            return channel[parseInt(value) - 1];
+            return channelObj[value];
         }
     }, {
         field: 'enabled',
@@ -314,7 +317,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7523) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7524) {
                         $.ajax({
                             type: "post",
                             url: "/limitManagerController/updateLimit.do",
@@ -356,11 +359,11 @@
             var channelSelect = $("#txt_channel");
             var queryChannel = $("#query_channel");
             queryChannel.append("<option value=''> 所有</option>")
-            for (var i = 0, channelSize = channel.length; i < channelSize; i++) {
-                var value = ("0000" + (i + 1)).substr(-4);
-                channelSelect.append("<option value='" + value + "'>" + channel[i] + "</option>");
-                queryChannel.append("<option value='" + value + "'>" + channel[i] + "</option>")
+            for (var item  in  channelObj) {
+                channelSelect.append("<option value='" + item + "'>" + channelObj[item] + "</option>");
+                queryChannel.append("<option value='" + item + "'>" + channelObj[item] + "</option>")
             }
+
 
             var bankName = $("#txt_bankname");
             var queryBank = $("#query_bank");
@@ -472,6 +475,7 @@
             $("#prog").css("width", value + "%")
             st = setTimeout(increment, 500);
         }
+
         <!--更改上传状态-->
         $("#modifyEnabledStatusBtn").click(function () {
             var ids = [];

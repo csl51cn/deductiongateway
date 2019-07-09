@@ -81,8 +81,17 @@ public interface ChannelDispatchService {
     /**
      * 获取启用的支持当前记录银行的的渠道
      *
-     * @param id  记录主键
+     * @param id 记录主键
      * @return
      */
     Message getEnabledChannel(Integer id);
+
+    /**
+     * 注册账号
+     *
+     * @param id      accountManager主键
+     * @param channel 渠道
+     * @return
+     */
+    Message registration(Integer id, String channel);
 }

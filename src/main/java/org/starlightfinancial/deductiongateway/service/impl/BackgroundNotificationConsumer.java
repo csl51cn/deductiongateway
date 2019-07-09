@@ -8,16 +8,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.starlightfinancial.deductiongateway.baofu.domain.BFErrorCodeEnum;
+import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.enums.ChinaPayReturnCodeEnum;
+import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
+import org.starlightfinancial.deductiongateway.enums.PingAnNotifyTypeEnum;
+import org.starlightfinancial.deductiongateway.enums.RsbCodeEnum;
+import org.starlightfinancial.deductiongateway.service.AccountManagerService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
+import org.starlightfinancial.deductiongateway.strategy.impl.PingAnCommercialEntrustStrategyImpl;
 import org.starlightfinancial.deductiongateway.utility.Constant;
+import org.starlightfinancial.deductiongateway.utility.FIFOCache;
 import org.starlightfinancial.rpc.hessian.entity.cpcn.request.Notice2018Req;
+import org.starlightfinancial.rpc.hessian.entity.yqb.response.AsyncResponse;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.Objects;
 
 
 /**
@@ -36,6 +45,8 @@ public class BackgroundNotificationConsumer {
 
     @Autowired
     private OperationStrategyContext operationStrategyContext;
+    @Autowired
+    private AccountManagerService accountManagerService;
 
     /**
      * 银联支付结果后台通知处理
@@ -187,6 +198,74 @@ public class BackgroundNotificationConsumer {
                 session.recover();
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.recover();
+        }
+
+    }
+
+
+    /**
+     * 平安后台通知处理
+     *
+     * @param textMessage
+     * @param session
+     */
+    @JmsListener(destination = "PingAnQueue", containerFactory = "jmsQueueListener")
+    public void receivePingAnQueue(TextMessage textMessage, Session session) throws JMSException {
+        try {
+            String text = textMessage.getText();
+            logger.info("收到平安后台通知消息:{}", text);
+            AsyncResponse response = JSONObject.parseObject(text, AsyncResponse.class);
+            FIFOCache<String, Integer> signCache = PingAnCommercialEntrustStrategyImpl.SIGN_CACHE;
+            String mercOrderNo = response.getMercOrderNo();
+            String notifyType = response.getNotifyType();
+            if (signCache.containsKey(mercOrderNo)) {
+                //返回的消息是签约后台通知
+                Integer id = signCache.get(mercOrderNo);
+                AccountManager accountManager = accountManagerService.findById(id);
+                if (StringUtils.isBlank(accountManager.getPingAnCommercialEntrustProtocolNo())) {
+                    //如果数据库中的平安付id为空,再进行下一步
+                    if (StringUtils.equals(notifyType, PingAnNotifyTypeEnum.TYPE10.getType())) {
+                        //处理签约成功的通知
+                        JSONObject jsonObject = JSONObject.parseObject(response.getMercNotifyExt());
+                        String bankId = jsonObject.getString("bankId");
+                        accountManager.setPingAnCommercialEntrustProtocolNo(bankId);
+                        accountManagerService.updateAccount(accountManager);
+                        textMessage.acknowledge();
+                    }
+                }
+            } else {
+                //查询代扣信息
+                MortgageDeduction mortgageDeduction = mortgageDeductionService.findByOrdId(mercOrderNo);
+                if (Objects.nonNull(mortgageDeductionService)) {
+                    //通过商户订单号查询出来的结果不为空
+                    if (StringUtils.equals(mortgageDeduction.getIssuccess(), ConstantsEnum.SUCCESS.getCode())) {
+                        //扣款结果成功,直接签收消息
+                        textMessage.acknowledge();
+                        return;
+                    }
+                    if (StringUtils.equals(notifyType, PingAnNotifyTypeEnum.TYPE00.getType())) {
+                        //支付成功
+                        mortgageDeduction.setIssuccess(ConstantsEnum.SUCCESS.getCode());
+                        mortgageDeduction.setErrorResult("交易成功");
+                        mortgageDeduction.setResult(RsbCodeEnum.ERROR_CODE_01.getCode());
+                        //计算手续费
+                        operationStrategyContext.calculateHandlingCharge(mortgageDeduction);
+                    } else {
+                        //失败
+                        mortgageDeduction.setErrorResult(response.getErrMsg());
+                        mortgageDeduction.setResult(response.getErrCode());
+                        mortgageDeduction.setIssuccess(ConstantsEnum.FAIL.getCode());
+                    }
+                    mortgageDeductionService.updateMortgageDeduction(mortgageDeduction);
+                    textMessage.acknowledge();
+                } else {
+                    //数据库中未查询到此订单号相关记录,消息重发
+                    session.recover();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             session.recover();

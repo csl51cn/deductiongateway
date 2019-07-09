@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.starlightfinancial.deductiongateway.BaofuConfig;
+import org.starlightfinancial.deductiongateway.config.BaofuConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransContent;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransHead;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransReqDataWrapper;

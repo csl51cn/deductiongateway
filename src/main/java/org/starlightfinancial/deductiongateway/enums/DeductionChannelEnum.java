@@ -45,7 +45,13 @@ public enum DeductionChannelEnum {
     /**
      * 银联商委代扣
      */
-    CHINA_PAY_COMMERCIAL_ENTRUST("0008", "银联", "银联商委代扣");
+    CHINA_PAY_COMMERCIAL_ENTRUST("0008", "银联", "银联商委代扣"),
+
+
+    /**
+     * 中国平安商委代扣
+     */
+    PING_AN_COMMERCIAL_ENTRUST("0009", "平安", "平安商委代扣");
 
 
     /**

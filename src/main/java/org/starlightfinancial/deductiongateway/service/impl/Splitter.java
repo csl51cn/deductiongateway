@@ -52,6 +52,7 @@ public class Splitter extends Decorator {
             if (isICBC && isHoliday & matchLimit) {
                 split = channelDispatchService.split(mortgageDeduction, DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
             } else {
+
                 split = channelDispatchService.split(mortgageDeduction, null);
             }
             if (split.size() == 1) {

@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway;
+package org.starlightfinancial.deductiongateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

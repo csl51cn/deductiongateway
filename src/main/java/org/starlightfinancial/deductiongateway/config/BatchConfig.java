@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway;
+package org.starlightfinancial.deductiongateway.config;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

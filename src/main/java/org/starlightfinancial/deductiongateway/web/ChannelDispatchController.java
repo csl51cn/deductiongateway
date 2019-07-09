@@ -104,7 +104,7 @@ public class ChannelDispatchController {
             }
             String ipAddress = Utility.getIpAddress(request);
             LOGGER.info("执行代扣,操作人员:{},发起请求ip:{},代扣记录ids:{},是(1)否(0)重新生成记录:{},代扣渠道:{}",
-                    ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddress, ids, reGenerate,channel);
+                    ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddress, ids, reGenerate, channel);
 
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
             ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
@@ -148,26 +148,41 @@ public class ChannelDispatchController {
 
     /**
      * 获取手续费最少的渠道
+     *
      * @param id 主键
      * @return
      */
     @RequestMapping(value = "/getHandlingChargeLowestChannel.do")
     @ResponseBody
-    public Message getHandlingChargeLowestChannel(Integer id){
+    public Message getHandlingChargeLowestChannel(Integer id) {
         return channelDispatchService.getHandlingChargeLowestChannel(id);
     }
 
 
-
     /**
      * 获取启用的支持当前记录银行的的渠道
+     *
      * @param id 主键
      * @return
      */
     @RequestMapping(value = "/getEnabledChannel.do")
     @ResponseBody
-    public Message getEnabledChannel(Integer id){
+    public Message getEnabledChannel(Integer id) {
         return channelDispatchService.getEnabledChannel(id);
+    }
+
+
+    /**
+     * 注册账号
+     *
+     * @param id      accountManager主键
+     * @param channel 渠道
+     * @return
+     */
+    @RequestMapping(value = "/registration.do")
+    @ResponseBody
+    public Message registration(Integer id, String channel) {
+        return channelDispatchService.registration(id, channel);
     }
 
 }

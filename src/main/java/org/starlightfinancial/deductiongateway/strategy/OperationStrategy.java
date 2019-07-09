@@ -121,4 +121,17 @@ public interface OperationStrategy {
         candidateMap.put(handlingCharge, result);
 
     }
+
+
+    /**
+     * 平安域账户注册
+     *
+     * @param id 代扣系统的账户信息id
+     * @return 注册结果
+     */
+    default Message registration(Integer id) {
+        return null;
+    }
+
+
 }

@@ -146,7 +146,7 @@
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">×</span>
                             </button>
-                            <h4 class="modal-title" id="moreInfoModalLabel">代扣信息</h4>
+                            <h4 class="modal-title" id="moreInfoModalLabel">签约信息</h4>
                         </div>
                         <div class="modal-body" id="moreInfoBody">
                             <div id="signTableInfo">
@@ -183,13 +183,24 @@
                                         <td style="width: 200px;text-align: left;"><input type="text" id="mobile"
                                                                                           name="mobile"/></td>
                                     </tr>
+                                    <tr id="unusual">
+                                        <td style="width: 100px;text-align: right;">操作:</td>
+                                        <td style="width: 200px;text-align: left;"><input type="button"
+                                                                                          id="queryIsSignedBtn"
+                                                                                          class="queryIsSignedBtn"
+                                                                                          value="查询是否已经签约"/>
+                                        </td>
 
-                                    <tr>
+                                    </tr>
+                                    <tr id="usual">
                                         <td style="width: 100px;text-align: right;">短信验证码:</td>
                                         <td style="width: 200px;text-align: left;"><input type="text" id="smsCode"
                                                                                           name="smsCode"/>
-                                            <input type="button" class="sendSmsCodeBtn" value="获取短信验证码"/></td>
+                                            <input type="button" id="sendSmsCodeBtn" class="sendSmsCodeBtn"
+                                                   value="获取短信验证码"/>
+                                        </td>
                                     </tr>
+
                                 </table>
                             </div>
 
@@ -218,7 +229,7 @@
                                         <td><input type="text" class="" id="accountName" name="accountName"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" class="btn" value="查询"/>
-                                            <input type="button" id="addBtn" class="btn"  value="新增"/>
+                                            <input type="button" id="addBtn" class="btn" value="新增"/>
                                             <input type="button" id="importBtn" class="btn" value="批量更新代扣卡"/>
                                         </td>
                                     </tr>
@@ -266,8 +277,7 @@
                         noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                     } else if (data.data == "2000") {
                         noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    }
-                    else {
+                    } else {
                         $("#accountNameInContractTable").attr("value", row.accountName);
                         $("#accountNameInContractTable").attr("readonly", "readonly");
                         $("#account").attr("value", row.account);
@@ -280,6 +290,9 @@
                         $("#channelMarking").attr("value", "0001");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/unionpay.png");
+                        $("#usual").show();
+                        $("#sendSmsCodeBtn").show();
+                        $("#unusual").hide();
                         $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
@@ -300,8 +313,7 @@
                         noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
                     } else if (data.data == "2000") {//无数据返回
                         noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    }
-                    else {
+                    } else {
                         $("#accountNameInContractTable").attr("value", row.accountName);
                         $("#accountNameInContractTable").attr("readonly", "readonly");
                         $("#account").attr("value", row.account);
@@ -314,6 +326,9 @@
                         $("#channelMarking").attr("value", "0002");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/baofu.png");
+                        $("#usual").show();
+                        $("#sendSmsCodeBtn").show();
+                        $("#unusual").hide();
                         $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
@@ -332,8 +347,7 @@
                         noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
                     } else if (data.data == "2000") {
                         noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    }
-                    else {
+                    } else {
                         $("#accountNameInContractTable").attr("value", row.accountName);
                         $("#accountNameInContractTable").attr("readonly", "readonly");
                         $("#account").attr("value", row.account);
@@ -346,9 +360,42 @@
                         $("#channelMarking").attr("value", "0007");
                         $("#id").attr("value", row.id);
                         $("#channelLogo").attr("src", "/img/cpcn.png");
+                        $("#usual").show();
+                        $("#sendSmsCodeBtn").show();
+                        $("#unusual").hide();
                         $("#signModalBody").html($("#signTableInfo").html());
                         $("#signModal").modal();
                     }
+                }
+            });
+        },
+        'click .pingan-action': function (e, value, row, index) {
+            $.ajax({
+                url: "/channelDispatchController/registration.do",
+                method: "post",
+                data: {"id": row.id, "channel": "0009"},
+                success: function (data) {
+                    if (data.code == "0000") {
+                        $("#accountNameInContractTable").attr("value", row.accountName);
+                        $("#accountNameInContractTable").attr("readonly", "readonly");
+                        $("#account").attr("value", row.account);
+                        $("#account").attr("readonly", "readonly");
+                        $("#certificateType").attr("value", row.certificateType);
+                        $("#certificateType").attr("readonly", "readonly");
+                        $("#certificateNo").attr("value", row.certificateNo);
+                        $("#certificateNo").attr("readonly", "readonly");
+                        $("#mobile").attr("value", row.mobile);
+                        $("#channelMarking").attr("value", "0009");
+                        $("#id").attr("value", row.id);
+                        $("#channelLogo").attr("src", "/img/cpcn.png");
+                        $("#usual").hide();
+                        $("#unusual").show();
+                        $("#signModalBody").html($("#signTableInfo").html());
+                        $("#signModal").modal();
+                    } else {
+                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                    }
+
                 }
             });
         }
@@ -365,6 +412,9 @@
             }
             if (row.chinaPayClearNetIsSigned != 1) {
                 operator.push('<button type="button" id="cpcnContracteBtn' + index + '" class="cpcn-action btn btn-primary  btn-small" style="margin-right:15px;">中金签约</button>');
+            }
+            if (row.pingAnCommercialEntrustIsSigned != 1) {
+                operator.push('<button type="button" id="pingAnContracteBtn' + index + '" class="pingan-action btn btn-primary  btn-small" style="margin-right:15px;">平安签约</button>');
             }
             return operator.join('');
         }
@@ -416,100 +466,100 @@
             }
         }
     },
-    //         {
-    //         field: 'mobile',
-    //         title: '手机号',
-    //         editable: {
-    //             type: 'text',
-    //             title: '手机号',
-    //             validate: function (v) {
-    //                 if (!v) return '手机号不能为空';
-    //             }
-    //         }
-    //     } ,
-    //       {
-    //         field: 'unionpayIsSigned',
-    //         title: '银联签约',
-    //         formatter: function (value, row, index) {
-    //             if (value == 1) {
-    //                 return "已签约";
-    //             } else {
-    //                 return "未签约";
-    //             }
-    //         },
-    //         cellStyle:function(value,row,index){
-    //             var cssObject  = {};
-    //
-    //             if (value==1){
-    //                 cssObject.color = "green";
-    //             }else{
-    //                 cssObject.color = "red";
-    //             }
-    //             if (index % 2 == 0){
-    //                 cssObject.background = "#fff"
-    //             }else{
-    //                 cssObject.background ="#aaa"
-    //             }
-    //
-    //             return {css:{"color":cssObject.color,"background":cssObject.background}};
-    //         }
-    //     },
-    //         {
-    //             field: 'baofuIsSigned',
-    //             title: '宝付签约',
-    //             formatter: function (value, row, index) {
-    //                 if (value == 1) {
-    //                     return "已签约";
-    //                 } else {
-    //                     return "未签约";
-    //                 }
-    //
-    //             },
-    //             cellStyle:function(value,row,index){
-    //                 var cssObject  = {};
-    //
-    //                 if (value==1){
-    //                     cssObject.color = "green";
-    //                 }else{
-    //                     cssObject.color = "red";
-    //                 }
-    //                 if (index % 2 == 0){
-    //                     cssObject.background = "#fff"
-    //                 }else{
-    //                     cssObject.background ="#aaa"
-    //                 }
-    //
-    //                 return {css:{"color":cssObject.color,"background":cssObject.background}};
-    //             }
-    //         },
-    //         {
-    //             field: 'chinaPayClearNetIsSigned',
-    //             title: '中金签约',
-    //             formatter: function (value, row, index) {
-    //                 if (value == 1) {
-    //                     return "已签约";
-    //                 } else {
-    //                     return "未签约";
-    //                 }
-    //
-    //             },
-    //             cellStyle:function(value,row,index){
-    //                 var cssObject  = {};
-    //
-    //                 if (value==1){
-    //                     cssObject.color = "green";
-    //                 }else{
-    //                     cssObject.color = "red";
-    //                 }
-    //                 if (index % 2 == 0){
-    //                     cssObject.background = "#fff"
-    //                 }else{
-    //                     cssObject.background ="#aaa"
-    //                 }
-    //
-    //                 return {css:{"color":cssObject.color,"background":cssObject.background}};
-    //             }
-    //         },
+        {
+            field: 'mobile',
+            title: '手机号',
+            editable: {
+                type: 'text',
+                title: '手机号',
+                validate: function (v) {
+                    if (!v) return '手机号不能为空';
+                }
+            }
+        },
+        {
+            field: 'unionpayIsSigned',
+            title: '银联签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+            },
+            cellStyle: function (value, row, index) {
+                var cssObject = {};
+
+                if (value == 1) {
+                    cssObject.color = "green";
+                } else {
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0) {
+                    cssObject.background = "#fff"
+                } else {
+                    cssObject.background = "#aaa"
+                }
+
+                return {css: {"color": cssObject.color, "background": cssObject.background}};
+            }
+        },
+        {
+            field: 'baofuIsSigned',
+            title: '宝付签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+
+            },
+            cellStyle: function (value, row, index) {
+                var cssObject = {};
+
+                if (value == 1) {
+                    cssObject.color = "green";
+                } else {
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0) {
+                    cssObject.background = "#fff"
+                } else {
+                    cssObject.background = "#aaa"
+                }
+
+                return {css: {"color": cssObject.color, "background": cssObject.background}};
+            }
+        },
+        {
+            field: 'chinaPayClearNetIsSigned',
+            title: '中金签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+
+            },
+            cellStyle: function (value, row, index) {
+                var cssObject = {};
+
+                if (value == 1) {
+                    cssObject.color = "green";
+                } else {
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0) {
+                    cssObject.background = "#fff"
+                } else {
+                    cssObject.background = "#aaa"
+                }
+
+                return {css: {"color": cssObject.color, "background": cssObject.background}};
+            }
+        },
         {
             field: 'sort',
             title: '扣款顺序',
@@ -532,12 +582,12 @@
                 }
             }
         },
-        // {
-        //     field: 'operate',
-        //     title: '操作',
-        //     events: operateEvents,
-        //     formatter: operateFormatter
-        // }
+        {
+            field: 'operate',
+            title: '操作',
+            events: operateEvents,
+            formatter: operateFormatter
+        }
     ];
 
     $(function () {
@@ -705,8 +755,32 @@
                     }
                 });
             });
-
-
+            var queryIsSignedBtn = $(this).find(".modal-body .queryIsSignedBtn");
+            queryIsSignedBtn.unbind("click");
+            queryIsSignedBtn.click(function () {
+                $.ajax({
+                    url: "/channelDispatchController/queryIsSigned.do",
+                    method: "post",
+                    data: {"id": $(".modal-body input[name='id']").val(), "channel": "0009"},
+                    success: function (data) {
+                        if (data.code == "0000") {
+                            if (!data.data) {
+                                //已签约
+                                $('#signModal').modal('hide');
+                                setTimeout("$('#queryBtn').click()", 4020);
+                                noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+                            } else {
+                                //未签约
+                                $("#sendSmsCodeBtn").hide();
+                                $("#usual").show();
+                                $(".modal-body input[name='merOrderNo']").attr("value", data.data);
+                            }
+                        } else {
+                            noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                        }
+                    }
+                });
+            });
         });
 
 

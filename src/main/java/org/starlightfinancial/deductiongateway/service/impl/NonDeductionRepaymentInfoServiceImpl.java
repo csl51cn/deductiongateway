@@ -13,7 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.AllInPayConfig;
+import org.starlightfinancial.deductiongateway.config.AllInPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;

@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway;
+package org.starlightfinancial.deductiongateway.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

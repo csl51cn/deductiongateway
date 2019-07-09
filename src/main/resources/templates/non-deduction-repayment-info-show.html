@@ -315,6 +315,10 @@
                                                    for="txt_repayment_original_info">还款原始信息</label></td>
                                         <td><input type="text" name="repaymentOriginalInfo"
                                                    id="txt_repayment_original_info" placeholder="还款原始信息"></td>
+                                        <td><label class="control-label"
+                                                   for="txt_remark">备注</label></td>
+                                        <td><input type="text" name="remark"
+                                                   id="txt_remark" placeholder="备注"></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -661,7 +665,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7523) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7524) {
                         if (row.isUploaded == "1") {
                             noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             setTimeout(query, 4000);
@@ -710,6 +714,7 @@
                     $("#txt_repayment_method").val(row.repaymentMethod);
                     $("#txt_bank_name").select(row.bankName);
                     $("#txt_repayment_type").val(row.repaymentType);
+                    $("#txt_remark").val(row.remark);
                     $("#editModal").modal();
                 },
                 onLoadSuccess: function (data) {

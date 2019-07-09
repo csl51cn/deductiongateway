@@ -239,5 +239,24 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         return message;
     }
 
+    /**
+     * 注册账号
+     *
+     * @param id      accountManager主键
+     * @param channel 渠道
+     * @return
+     */
+    @Override
+    public Message registration(Integer id, String channel) {
+        OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
+        Message message;
+        if (operationStrategy != null) {
+            message = operationStrategy.registration(id);
+        } else {
+            message = Message.fail("渠道信息未配置");
+        }
+        return message;
+    }
+
 
 }

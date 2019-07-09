@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.domain.local;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -10,6 +11,7 @@ import java.util.Date;
  *
  * @author senlin.deng
  */
+@Data
 @Entity(name = "BU_ACCOUNT_MANAGER")
 public class AccountManager {
 
@@ -143,18 +145,18 @@ public class AccountManager {
     /**
      * 中金支付是否签约,0:未签约,1:已签约
      */
-    @Column(name="cpcn_is_signed")
+    @Column(name = "cpcn_is_signed")
     private Integer chinaPayClearNetIsSigned;
 
     /**
      * 中金支付绑定流水号
      */
     @Column(name = "cpcn_protocol_no")
-    private  String  chinaPayClearNetProtocolNo;
+    private String chinaPayClearNetProtocolNo;
 
 
     /**
-     *  银联商业委托是否签约,0:未签约,1:已签约
+     * 银联商业委托是否签约,0:未签约,1:已签约
      */
 //    @Column(name="cpcn_is_signed")
     @Transient
@@ -165,8 +167,25 @@ public class AccountManager {
      */
 //    @Column(name = "cpcn_protocol_no")
     @Transient
-    private  String  unionpayCommercialEntrustProtocolNo;
+    private String unionpayCommercialEntrustProtocolNo;
 
+    /**
+     * 平安商委是否签约
+     */
+    @Column(name = "pingan_is_signed")
+    private String pingAnCommercialEntrustIsSigned;
+
+    /**
+     * 平安商委协议号
+     */
+    @Column(name = "pingan_protocol_no")
+    private String pingAnCommercialEntrustProtocolNo;
+
+    /**
+     * 平安付会员号
+     */
+    @Column(name="pingan_customer_Id")
+    private String  pingAnCustomerId;
 
     /**
      * 签约短信验证码
@@ -179,236 +198,5 @@ public class AccountManager {
     @Transient
     private String merOrderNo;
 
-    public Integer getId() {
-        return id;
-    }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getDateId() {
-        return dateId;
-    }
-
-    public void setDateId(Integer dateId) {
-        this.dateId = dateId;
-    }
-
-    public String getContractNo() {
-        return contractNo;
-    }
-
-    public void setContractNo(String contractNo) {
-        this.contractNo = contractNo;
-    }
-
-    public String getBizNo() {
-        return bizNo;
-    }
-
-    public void setBizNo(String bizNo) {
-        this.bizNo = bizNo;
-    }
-
-    public String getBankName() {
-        return bankName;
-    }
-
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
-
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public String getCertificateType() {
-        return certificateType;
-    }
-
-    public void setCertificateType(String certificateType) {
-        this.certificateType = certificateType;
-    }
-
-    public String getCertificateNo() {
-        return certificateNo;
-    }
-
-    public void setCertificateNo(String certificateNo) {
-        this.certificateNo = certificateNo;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-    public Date getChangeTime() {
-        return changeTime;
-    }
-
-    public void setChangeTime(Date changeTime) {
-        this.changeTime = changeTime;
-    }
-
-    public Date getLoanDate() {
-        return loanDate;
-    }
-
-    public void setLoanDate(Date loanDate) {
-        this.loanDate = loanDate;
-    }
-
-    public Integer getIsEnabled() {
-        return isEnabled;
-    }
-
-    public void setIsEnabled(Integer isEnabled) {
-        this.isEnabled = isEnabled;
-    }
-
-    public String getMobile() {
-        return mobile;
-    }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
-    public String getUnionpayProtocolNo() {
-        return unionpayProtocolNo;
-    }
-
-    public void setUnionpayProtocolNo(String unionpayProtocolNo) {
-        this.unionpayProtocolNo = unionpayProtocolNo;
-    }
-
-    public String getBaofuProtocolNo() {
-        return baofuProtocolNo;
-    }
-
-    public void setBaofuProtocolNo(String baofuProtocolNo) {
-        this.baofuProtocolNo = baofuProtocolNo;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public Integer getUnionpayIsSigned() {
-        return unionpayIsSigned;
-    }
-
-    public void setUnionpayIsSigned(Integer unionpayIsSigned) {
-        this.unionpayIsSigned = unionpayIsSigned;
-    }
-
-    public Integer getBaofuIsSigned() {
-        return baofuIsSigned;
-    }
-
-    public void setBaofuIsSigned(Integer baofuIsSigned) {
-        this.baofuIsSigned = baofuIsSigned;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getSmsCode() {
-        return smsCode;
-    }
-
-    public void setSmsCode(String smsCode) {
-        this.smsCode = smsCode;
-    }
-
-    public String getMerOrderNo() {
-        return merOrderNo;
-    }
-
-    public void setMerOrderNo(String merOrderNo) {
-        this.merOrderNo = merOrderNo;
-    }
-
-    public Integer getChinaPayClearNetIsSigned() {
-        return chinaPayClearNetIsSigned;
-    }
-
-    public void setChinaPayClearNetIsSigned(Integer chinaPayClearNetIsSigned) {
-        this.chinaPayClearNetIsSigned = chinaPayClearNetIsSigned;
-    }
-
-    public String getChinaPayClearNetProtocolNo() {
-        return chinaPayClearNetProtocolNo;
-    }
-
-    public void setChinaPayClearNetProtocolNo(String chinaPayClearNetProtocolNo) {
-        this.chinaPayClearNetProtocolNo = chinaPayClearNetProtocolNo;
-    }
-
-    public Integer getUnionpayCommercialEntrustIsSigned() {
-        return unionpayCommercialEntrustIsSigned;
-    }
-
-    public void setUnionpayCommercialEntrustIsSigned(Integer unionpayCommercialEntrustIsSigned) {
-        this.unionpayCommercialEntrustIsSigned = unionpayCommercialEntrustIsSigned;
-    }
-
-
-    @Override
-    public String toString() {
-        return "AccountManager{" +
-                "id=" + id +
-                ", dateId=" + dateId +
-                ", contractNo='" + contractNo + '\'' +
-                ", bizNo='" + bizNo + '\'' +
-                ", bankName='" + bankName + '\'' +
-                ", accountName='" + accountName + '\'' +
-                ", account='" + account + '\'' +
-                ", certificateType='" + certificateType + '\'' +
-                ", certificateNo='" + certificateNo + '\'' +
-                ", sort=" + sort +
-                ", changeTime=" + changeTime +
-                ", loanDate=" + loanDate +
-                ", isEnabled=" + isEnabled +
-                ", mobile='" + mobile + '\'' +
-                ", unionpayIsSigned=" + unionpayIsSigned +
-                ", baofuIsSigned=" + baofuIsSigned +
-                ", unionpayProtocolNo='" + unionpayProtocolNo + '\'' +
-                ", baofuProtocolNo='" + baofuProtocolNo + '\'' +
-                ", customerId='" + customerId + '\'' +
-                ", createTime=" + createTime +
-                ", chinaPayClearNetIsSigned=" + chinaPayClearNetIsSigned +
-                ", chinaPayClearNetProtocolNo='" + chinaPayClearNetProtocolNo + '\'' +
-                ", unionpayCommercialEntrustIsSigned=" + unionpayCommercialEntrustIsSigned +
-                ", unionpayCommercialEntrustProtocolNo='" + unionpayCommercialEntrustProtocolNo + '\'' +
-                ", smsCode='" + smsCode + '\'' +
-                ", merOrderNo='" + merOrderNo + '\'' +
-                '}';
-    }
 }
