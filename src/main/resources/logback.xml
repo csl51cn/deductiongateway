@@ -90,7 +90,15 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
+    <!-- 1. 输出SQL 到控制台和文件-->
+    <logger name="org.hibernate.SQL" additivity="false"  level="DEBUG">
+        <appender-ref ref="consoleAppender" />
+    </logger>
 
+    <!-- 2. 输出SQL 的参数到控制台和文件-->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" additivity="false" level="TRACE" >
+        <appender-ref ref="consoleAppender" />
+    </logger>
     <!-- 生产环境用info -->
     <logger name="org.starlightfinancial.deductiongateway" level="${log.lever}">
         <appender-ref ref="debugAppender"/>

@@ -4,7 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.BeanUtils;
+import org.starlightfinancial.rpc.hessian.config.PingAnEnvironment;
 import org.starlightfinancial.rpc.hessian.entity.yqb.AbstractTxResponse;
+import org.starlightfinancial.rpc.hessian.security.yqb.SecurityUtil;
+
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -223,5 +227,17 @@ public class Tx005Response extends AbstractTxResponse {
     protected void process() throws Exception {
         Tx005Response tx005Response = JSONObject.parseObject(responseMessage, Tx005Response.class);
         BeanUtils.copyProperties(tx005Response, this);
+    }
+
+    /**
+     * 验签
+     *
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    @Override
+    protected String verySign(Map<String, String> map) throws Exception {
+        return SecurityUtil.encryptWithSHA256(map, PingAnEnvironment.getMerchantKey());
     }
 }

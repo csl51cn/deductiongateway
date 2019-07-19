@@ -10,7 +10,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.domain.remote.Holiday;
 import org.starlightfinancial.deductiongateway.domain.remote.HolidayRepository;
@@ -58,7 +57,7 @@ public class ScheduledTaskService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "00 50 08 * * ? ")
+//    @Scheduled(cron = "00 50 08 * * ? ")
     public void execute() throws Exception {
         LOGGER.info("开始执行自动代扣,[{}]", LocalDate.now().toString());
 
@@ -99,7 +98,7 @@ public class ScheduledTaskService {
      *
      * @throws Exception 异常时抛出
      */
-    @Scheduled(cron = "00 30 08 * * ? ")
+//    @Scheduled(cron = "00 30 08 * * ? ")
     public void deductionTemplateImport() throws Exception {
         LOGGER.info("自动导入当天代扣模板,[{}]", LocalDate.now().toString());
         String autoSwitch = isHoliday(LocalDate.now());
@@ -120,9 +119,9 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从12点-23点每小时处理一次
      */
-    @Scheduled(cron = "0 55 12-23 * * ?")
+//    @Scheduled(cron = "0 55 12-23 * * ?")
     public void uploadAutoAccountingFile() {
-        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(),"prod")){
+        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(), "prod")) {
             //如果不是生产环境,不执行
             return;
         }
@@ -141,7 +140,7 @@ public class ScheduledTaskService {
     /**
      * 每天上午5点刷新缓存服务
      */
-    @Scheduled(cron = "0 0 5 * * ? ")
+//    @Scheduled(cron = "0 0 5 * * ? ")
     public void refreshCacheService() {
         CacheService.refresh();
     }
@@ -149,9 +148,9 @@ public class ScheduledTaskService {
     /**
      * 导入昨天的还款数据:成功代扣的和非代扣还款的,设置为9:30
      */
-    @Scheduled(cron = "00 40 9 * * ? ")
+//    @Scheduled(cron = "00 40 9 * * ? ")
     public void importRepaymentInfo() {
-        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(),"prod")){
+        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(), "prod")) {
             //如果不是生产环境,不执行
             return;
         }

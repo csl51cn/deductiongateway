@@ -177,14 +177,17 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
                     mortgageDeduction.getParam3(), mortgageDeduction.getCustomerName(), mortgageDeduction.getParam6());
             if (Objects.nonNull(accountManager)) {
                 //判断银行卡号是否绑定快捷支付,来决定是否要删除快捷支付的代扣渠道
-                if (StringUtils.equals(String.valueOf(accountManager.getUnionpayIsSigned()), ConstantsEnum.FAIL.getCode())) {
+                if (!StringUtils.equals(String.valueOf(accountManager.getUnionpayIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
                     limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode()));
                 }
-                if (StringUtils.equals(String.valueOf(accountManager.getBaofuIsSigned()), ConstantsEnum.FAIL.getCode())) {
+                if (!StringUtils.equals(String.valueOf(accountManager.getBaofuIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
                     limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode()));
                 }
-                if (StringUtils.equals(String.valueOf(accountManager.getChinaPayClearNetIsSigned()), ConstantsEnum.FAIL.getCode())) {
+                if (!StringUtils.equals(String.valueOf(accountManager.getChinaPayClearNetIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
                     limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getCode()));
+                }
+                if (!StringUtils.equals(String.valueOf(accountManager.getPingAnCommercialEntrustIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
+                    limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.PING_AN_COMMERCIAL_ENTRUST.getCode()));
                 }
             }
 

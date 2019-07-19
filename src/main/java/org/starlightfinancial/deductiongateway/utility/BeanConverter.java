@@ -974,7 +974,7 @@ public class BeanConverter {
      */
     public TxRegistrationRequest transToTxRegistrationReq(AccountManager accountManager) {
         TxRegistrationRequest request = new TxRegistrationRequest();
-        request.setMerchantNo(pingAnConfig.getMerchantId());
+        request.setMerchantNo(pingAnConfig.getPlatMerchantId());
         request.setPartnerId(accountManager.getCustomerId());
         request.setBindMobile(accountManager.getMobile());
         request.setRealName(accountManager.getAccountName());
@@ -998,7 +998,7 @@ public class BeanConverter {
         request.setCustomerIdType("I");
         request.setCustomerName(accountManager.getAccountName());
         request.setTelephone(accountManager.getMobile());
-        request.setMerchantId(pingAnConfig.getMerchantId());
+        request.setMerchantId(pingAnConfig.getPlatMerchantId());
         request.setMerchantSeqNo(MerSeq.tickOrder());
         request.setAcctType("0");
         request.setPafMember("1");
@@ -1021,7 +1021,7 @@ public class BeanConverter {
         tx047Request.setCustomerIdNo(accountManager.getCertificateNo());
         tx047Request.setCardType("D");
         tx047Request.setMerchantSeqNo(MerSeq.tickOrder());
-        tx047Request.setMerchantId(pingAnConfig.getMerchantId());
+        tx047Request.setMerchantId(pingAnConfig.getPlatMerchantId());
         tx047Request.setCustomerPAFId(account.getPingAnCustomerId());
         tx047Request.setTraceNo(accountManager.getMerOrderNo());
         tx047Request.setVerifyCode(accountManager.getSmsCode());
@@ -1029,7 +1029,7 @@ public class BeanConverter {
     }
 
     /**
-     * 转换为平安代扣合壹付001请求参数
+     * 转换为平安代扣合壹付支付001请求参数
      *
      * @param mortgageDeduction
      * @return

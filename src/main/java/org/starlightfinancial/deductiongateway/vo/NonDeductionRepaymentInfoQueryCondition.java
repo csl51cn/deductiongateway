@@ -1,4 +1,4 @@
-package org.starlightfinancial.deductiongateway.domain.local;
+package org.starlightfinancial.deductiongateway.vo;
 
 import org.springframework.format.annotation.DateTimeFormat;
 

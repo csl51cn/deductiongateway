@@ -3,11 +3,13 @@ package org.starlightfinancial.deductiongateway.service.impl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.starlightfinancial.deductiongateway.domain.local.DefaultChannel;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.remote.AutoBatchDeduction;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
 import org.starlightfinancial.deductiongateway.service.Decorator;
+import org.starlightfinancial.deductiongateway.service.DefaultChannelService;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
@@ -29,6 +31,8 @@ public class Splitter extends Decorator {
     @Autowired
     private BeanConverter converter;
 
+    @Autowired
+    private DefaultChannelService defaultChannelService;
     private List<MortgageDeduction> deductionList;
 
     public List getDeductionList() {
@@ -49,10 +53,13 @@ public class Splitter extends Decorator {
             BigDecimal total = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
             boolean matchLimit = total.compareTo(BigDecimal.valueOf(50000)) >= 0 && total.compareTo(BigDecimal.valueOf(100000)) <= 0;
             Map<String, List<MortgageDeduction>> split;
-            if (isICBC && isHoliday & matchLimit) {
+            DefaultChannel defaultChannel = defaultChannelService.getByBankCode(mortgageDeduction.getParam1());
+            if (Objects.nonNull(defaultChannel) && StringUtils.isNotBlank(DeductionChannelEnum.getOrderDescByCode(defaultChannel.getDefaultChannel()))) {
+                //如果默认渠道记录不为空,并且设置的默认渠道是有效的,直接使用
+                split = channelDispatchService.split(mortgageDeduction, defaultChannel.getDefaultChannel());
+            } else if (isICBC && isHoliday & matchLimit) {
                 split = channelDispatchService.split(mortgageDeduction, DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
             } else {
-
                 split = channelDispatchService.split(mortgageDeduction, null);
             }
             if (split.size() == 1) {

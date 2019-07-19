@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.starlightfinancial.rpc.hessian.security.yqb.SecurityUtil;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,7 +66,7 @@ public abstract class AbstractTxResponse implements Serializable {
         if ("0000".equals(responseCode)) {
             String responseSignature = resultMap.get("signature");
             //重新对数据签名
-            String signature = SecurityUtil.encryptWithSHA256((TreeMap) resultMap.clone());
+            String signature = verySign((TreeMap) resultMap.clone());
             //判断签名是否相等
             if (StringUtils.equals(responseSignature, signature)) {
                 responseMessage = JSONObject.toJSONString(resultMap);
@@ -104,6 +105,15 @@ public abstract class AbstractTxResponse implements Serializable {
      * @throws Exception
      */
     protected abstract void process() throws Exception;
+
+    /**
+     * 验签
+     *
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    protected abstract String verySign(Map<String, String> map) throws Exception;
 
 
     public String getResponseMessage() {

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.starlightfinancial.rpc.hessian.config.PingAnEnvironment;
 import org.starlightfinancial.rpc.hessian.entity.yqb.AbstractTxRequest;
 import org.starlightfinancial.rpc.hessian.security.yqb.SecurityUtil;
 
@@ -93,7 +94,7 @@ public class Tx005Request extends AbstractTxRequest {
         map.put("platMerchantId", platMerchantId);
         map.put("mercOrderNo", mercOrderNo);
         map.put("orderTraceNo", orderTraceNo);
-        signature = SecurityUtil.encryptWithSHA256(map);
+        signature = SecurityUtil.encryptWithSHA256(map, PingAnEnvironment.getMerchantKey());
         map.put("signature", signature);
         map.put("signMethod", signMethod);
         map.forEach((k, v) -> {

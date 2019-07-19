@@ -3,7 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
+import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 

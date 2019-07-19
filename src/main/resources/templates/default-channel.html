@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
+    <meta charset="UTF-8">
+    <title>默认代扣渠道</title>
     <title th:include="common :: #header" th:remove="tag"></title>
-    <title>限额管理</title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-editable.css" rel="stylesheet">
 </head>
@@ -12,7 +12,6 @@
 <div class="navbar">
     <div th:include="common :: #navbar" th:remove="tag"></div>
 </div>
-<!-- start: Header -->
 <div class="container-fluid-full">
     <div class="row-fluid">
         <!-- start: Main Menu -->
@@ -37,7 +36,7 @@
                     <a href="/main.do">主页</a>
                     <i class="icon-angle-right"></i>
                 </li>
-                <li><a href="/limitmanager.do">限额管理</a></li>
+                <li><a href="/default-channel.do">默认代扣渠道管理</a></li>
             </ul>
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
@@ -100,37 +99,12 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td><label class="control-label" for="txt_cardtype">卡性质</label></td>
+                                        <td><label class="control-label" for="txt_default_channel">默认代扣渠道</label></td>
                                         <td>
-                                            <select id="txt_cardtype" name="cardType">
-                                                <option value="0">借记卡</option>
-                                                <option value="1">贷记卡</option>
-                                                <option value="1">准贷记卡</option>
+                                            <select id="txt_default_channel" name="defaultChannel">
                                             </select>
                                         </td>
 
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_singlelimit">单笔单卡限额</label></td>
-                                        <td><input type="text" name="singleLimit" id="txt_singlelimit"
-                                                   placeholder="单笔单卡限额"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_singledaylimit">单日单卡限额</label></td>
-                                        <td><input type="text" name="singleDayLimit" id="txt_singledaylimit"
-                                                   placeholder="单日单卡限额"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_channel">渠道</label></td>
-                                        <td><select name="channel" id="txt_channel">
-                                        </select></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label class="control-label" for="txt_enabled">启用状态</label></td>
-                                        <td><select name="enabled" id="txt_enabled">
-                                            <option value="1">启用</option>
-                                            <option value="0">停用</option>
-                                        </select></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -146,26 +120,18 @@
             <div class="row-fluid sortable">
                 <div class="box span12">
                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>限额管理</h2>
+                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>默认代扣渠道管理</h2>
                     </div>
                     <div class="box-content">
                         <div>
                             <form class="form-horizontal" id="form">
                                 <div class="flex-container">
                                     <input type="button" id="addBtn" class="btn" value="新增"/>
-                                    <input type="button" id="modifyEnabledStatusBtn" class="btn" value="变更启用状态"/>
                                     <div>银行: <select id="query_bank">
                                     </select></div>
                                     <div>代扣渠道:<select id="query_channel">
                                     </select></div>
-                                    <div>启用状态<select id="query_enabled">
-                                        <option value="">所有</option>
-                                        <option value="1">启用</option>
-                                        <option value="0">停用</option>
-                                    </select></div>
-
                                 </div>
-
                             </form>
                         </div>
                         <table id="table"></table>
@@ -178,21 +144,23 @@
         <!-- end: Content -->
     </div><!--/#content.span10-->
 </div><!--/fluid-row-->
+
+
 <footer>
     <p>
         <span style="text-align:left;float:left" id="footer"></span>
     </p>
 </footer>
+
 <!-- start: JavaScript-->
 <div th:include="common :: #script" th:remove="tag"></div>
 <script src="/js/bootstrap-table.js"></script>
 <script src="/js/bootstrap-table-zh-CN.js"></script>
 <script src="/js/bootstrap-editable.min.js"></script>
 <script src="/js/bootstrap-table-editable.min.js"></script>
-
-
 <script type="text/javascript" th:inline="javascript">
     var channelObj = {
+        "0000": "无",
         "0001": "银联快捷支付",
         "0002": "宝付协议支付",
         "0003": "银联白名单代扣",
@@ -206,15 +174,10 @@
     var staffId = [[${session.loginUser.staffId}]];
     if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7524) {
         $("#addBtn").show();
-        $("#modifyEnabledStatusBtn").show();
     } else {
         $("#addBtn").hide();
-        $("#modifyEnabledStatusBtn").hide();
     }
     var columns = [{
-        field: 'state',
-        checkbox: true
-    }, {
         field: 'number',
         title: '序号',
         formatter: function (value, row, index) {
@@ -228,76 +191,39 @@
         field: 'bankName',
         title: '银行名称'
     }, {
-        field: 'cardType',
-        title: '卡性质',
-        formatter: function (value, row, index) {
-            if (value == 0) {
-                return "借记卡";
-            } else if (value == 1) {
-                return "贷记卡";
-            } else if (value == 2) {
-                return "准贷记卡";
-            } else {
-                return "未知";
-            }
-        }
-    }, {
-        field: 'singleLimit',
-        title: '单笔单卡限额',
-        editable: {
-            type: 'text',
-            title: '单笔单卡限额(-1为无限额)',
-            validate: function (v) {
-                if (!v) return '单笔单卡限额不能为空';
-            }
-        },
-        formatter: function (value, row, index) {
-            if (value == "-1") {
-                return "无限额";
-            }
-            return value;
-        }
-    }, {
-        field: 'singleDayLimit',
-        title: '单日单卡限额',
-        editable: {
-            type: 'text',
-            title: '单日单卡限额(-1为无限额)',
-            validate: function (v) {
-                if (!v) return '单日单卡限额不能为空';
-            }
-        },
-        formatter: function (value, row, index) {
-            if (value == "-1") {
-                return "无限额";
-            }
-            return value;
-        }
-    }, {
-        field: 'channel',
-        title: '支付渠道',
-        formatter: function (value, row, index) {
-            return channelObj[value];
-        }
-    }, {
-        field: 'enabled',
-        title: "启用状态",
+        field: 'defaultChannel',
+        title: '默认渠道',
         editable: {
             type: 'select',
-            title: '启用状态',
-            source: [{value: 1, text: "启用"}, {value: 0, text: "停用"}],
+            title: '默认渠道',
+            source: [{value: "0000", text: "无"}, {value: "0001", text: "银联快捷支付"}, {
+                value: "0002",
+                text: "宝付协议支付"
+            }, {value: "0003", text: "银联白名单代扣"},
+                {value: "0004", text: "银联新无卡代扣"}, {value: "0005", text: "宝付代扣"}, {value: "0006", text: "中金代扣"},
+                {value: "0007", text: "中金快捷支付"}, {value: "0009", text: "平安代扣"}
+            ],
             validate: function (v) {
                 if (!v) return '不能为空';
             }
         }
-
     }];
+
+    function queryParams() {
+        return {
+            pageNumber: this.pageNumber,
+            pageSize: this.pageSize,
+            bankName: $("#query_bank").val(),
+            defaultChannel: $("#query_channel").val()
+        }
+    }
+
     $(function () {
         function initTable() {
             $('#table').bootstrapTable({
                 method: "POST",
                 contentType: "application/x-www-form-urlencoded",
-                url: "/limitManagerController/queryLimit.do",
+                url: "/defaultChannelController/queryDefaultChannel.do",
                 queryParams: queryParams,
                 sidePagination: "server",
                 pageSize: 20,
@@ -326,12 +252,12 @@
                     if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 7524) {
                         $.ajax({
                             type: "post",
-                            url: "/limitManagerController/updateLimit.do",
+                            url: "/defaultChannelController/updateDefaultChannel.do",
                             data: row,
                             dataType: 'JSON',
                             success: function (data) {
                                 setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                                if (data == "1") {
+                                if (data.code == "0000") {
                                     noty({
                                         'text': '执行完成',
                                         'layout': 'center',
@@ -347,19 +273,18 @@
                             }
                         })
                     } else {
-                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                        noty({'text': '操作未完成:无权限进行操作!', 'layout': 'center', 'type': 'error', "timeout": "5000"});
                     }
-                    ;
                 }
             });
-        };
+        }
+
         initTable();
         $('#table').bootstrapTable('hideColumn', 'id');
 
-
         function initEditModal() {
-            //初始化添加限额记录的渠道下拉框
-            var channelSelect = $("#txt_channel");
+            //初始化新增默认代扣渠道记录的默认渠道下拉框
+            var channelSelect = $("#txt_default_channel");
             var queryChannel = $("#query_channel");
             queryChannel.append("<option value=''> 所有</option>")
             for (var item  in  channelObj) {
@@ -399,33 +324,17 @@
         $("#query_channel").change(function () {
             query()
         });
-        //查询启用状态变化时
-        $("#query_enabled").change(function () {
-            query()
-        });
 
         function query() {
             $('#table').bootstrapTable('removeAll');
             $('#table').bootstrapTable('refresh', {
-                url: '/limitManagerController/queryLimit.do',
+                url: '/defaultChannelController/queryDefaultChannel.do',
                 query: queryParams()
             });
         }
 
-        function queryParams() {
-
-            return {
-                pageNumber: this.pageNumber,
-                pageSize: this.pageSize,
-                bankName: $("#query_bank").val(),
-                channel: $("#query_channel").val(),
-                enabled: $("#query_enabled").val()
-            }
-        };
         <!--新增按钮功能-->
         $("#addBtn").click(function () {
-            $("#txt_singledaylimit").attr("value", "");
-            $("#txt_singlelimit").attr("value", "");
             $("#editModal").modal();
 
         });
@@ -433,18 +342,18 @@
         $(".btn-success").click(function () {
             $.ajax({
                 type: "post",
-                url: "/limitManagerController/isExisted.do",
-                data: {"bankCode": $("#txt_bankcode").val(), "channel": $("#txt_channel").val()},
+                url: "/defaultChannelController/isExisted.do",
+                data: {"bankCode": $("#txt_bankcode").val()},
                 dataType: 'JSON',
                 success: function (data) {
                     if (data.code === "0000") {
                         $.ajax({
                             type: "post",
-                            url: "/limitManagerController/saveLimit.do",
+                            url: "/defaultChannelController/saveDefaultChannel.do",
                             data: $("#editForm").serialize(),
                             dataType: 'JSON',
                             success: function (data) {
-                                if (data == "1") {
+                                if (data.code == "0000") {
                                     setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
                                     noty({
                                         'text': '执行完成',
@@ -452,6 +361,7 @@
                                         'type': 'information',
                                         "timeout": "4000"
                                     });
+
                                 } else {
                                     noty({'text': '执行失败', 'layout': 'center', 'type': 'error', "timeout": "5000"});
                                 }
@@ -463,77 +373,9 @@
                 }
             });
         });
-
-        <!--进度条自动增长-->
-        function increment() {
-            value += 1;
-            if (value == 80) {
-                clearTimeout(st);
-                return;
-            }
-            $("#prog").css("width", value + "%")
-            st = setTimeout(increment, 500);
-        }
-
-        <!--更改上传状态-->
-        $("#modifyEnabledStatusBtn").click(function () {
-            var ids = [];
-            var rows = $('#table').bootstrapTable('getSelections');
-            for (var i = 0; i < rows.length; i++) {
-                ids.push(rows[i].id);
-            }
-            if (ids.length <= 0) {
-                noty({'text': '请选择一条记录更新启用状态', 'layout': 'center', 'type': 'error', "timeout": "4000"});
-                return;
-            }
-            $('#confirmModal').modal();
-            var confirmdobtn = $("#confirmdobtn");
-            confirmdobtn.unbind("click");
-            confirmdobtn.click(function () {
-                value = 0;
-                increment();
-                $('#myModal').modal('show');
-
-                $.ajax({
-                    url: "/limitManagerController/modifyEnabledStatus.do",
-                    timeout: 1800000,
-                    method: "POST",
-                    data: {"ids": ids.toString()},
-                    dataType: 'JSON',
-                    success: function (data) {
-                        value = 0;
-                        $('#myModal').modal('hide');
-                        if ("1" == data) {
-                            setTimeout(query(), 4020);
-                            noty({'text': '执行完成', 'layout': 'center', 'type': 'information', "timeout": "5000"});
-                        } else {
-                            noty({
-                                'text': '执行失败,' + data,
-                                'layout': 'center',
-                                'type': 'error',
-                                "timeout": "6000"
-                            });
-                        }
-
-                    },
-                    error: function (data) {
-                        value = 0;
-                        $('#myModal').modal('hide');
-                        noty({
-                            'text': '执行失败,' + data.responseText,
-                            'layout': 'center',
-                            'type': 'error',
-                            "timeout": "6000"
-                        });
-                    }
-                })
-            });
+    });
 
 
-        })
-
-    })
 </script>
-<!-- end: JavaScript-->
 </body>
 </html>

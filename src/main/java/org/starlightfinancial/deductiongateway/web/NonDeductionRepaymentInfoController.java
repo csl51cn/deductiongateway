@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
+import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.AlreadyUploadedUpdateException;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;

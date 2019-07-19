@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author senlin.deng
  */
-public class AccountManagerRowMapper implements RowMapper {
+public class AccountManagerRowMapper implements RowMapper<AccountManager> {
 
     public static final String DATAID_COLUMN = "dateid";
     public static final String BIZNO_COLUMN = "bizno";
@@ -30,7 +30,7 @@ public class AccountManagerRowMapper implements RowMapper {
 
 
     @Override
-    public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+    public AccountManager mapRow(ResultSet resultSet, int i) throws SQLException {
         AccountManager accountManager = new AccountManager();
         accountManager.setDateId(resultSet.getInt(DATAID_COLUMN));
         accountManager.setBizNo(resultSet.getString(BIZNO_COLUMN));

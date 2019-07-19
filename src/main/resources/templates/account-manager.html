@@ -5,6 +5,9 @@
     <title>卡号管理</title>
     <link href="/css/bootstrap-table.css" rel="stylesheet">
     <link href="/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-datepicker.css" rel="stylesheet">
+    <link href="/css/jquery.noty.css" rel="stylesheet">
 </head>
 <body>
 <!-- start: Header -->
@@ -220,9 +223,17 @@
                         <div>
                             <form class="form-horizontal" id="form">
                                 <table class="table-bordered">
-                                    <tr with="33%">
+                                    <tr>
+                                        <td><label for="loanStartDate">放款开始日期</label></td>
+                                        <td><input size="16" type="text" id="loanStartDate" class="form_datetime"
+                                                   name="loanEndDate"/></td>
+                                        <td><label for="loanEndDate">结束日期</label></td>
+                                        <td><input size="16" type="text" id="loanEndDate" class="form_datetime"
+                                                   name="loanEndDate"/></td>
                                         <td>合同编号</td>
                                         <td><input type="text" class="" id="contractNo" name="contractNo"/></td>
+                                    </tr>
+                                    <tr>
                                         <td>业务编号</td>
                                         <td><input type="text" class="" id="bizNo" name="bizNo"/></td>
                                         <td>账户名</td>
@@ -230,7 +241,9 @@
                                         <td>
                                             <input type="button" id="queryBtn" class="btn" value="查询"/>
                                             <input type="button" id="addBtn" class="btn" value="新增"/>
-                                            <input type="button" id="importBtn" class="btn" value="批量更新代扣卡"/>
+                                            <input title="导入放款日期比最后一条记录的放款日期晚的卡号信息" type="button" id="importBtn"
+                                                   class="btn" value="批量增加代扣卡"/>
+                                            <input type="button" id="whiteListExportBtn" class="btn" value="白名单下载"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -257,8 +270,11 @@
 <div th:include="common :: #script" th:remove="tag"></div>
 <script src="/js/bootstrap-table.js"></script>
 <script src="/js/bootstrap-table-zh-CN.js"></script>
-<script src="/js/bootstrap-editable.min.js"></script>
+<script src="/js/bootstrap-editable.js"></script>
 <script src="/js/bootstrap-table-editable.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/js/bootstrap-datepicker.js"></script>
 
 
 <script type="text/javascript" th:inline="javascript">
@@ -465,6 +481,9 @@
                 if (!v) return '证件号码不能为空';
             }
         }
+    },{
+        field:'loanDate',
+        title:'放款日期'
     },
         {
             field: 'mobile',
@@ -559,6 +578,33 @@
 
                 return {css: {"color": cssObject.color, "background": cssObject.background}};
             }
+        },   {
+            field: 'pingAnCommercialEntrustIsSigned',
+            title: '平安商委签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+
+            },
+            cellStyle: function (value, row, index) {
+                var cssObject = {};
+
+                if (value == 1) {
+                    cssObject.color = "green";
+                } else {
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0) {
+                    cssObject.background = "#fff"
+                } else {
+                    cssObject.background = "#aaa"
+                }
+
+                return {css: {"color": cssObject.color, "background": cssObject.background}};
+            }
         },
         {
             field: 'sort',
@@ -591,6 +637,31 @@
     ];
 
     $(function () {
+
+        var loanStartDateNode = $("#loanStartDate");
+        var loanEndDateNode = $("#loanEndDate");
+        loanStartDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            autoclose: true,
+            todayBtn: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            loanStartDateNode.datetimepicker("setEndDate", loanEndDateNode.val())
+        });
+        loanEndDateNode.datetimepicker({
+            format: 'yyyy-mm-dd',
+            minView: 'month',
+            language: 'zh-CN',
+            todayBtn: true,
+            autoclose: true,
+            startDate: new Date('1900-01-01')
+        }).on("click", function () {
+            loanEndDateNode.datetimepicker("setStartDate", loanEndDateNode.val())
+        });
+
+
         function initTable() {
             $('#table').bootstrapTable({
                 method: "POST",
@@ -670,15 +741,18 @@
         $('#table').bootstrapTable('hideColumn', 'dateId');
         $('#table').bootstrapTable('hideColumn', 'loandate');
 
+
         function queryParams() {
             return {
                 pageNumber: this.pageNumber,
                 pageSize: this.pageSize,
                 contractNo: $("#contractNo").val(),
                 bizNo: $("#bizNo").val(),
-                accountName: $("#accountName").val()
+                accountName: $("#accountName").val(),
+                loanStartDate: loanStartDateNode.val(),
+                loanEndDate: loanEndDateNode.val()
             }
-        };
+        }
 
         <!--带参数刷新页面-->
         function refreshPage() {
@@ -888,6 +962,18 @@
             st = setTimeout(increment, 500);
         }
 
+        <!--白名单导出按钮-->
+        $("#whiteListExportBtn").click(function () {
+
+            var contractNo = $("#contractNo").val();
+            var bizNo = $("#bizNo").val();
+            var accountName = $("#accountName").val();
+            var loanStartDate = loanStartDateNode.val();
+            var loanEndDate = loanEndDateNode.val();
+            location.href = "/accountManagerController/whiteListExport.do?contractNo="+contractNo+"&bizNo="+bizNo+"&accountName="+accountName
+            +"&loanStartDate="+loanStartDate+"&loanEndDate="+loanEndDate
+
+        })
 
     })
 </script>

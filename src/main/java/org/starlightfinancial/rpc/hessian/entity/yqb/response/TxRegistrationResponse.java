@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import org.springframework.beans.BeanUtils;
 import org.starlightfinancial.rpc.hessian.entity.yqb.AbstractJsonTxResponse;
 
+import java.util.Map;
+
 /**
  * @author: Senlin.Deng
  * @Description: 注册返回信息
@@ -59,5 +61,17 @@ public class TxRegistrationResponse extends AbstractJsonTxResponse {
     protected void process() throws Exception {
         TxRegistrationResponse txRegistrationResponse = JSONObject.parseObject(responseMessage, TxRegistrationResponse.class);
         BeanUtils.copyProperties(txRegistrationResponse, this);
+    }
+
+    /**
+     * 验签
+     *
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    @Override
+    protected String verySign(Map<String, String> map) throws Exception {
+        return null;
     }
 }

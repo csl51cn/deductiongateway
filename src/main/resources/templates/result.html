@@ -292,7 +292,16 @@
     } else {
         $("#uploadBtn").hide();
     }
-    var deductionChannelSpanArray = ["", "0001", "0002", "0003", "0004", "0005", "0006", "0007"];
+    var channelObj = {
+        "0001": "银联快捷支付",
+        "0002": "宝付协议支付",
+        "0003": "银联白名单代扣",
+        "0004": "银联新无卡代扣",
+        "0005": "宝付代扣",
+        "0006": "中金代扣",
+        "0007": "中金快捷支付",
+        "0009": "平安代扣"
+    };
     window.operateEvents = {
 
         'click .action': function (e, value, row, index) {
@@ -307,7 +316,7 @@
                 success: function (data) {
                     recommendChannel.html(data.data);
                     $(".btn-success").unbind("click");
-                    if ((row.channel == "0006" || row.channel == "0007" ||row.channel == "0009") && (row.issuccess != "0" || row.issuccess != "1")) {
+                    if ((row.channel == "0006" || row.channel == "0007" || row.channel == "0009") && (row.issuccess != "0" || row.issuccess != "1")) {
                         $("#queryResultBtn").show();
                     } else {
                         $("#queryResultBtn").hide();
@@ -326,19 +335,12 @@
                     if (length === 0) {
                         noty({'text': "暂无支持渠道", 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     } else {
-                        var hideChannelSpan = deductionChannelSpanArray.concat();
-                        for (var i = hideChannelSpan.length - 1; i >= 0; i--) {
-                            for (var j = 0; j < length; j++) {
-                                if (hideChannelSpan[i] === showChannelSpan[j]) {
-                                    hideChannelSpan.splice(i, 1);
-                                }
-                            }
-                        }
+                        //所有渠道设置隐藏
+                        jQuery.each(channelObj, function(key, val) {
+                            $("#" + key).hide();
+                        });
                         showChannelSpan.forEach(function (channelID, index) {
                             $("#" + channelID).show();
-                        });
-                        hideChannelSpan.forEach(function (channelID, index1) {
-                            $("#" + channelID).hide();
                         });
                         $('#actionModal').modal();
                     }

@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.web;
 
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -21,11 +22,21 @@ import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.service.AccountManagerService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.vo.AccountManagerVO;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * 卡号管理Controller
@@ -57,8 +68,8 @@ public class AccountManagerController {
      */
     @RequestMapping(value = "/queryAccount.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Map<String, Object> queryAccount(String contractNo, String bizNo, String accountName, PageBean pageBean) {
-        PageBean result = accountManagerService.queryAccount(contractNo.trim(), bizNo.trim(), accountName.trim(), pageBean);
+    public Map<String, Object> queryAccount(AccountManagerVO accountManagerVO, PageBean pageBean) {
+        PageBean result = accountManagerService.queryAccount(accountManagerVO, pageBean);
         return Utility.pageBean2Map(result);
     }
 
@@ -108,13 +119,12 @@ public class AccountManagerController {
     @RequestMapping(value = "/executeAccountAutoBatchImport.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public String executeAccountAutoBatchImport() {
-        List<AccountManager> lastAccount = accountManagerService.findLastAccount();
+        AccountManager accountManager = accountManagerService.findLastAccount();
         String lastLoanDate = null;
-        if (lastAccount.size() > 0) {
-            AccountManager accountManager = lastAccount.get(0);
+        if (Objects.nonNull(accountManager)) {
             Date loanDate = accountManager.getLoanDate();
             if (loanDate != null) {
-                lastLoanDate = Utility.convertToString(loanDate,"yyyy-MM-dd");
+                lastLoanDate = Utility.convertToString(loanDate, "yyyy-MM-dd");
             } else {
                 lastLoanDate = setLastLoanDate();
             }
@@ -137,5 +147,45 @@ public class AccountManagerController {
         return yesterday.toString();
     }
 
+    /**
+     * 根据条件查询,生成白名单,压缩导出
+     */
+    @RequestMapping(value = "/whiteListExport.do")
+    public void whiteListExport(AccountManagerVO accountManagerVO, HttpServletResponse response) throws IOException {
+        response.reset();
+        response.setContentType("application/zip;");
+        response.setHeader("Content-Disposition", "attachment;filename="
+                + new String(("白名单导出" + Utility.getTimestamp()).getBytes("gb2312"), "iso8859-1") + ".zip");
 
+        // 白名单文件名与内容的映射
+        Map<String, String> whiteListContent = accountManagerService.whiteListExport(accountManagerVO);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        CheckedOutputStream cos = new CheckedOutputStream(output, new CRC32());
+        ZipOutputStream zos = new ZipOutputStream(cos);
+        for (Map.Entry<String, String> entry : whiteListContent.entrySet()) {
+            String fileName = entry.getKey();
+            String content = entry.getValue();
+            //构建输入流
+            BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(content.getBytes()));
+            //创建文件（zip里面的文件）
+            ZipEntry zipEntry = new ZipEntry(fileName);
+            //放入文件
+            zos.putNextEntry(zipEntry);
+            //写入文件
+            IOUtils.copy(bis, zos);
+            //关闭流
+            bis.close();
+            zos.closeEntry();
+        }
+
+        zos.close();
+        //设置返回信息
+        response.setHeader("Content-Length", String.valueOf(output.size()));
+        IOUtils.copy(new ByteArrayInputStream(output.toByteArray()), response.getOutputStream());
+        //创建完压缩文件后关闭流
+        cos.close();
+        output.close();
+
+    }
 }

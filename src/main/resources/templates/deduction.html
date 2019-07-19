@@ -108,6 +108,7 @@
                                             <!--<input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>-->
                                             <!--<input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>-->
                                             <!--<input type="button" id="chinaPayClearNetDeductionBtn" class="btn"  value="中金快捷支付"/>-->
+                                            <!--<input type="button" id="pingAnDeductionBtn" class="btn"  value="平安代扣"/>-->
                                             <input type="button" id="deleteBtn" class="btn"  value="删除"/>
                                         </td>
                                     </tr>
@@ -333,31 +334,37 @@
         //     executeDeduct("0002");
         // });
         <!--银联旧代扣-->
-        // $("#chinaPayClassicDeductionBtn").click(function () {
-        //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
-        //     executeDeduct("0003");
-        // });
+        $("#chinaPayClassicDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
+            executeDeduct("0003");
+        });
         <!--银联新代扣-->
         // $("#chinaPayNewDeductionBtn").click(function () {
         //     $("#logoImage").html('<img src="/img/unionpay.png" style="max-width:30%;">' );
         //     executeDeduct("0004");
         // });
         <!--宝付旧代扣-->
-        // $("#baoFuClassicDeductionBtn").click(function () {
-        //     $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
-        //     executeDeduct("0005");
-        // });
+        $("#baoFuClassicDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/baofu.png" style="max-width:30%;">' );
+            executeDeduct("0005");
+        });
 
         <!--中金支付单笔代扣-->
-        // $("#chinaPayClearNetClassicDeductionBtn").click(function () {
-        //     $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
-        //     executeDeduct("0006");
-        // });
-
-        <!--中金支付单笔代扣-->
-        $("#chinaPayClearNetDeductionBtn").click(function () {
+        $("#chinaPayClearNetClassicDeductionBtn").click(function () {
             $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
-            executeDeduct("0007");
+            executeDeduct("0006");
+        });
+
+        <!--中金支付快捷支付-->
+        // $("#chinaPayClearNetDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/cpcn.png" style="max-width:30%;">' );
+        //     executeDeduct("0007");
+        // });
+
+        <!--平安商委支付-->
+        $("#pingAnDeductionBtn").click(function () {
+            $("#logoImage").html('<img src="/img/pingan.png" style="max-width:30%;">' );
+            executeDeduct("0009");
         });
         $("#DeductionBtn").click(function () {
             executeDeduct("");

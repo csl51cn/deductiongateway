@@ -3,8 +3,13 @@ package org.starlightfinancial.rpc.hessian.entity.yqb.response;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.starlightfinancial.rpc.hessian.config.PingAnEnvironment;
 import org.starlightfinancial.rpc.hessian.entity.yqb.AbstractTxResponse;
+import org.starlightfinancial.rpc.hessian.security.yqb.SecurityUtil;
+
+import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -130,5 +135,23 @@ public class AsyncResponse extends AbstractTxResponse {
     protected void process() throws Exception {
         AsyncResponse asyncResponse = JSONObject.parseObject(responseMessage, AsyncResponse.class);
         BeanUtils.copyProperties(asyncResponse, this);
+    }
+
+    /**
+     * 验签
+     *
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    @Override
+    protected String verySign(Map<String, String> map) throws Exception {
+        String merchantId = map.get("merchantId");
+        if (StringUtils.equals(merchantId, PingAnEnvironment.getMerchantId())) {
+            return SecurityUtil.encryptWithSHA256(map, PingAnEnvironment.getMerchantKey());
+        } else if (StringUtils.equals(merchantId, PingAnEnvironment.getPlatMerchantId())) {
+            return SecurityUtil.encryptWithSHA256(map, PingAnEnvironment.getMerchantKey());
+        }
+        return null;
     }
 }

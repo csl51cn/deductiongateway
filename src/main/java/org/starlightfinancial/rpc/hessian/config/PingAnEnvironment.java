@@ -15,11 +15,13 @@ import java.util.Properties;
  */
 public class PingAnEnvironment {
     private static Logger log = LoggerFactory.getLogger(PingAnEnvironment.class);
+    private static String platMerchantId;
     private static String merchantId;
     private static String merchantSHA1Key;
     private static String aseKey;
     private static String transactionUrl;
     private static String merchantKey;
+    private static String platMerchantKey;
     private static String registrationChannel;
     private static String registrationSystem;
     private static String registrationCoOperCode;
@@ -32,11 +34,13 @@ public class PingAnEnvironment {
         Properties properties = new Properties();
         try (InputStream resourceAsStream = PingAnEnvironment.class.getClassLoader().getResourceAsStream(fileName)) {
             properties.load(resourceAsStream);
+            platMerchantId = properties.getProperty("platMerchantId");
             merchantId = properties.getProperty("merchantId");
             merchantSHA1Key = properties.getProperty("merchantSHA1Key");
             aseKey = properties.getProperty("aseKey");
             transactionUrl = properties.getProperty("transactionUrl");
             merchantKey = properties.getProperty("merchantKey");
+            platMerchantKey = properties.getProperty("platMerchantKey");
             registrationChannel = properties.getProperty("registrationChannel");
             registrationSystem = properties.getProperty("registrationSystem");
             registrationCoOperCode = properties.getProperty("registrationCoOperCode");
@@ -93,5 +97,11 @@ public class PingAnEnvironment {
     public static String getMerchantKey() {
         return merchantKey;
     }
+    public static String getPlatMerchantKey() {
+        return platMerchantKey;
+    }
 
+    public static String getPlatMerchantId() {
+        return platMerchantId;
+    }
 }

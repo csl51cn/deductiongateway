@@ -3,6 +3,8 @@ package org.starlightfinancial.deductiongateway.domain.local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 /**
  * @author: senlin.deng
  * @Description: 代扣卡管理Repository
@@ -44,5 +46,18 @@ public interface AccountManagerRepository extends JpaRepository<AccountManager, 
      */
     AccountManager findByContractNoAndAccountAndAccountNameAndCertificateNo(String contractNo, String account, String accountName, String certificationNo);
 
+    /**
+     * 获取最后一条记录
+     *
+     * @return
+     */
+    AccountManager findTopByOrderByIdDesc();
 
+    /**
+     * 通过 业务编号查询记录
+     *
+     * @param bizNo
+     * @return
+     */
+    List<AccountManager> findByBizNo(String bizNo);
 }

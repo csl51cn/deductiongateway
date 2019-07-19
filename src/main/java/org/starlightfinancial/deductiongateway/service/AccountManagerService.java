@@ -3,8 +3,9 @@ package org.starlightfinancial.deductiongateway.service;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
+import org.starlightfinancial.deductiongateway.vo.AccountManagerVO;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * 卡号管理Service接口
@@ -16,13 +17,11 @@ public interface AccountManagerService {
     /**
      * 按条件分页查询记录
      *
-     * @param contractNo  合同编号
-     * @param bizNo       业务编号
-     * @param accountName 账户名
-     * @param pageBean    分页对象
+     * @param accountManagerVO 查询条件
+     * @param pageBean         分页对象
      * @return
      */
-    PageBean queryAccount(String contractNo, String bizNo, String accountName, PageBean pageBean);
+    PageBean queryAccount(AccountManagerVO accountManagerVO, PageBean pageBean);
 
     /**
      * 更新记录
@@ -36,7 +35,7 @@ public interface AccountManagerService {
      *
      * @return
      */
-    List findLastAccount();
+    AccountManager findLastAccount();
 
     /**
      * 添加代扣卡信息
@@ -48,8 +47,16 @@ public interface AccountManagerService {
 
     /**
      * 根据id查询卡信息
+     *
      * @param id
      * @return
      */
     AccountManager findById(Integer id);
+
+    /**
+     * 按条件查询卡号记录,并生成白明单,map是文件名与白名单内容的映射
+     * @param accountManagerVO
+     * @return
+     */
+    Map<String, String> whiteListExport(AccountManagerVO accountManagerVO);
 }

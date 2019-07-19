@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.config.AllInPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoQueryCondition;
+import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.enums.*;

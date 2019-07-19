@@ -122,7 +122,7 @@ public class BatchConfig {
     @Bean(name = "r0")
     @StepScope
     public JdbcCursorItemReader<AccountManager> accountAutoBatchReader(@Qualifier("remoteDataSource") DataSource dataSource, @Value("#{jobParameters['lastLoanDate']}") String lastLoanDate) {
-        JdbcCursorItemReader jdbcCursorItemReader = new JdbcCursorItemReader();
+        JdbcCursorItemReader<AccountManager> jdbcCursorItemReader = new JdbcCursorItemReader<>();
         jdbcCursorItemReader.setDataSource(dataSource);
         jdbcCursorItemReader.setRowMapper(new AccountManagerRowMapper());
         jdbcCursorItemReader.setSql(

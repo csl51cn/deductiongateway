@@ -81,7 +81,7 @@ public class LimitManagerServiceImpl implements LimitManagerService {
     @Override
     public void saveLimit(LimitManager limitManager) {
         limitManagerRepository.saveAndFlush(limitManager);
-        log.info("新增限额信息,操作人:[{}],非代扣还款记录id:[{}]", Utility.getLoginUserName(ServletUtil.getSession()),
+        log.info("新增限额信息,操作人:[{}],限额记录id:[{}]", Utility.getLoginUserName(ServletUtil.getSession()),
                 limitManager.getId());
     }
 

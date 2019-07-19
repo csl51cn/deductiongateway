@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class SecurityUtil {
 
+
     /**
      * 对字符串加密,加密算法使用MD5,SHA-1,SHA-256,默认使用SHA-1
      *
@@ -65,10 +66,11 @@ public class SecurityUtil {
      * 加密方法:使用SHA-256
      *
      * @param map 加密方法:使用SHA-256
+     * @param merchantKey 商户秘钥
      * @return
      * @throws Exception
      */
-    public static String encryptWithSHA256(Map<String, String> map) throws Exception {
+    public static String encryptWithSHA256(Map<String, String> map,String merchantKey) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         String charset = map.get("charset");
         String signMethod = map.remove("signMethod");
@@ -79,7 +81,7 @@ public class SecurityUtil {
                 stringBuilder.append("&").append(k).append("=").append(v);
             }
         });
-        stringBuilder.append(PingAnEnvironment.getMerchantKey());
+        stringBuilder.append(merchantKey);
         //去除掉第一个"&"
         String data = stringBuilder.toString().substring(1);
         signMethod = StringUtils.isBlank(signMethod) ? "SHA-256" : signMethod;
@@ -107,12 +109,12 @@ public class SecurityUtil {
 
     /**
      * 加密方法:使用3DES加密
-     *
+     * @param merchantKey 商户秘钥
      * @param data
      * @return
      */
-    public static String encryptWithDES(String data) throws Exception {
-        return DESEncrypt.encrypt(data, PingAnEnvironment.getMerchantKey());
+    public static String encryptWithDES(String data,String merchantKey) throws Exception {
+        return DESEncrypt.encrypt(data,merchantKey);
     }
 
     /**

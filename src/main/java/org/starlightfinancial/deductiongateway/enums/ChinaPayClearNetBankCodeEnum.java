@@ -28,8 +28,8 @@ public enum ChinaPayClearNetBankCodeEnum {
     BANK_CODE_15("0306", "306", "广东发展银行"),
     BANK_CODE_16("920", "304", "华夏银行"),
     BANK_CODE_17("910", "441", "重庆银行"),
-    BANK_CODE_18("777", "321", "三峡银行"),
-    BANK_CODE_19("0910", "1413", "重庆农村商业银行");
+    BANK_CODE_18("777", "321", "重庆三峡银行"),
+    BANK_CODE_19("0910", "1413", "重庆农商行");
 
     /**
      * 银联银行编码
@@ -106,6 +106,16 @@ public enum ChinaPayClearNetBankCodeEnum {
     public static String getBankNameById(String id) {
         for (ChinaPayClearNetBankCodeEnum bankCodeEnum : ChinaPayClearNetBankCodeEnum.values()) {
             if (id.equals(bankCodeEnum.getId())) {
+                return bankCodeEnum.getBankName();
+            }
+        }
+        return null;
+    }
+
+
+    public static String getCodeByName(String name) {
+        for (ChinaPayClearNetBankCodeEnum bankCodeEnum : ChinaPayClearNetBankCodeEnum.values()) {
+            if (name.equals(bankCodeEnum.getBankName())) {
                 return bankCodeEnum.getBankName();
             }
         }
