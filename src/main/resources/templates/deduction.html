@@ -100,13 +100,13 @@
                                             <input type="text" class="" id="contractNo" name="contractNo"  style="width: 150px;"/></td>
                                         <td>
                                             <input type="button" id="queryBtn" class="btn"  value="查询"/>
-                                            <input type="button" id="DeductionBtn" class="btn"  value="代扣"/>
+                                            <!--<input type="button" id="DeductionBtn" class="btn"  value="代扣"/>-->
                                             <!--<input type="button" id="deductionBtn" class="btn"  value="银联快捷支付"/>-->
                                             <!--<input type="button" id="chinaPayNewDeductionBtn"  class="btn"  value="银联代扣"/>-->
                                             <!--<input type="button" id="baoFuDeductionBtn" class="btn"  value="宝付协议支付"/>-->
-                                            <!--<input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>-->
-                                            <!--<input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>-->
-                                            <!--<input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>-->
+                                            <input type="button" id="chinaPayClassicDeductionBtn" class="btn"  value="银联旧代扣"/>
+                                            <input type="button" id="baoFuClassicDeductionBtn" class="btn"  value="宝付代扣"/>
+                                            <input type="button" id="chinaPayClearNetClassicDeductionBtn" class="btn"  value="中金代扣"/>
                                             <!--<input type="button" id="chinaPayClearNetDeductionBtn" class="btn"  value="中金快捷支付"/>-->
                                             <!--<input type="button" id="pingAnDeductionBtn" class="btn"  value="平安代扣"/>-->
                                             <input type="button" id="deleteBtn" class="btn"  value="删除"/>
@@ -362,13 +362,13 @@
         // });
 
         <!--平安商委支付-->
-        $("#pingAnDeductionBtn").click(function () {
-            $("#logoImage").html('<img src="/img/pingan.png" style="max-width:30%;">' );
-            executeDeduct("0009");
-        });
-        $("#DeductionBtn").click(function () {
-            executeDeduct("");
-        });
+        // $("#pingAnDeductionBtn").click(function () {
+        //     $("#logoImage").html('<img src="/img/pingan.png" style="max-width:30%;">' );
+        //     executeDeduct("0009");
+        // });
+        // $("#DeductionBtn").click(function () {
+        //     executeDeduct("");
+        // });
 
 
 
