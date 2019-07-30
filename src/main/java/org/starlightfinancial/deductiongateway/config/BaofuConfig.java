@@ -212,6 +212,25 @@ public class BaofuConfig {
     @Value("${baofu.protocol.api.charge}")
     private BigDecimal protocolCharge;
 
+
+    @Value("${baofu.classic.api.group.one.charge}")
+    private BigDecimal classicGroupOneCharge;
+
+
+    @Value("${baofu.classic.api.group.two.charge}")
+    private BigDecimal classicGroupTwoCharge;
+
+    @Value("${baofu.classic.api.group.lowest.charge}")
+    private BigDecimal classicGroupLowestCharge;
+
+    public BigDecimal getClassicGroupLowestCharge() {
+        return classicGroupLowestCharge;
+    }
+
+    public void setClassicGroupLowestCharge(BigDecimal classicGroupLowestCharge) {
+        this.classicGroupLowestCharge = classicGroupLowestCharge;
+    }
+
     public String getClassicVersion() {
         return classicVersion;
     }
@@ -476,5 +495,21 @@ public class BaofuConfig {
 
     public void setProtocolCharge(BigDecimal protocolCharge) {
         this.protocolCharge = protocolCharge;
+    }
+
+    public BigDecimal getClassicGroupOneCharge() {
+        return classicGroupOneCharge;
+    }
+
+    public void setClassicGroupOneCharge(BigDecimal classicGroupOneCharge) {
+        this.classicGroupOneCharge = classicGroupOneCharge;
+    }
+
+    public BigDecimal getClassicGroupTwoCharge() {
+        return classicGroupTwoCharge;
+    }
+
+    public void setClassicGroupTwoCharge(BigDecimal classicGroupTwoCharge) {
+        this.classicGroupTwoCharge = classicGroupTwoCharge;
     }
 }

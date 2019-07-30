@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
 import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
 import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
@@ -147,7 +148,27 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-        if (totalAmount.compareTo(FIVE_THOUSAND) <= 0) {
+
+        String bank = mortgageDeduction.getParam1();
+        //农行,中行,建行,广发,平安 修改费率,有最低手续费
+        boolean isGroupOne = StringUtils.equals(bank, BankCodeEnum.BANK_CODE_02.getId()) || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_04.getId())
+                || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_03.getId()) || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_15.getId())
+                || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_09.getId());
+        //招行,光大 修改费率,有最低手续费
+        boolean isGroupTwo = StringUtils.equals(bank, BankCodeEnum.BANK_CODE_14.getId()) || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_08.getId());
+        if (isGroupOne) {
+            BigDecimal charge = totalAmount.multiply(baofuConfig.getClassicGroupOneCharge());
+            if (charge.compareTo(baofuConfig.getClassicGroupLowestCharge()) < 0) {
+                charge = baofuConfig.getClassicGroupLowestCharge();
+            }
+            mortgageDeduction.setHandlingCharge(charge);
+        } else if (isGroupTwo) {
+            BigDecimal charge = totalAmount.multiply(baofuConfig.getClassicGroupTwoCharge());
+            if (charge.compareTo(baofuConfig.getClassicGroupLowestCharge()) < 0) {
+                charge = baofuConfig.getClassicGroupLowestCharge();
+            }
+            mortgageDeduction.setHandlingCharge(charge);
+        } else if (totalAmount.compareTo(FIVE_THOUSAND) <= 0) {
             //代扣金额≤5000
             mortgageDeduction.setHandlingCharge(baofuConfig.getLevelOne());
         } else if (totalAmount.compareTo(FIFTY_THOUSAND) <= 0) {
@@ -158,7 +179,6 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setHandlingCharge(baofuConfig.getLevelThree());
         }
     }
-
 
 
 }
