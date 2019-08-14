@@ -359,7 +359,7 @@
 
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
-    if (staffId == 1 || staffId == 3384 || staffId == 3390) {
+    if (staffId == 1 || staffId == 3384 || staffId == 7525 || staffId == 7526) {
         $("#uploadBtn").show();
         $("#freshBtn").show();
         $("#splitBtn").show();
@@ -664,7 +664,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 3390 || staffId == 7524) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 ||  staffId == 7525 || staffId == 7526 || staffId == 7524) {
                         if (row.isUploaded == "1") {
                             noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             setTimeout(query, 4000);
@@ -690,7 +690,12 @@
                             },
                             error: function (data) {
                                 setTimeout(" $('#table').bootstrapTable('refresh')", 4000);
-                                noty({'text': '执行失败 '+ data.responseText, 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                noty({
+                                    'text': '执行失败 ' + data.responseText,
+                                    'layout': 'center',
+                                    'type': 'error',
+                                    "timeout": "4000"
+                                });
                             }
                         })
                     } else {
@@ -750,7 +755,12 @@
         });
         <!--设置默认时间-->
         var firstDay = new Date();
-        firstDay.setDate(1);
+        if (firstDay.getDate() === 1) {
+            //如果是月初,开始时间调整为上月最后一天
+            firstDay.setDate(firstDay.getDate() - 1);
+        }else{
+            firstDay.setDate(1);
+        }
         <!--设置开始日期默认时间为当月第一天-->
         repaymentStartDateNode.datetimepicker('update', firstDay);
         <!--设置结束日期默认时间为当天-->
