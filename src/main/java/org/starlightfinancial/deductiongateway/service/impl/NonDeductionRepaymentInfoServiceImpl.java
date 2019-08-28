@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.config.AllInPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoRepository;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
 import org.starlightfinancial.deductiongateway.enums.*;
@@ -30,6 +29,7 @@ import org.starlightfinancial.deductiongateway.utility.BeanConverter;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.PoiUtil;
 import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -294,8 +294,8 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Transactional(rollbackFor = Exception.class)
     public void updateNonDeduction(NonDeductionRepaymentInfo nonDeductionRepaymentInfo, HttpSession session) {
         NonDeductionRepaymentInfo nonDeductionRepaymentInfoInDataBase = nonDeductionRepaymentInfoRepository.findOne(nonDeductionRepaymentInfo.getId());
-        if (StringUtils.equals(nonDeductionRepaymentInfoInDataBase.getIsUploaded(),ConstantsEnum.SUCCESS.getCode())){
-            throw  new AlreadyUploadedUpdateException();
+        if (StringUtils.equals(nonDeductionRepaymentInfoInDataBase.getIsUploaded(), ConstantsEnum.SUCCESS.getCode())) {
+            throw new AlreadyUploadedUpdateException();
         }
 
         trim(nonDeductionRepaymentInfo);
@@ -388,6 +388,15 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
                 new ArrayList<>(principalAndInterestContractNoNonDeductionRepaymentInfoMap.values());
         noDuplicateList.addAll(serviceFeeContractNoNonDeductionRepaymentInfoMap.values());
         noDuplicateList.addAll(evaluationFeeContractNoNonDeductionRepaymentInfoMap.values());
+
+        noDuplicateList.sort((o1, o2) -> {
+            if (o1.getAccountingDate().before(o2.getAccountingDate())) {
+                return -1;
+            } else if (o1.getAccountingDate().after(o2.getAccountingDate())) {
+                return 1;
+            }
+            return 0;
+        });
 
         //将非代扣还款数据转换为自动入账excel表格行元素对应实体类
         List<AutoAccountingExcelRow> autoAccountingExcelRows =
