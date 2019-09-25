@@ -664,7 +664,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 ||  staffId == 7525 || staffId == 7526 || staffId == 7524) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 7525 || staffId == 7526 || staffId == 7524) {
                         if (row.isUploaded == "1") {
                             noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             setTimeout(query, 4000);
@@ -758,7 +758,7 @@
         if (firstDay.getDate() === 1) {
             //如果是月初,开始时间调整为上月最后一天
             firstDay.setDate(firstDay.getDate() - 1);
-        }else{
+        } else {
             firstDay.setDate(1);
         }
         <!--设置开始日期默认时间为当月第一天-->
@@ -1029,8 +1029,9 @@
         $("#txt_charge_company").change(function () {
             var chargeCompany = $(this).val();
             changeBankName(chargeCompany);
+            changeRepaymentType(chargeCompany);
+            changeRepaymentMethod(chargeCompany);
         });
-
 
         <!-- 新增模态框中还款方式初始化-->
         var repaymentMethodNode = $("#txt_repayment_method");
@@ -1046,6 +1047,30 @@
             }
         });
 
+
+        var repaymentType = $("#txt_repayment_type");
+        <!-- 新增模态框中还款类别切换-->
+        function changeRepaymentType(chargeCompany) {
+            if (chargeCompany === "润通") {
+                repaymentType.find("option:contains('本息')").attr("selected", true);
+            }
+            if (chargeCompany === "润坤" || chargeCompany === "铠岳" || chargeCompany === "康润") {
+                repaymentType.find("option:contains('服务费')").attr("selected", true);
+            }
+            if (chargeCompany === "第三方咨询公司") {
+                repaymentType.find("option:contains('调查评估费')").attr("selected", true);
+            }
+        }
+        <!-- 新增模态框中还款方式切换-->
+        function changeRepaymentMethod(chargeCompany){
+            if (chargeCompany === "第三方咨询公司") {
+                repaymentMethodNode.find("option:contains('收银宝')").attr("selected", true);
+                $("#txt_bank_name").find("option:contains('无')").attr("selected", true);
+            }else{
+                repaymentMethodNode.find("option:contains('银行转账')").attr("selected", true);
+            }
+
+        }
 
         <!-- 重新尝试匹配-->
         $("#freshBtn").click(function () {
