@@ -390,7 +390,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(3);
             cell.setCellValue(Utility.convertToString(mortgageDeduction.getCreateDate(), "yyyy-MM-dd"));
             cell = row.createCell(4);
-            cell.setCellValue(mortgageDeduction.getParam1());
+            Optional<String> bankName = Optional.ofNullable(BankCodeEnum.getBankNameById(mortgageDeduction.getParam1()));
+            cell.setCellValue(bankName.orElse(mortgageDeduction.getParam1()));
             cell = row.createCell(5);
             cell.setCellValue(mortgageDeduction.getParam3());
             cell = row.createCell(6);

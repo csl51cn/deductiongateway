@@ -159,7 +159,7 @@ public class ScheduledTaskService {
         try {
             financialVoucherService.importRepaymentData();
             LOGGER.info("**********导入昨天还款信息到业务系统成功**********");
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Exception e) {
             LOGGER.error("**********导入还款数据到业务系统异常**********", e);
         }
     }

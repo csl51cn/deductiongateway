@@ -282,75 +282,75 @@
     var staffId = [[${session.loginUser.staffId}]];
     window.operateEvents = {
 
-        'click .unionpay-action': function (e, value, row, index) {
-            $.ajax({
-                url: "/channelDispatchController/queryIsSigned.do",
-                method: "post",
-                data: {"id": row.id, "channel": "0001"},
-                success: function (data) {
-                    if (data.code == "0000") {
-                        setTimeout("$('#queryBtn').click()", 4020);
-                        noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    } else if (data.data == "2000") {
-                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    } else {
-                        $("#accountNameInContractTable").attr("value", row.accountName);
-                        $("#accountNameInContractTable").attr("readonly", "readonly");
-                        $("#account").attr("value", row.account);
-                        $("#account").attr("readonly", "readonly");
-                        $("#certificateType").attr("value", row.certificateType);
-                        $("#certificateType").attr("readonly", "readonly");
-                        $("#certificateNo").attr("value", row.certificateNo);
-                        $("#certificateNo").attr("readonly", "readonly");
-                        $("#mobile").attr("value", row.mobile);
-                        $("#channelMarking").attr("value", "0001");
-                        $("#id").attr("value", row.id);
-                        $("#channelLogo").attr("src", "/img/unionpay.png");
-                        $("#usual").show();
-                        $("#sendSmsCodeBtn").show();
-                        $("#unusual").hide();
-                        $("#signModalBody").html($("#signTableInfo").html());
-                        $("#signModal").modal();
-                    }
-                }
-            });
-        },
+        // 'click .unionpay-action': function (e, value, row, index) {
+        //     $.ajax({
+        //         url: "/channelDispatchController/queryIsSigned.do",
+        //         method: "post",
+        //         data: {"id": row.id, "channel": "0001"},
+        //         success: function (data) {
+        //             if (data.code == "0000") {
+        //                 setTimeout("$('#queryBtn').click()", 4020);
+        //                 noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+        //             } else if (data.data == "2000") {
+        //                 noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+        //             } else {
+        //                 $("#accountNameInContractTable").attr("value", row.accountName);
+        //                 $("#accountNameInContractTable").attr("readonly", "readonly");
+        //                 $("#account").attr("value", row.account);
+        //                 $("#account").attr("readonly", "readonly");
+        //                 $("#certificateType").attr("value", row.certificateType);
+        //                 $("#certificateType").attr("readonly", "readonly");
+        //                 $("#certificateNo").attr("value", row.certificateNo);
+        //                 $("#certificateNo").attr("readonly", "readonly");
+        //                 $("#mobile").attr("value", row.mobile);
+        //                 $("#channelMarking").attr("value", "0001");
+        //                 $("#id").attr("value", row.id);
+        //                 $("#channelLogo").attr("src", "/img/unionpay.png");
+        //                 $("#usual").show();
+        //                 $("#sendSmsCodeBtn").show();
+        //                 $("#unusual").hide();
+        //                 $("#signModalBody").html($("#signTableInfo").html());
+        //                 $("#signModal").modal();
+        //             }
+        //         }
+        //     });
+        // },
 
-        'click .baofu-action': function (e, value, row, index) {
-            $.ajax({
-                url: "/channelDispatchController/queryIsSigned.do",
-                method: "post",
-                data: {"id": row.id, "channel": "0002"},
-                success: function (data) {
-                    if (data.code == "0000") {
-                        setTimeout("$('#queryBtn').click()", 4020);
-                        noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
-                    } else if (data.data == "0001") {//失败
-                        noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
-                    } else if (data.data == "2000") {//无数据返回
-                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    } else {
-                        $("#accountNameInContractTable").attr("value", row.accountName);
-                        $("#accountNameInContractTable").attr("readonly", "readonly");
-                        $("#account").attr("value", row.account);
-                        $("#account").attr("readonly", "readonly");
-                        $("#certificateType").attr("value", row.certificateType);
-                        $("#certificateType").attr("readonly", "readonly");
-                        $("#certificateNo").attr("value", row.certificateNo);
-                        $("#certificateNo").attr("readonly", "readonly");
-                        $("#mobile").attr("value", row.mobile);
-                        $("#channelMarking").attr("value", "0002");
-                        $("#id").attr("value", row.id);
-                        $("#channelLogo").attr("src", "/img/baofu.png");
-                        $("#usual").show();
-                        $("#sendSmsCodeBtn").show();
-                        $("#unusual").hide();
-                        $("#signModalBody").html($("#signTableInfo").html());
-                        $("#signModal").modal();
-                    }
-                }
-            });
-        },
+        // 'click .baofu-action': function (e, value, row, index) {
+        //     $.ajax({
+        //         url: "/channelDispatchController/queryIsSigned.do",
+        //         method: "post",
+        //         data: {"id": row.id, "channel": "0002"},
+        //         success: function (data) {
+        //             if (data.code == "0000") {
+        //                 setTimeout("$('#queryBtn').click()", 4020);
+        //                 noty({'text': '当前卡号已签约', 'layout': 'center', 'type': 'information', "timeout": "4000"});
+        //             } else if (data.data == "0001") {//失败
+        //                 noty({'text': data.message, 'layout': 'center', 'type': 'warning', "timeout": "5000"});
+        //             } else if (data.data == "2000") {//无数据返回
+        //                 noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+        //             } else {
+        //                 $("#accountNameInContractTable").attr("value", row.accountName);
+        //                 $("#accountNameInContractTable").attr("readonly", "readonly");
+        //                 $("#account").attr("value", row.account);
+        //                 $("#account").attr("readonly", "readonly");
+        //                 $("#certificateType").attr("value", row.certificateType);
+        //                 $("#certificateType").attr("readonly", "readonly");
+        //                 $("#certificateNo").attr("value", row.certificateNo);
+        //                 $("#certificateNo").attr("readonly", "readonly");
+        //                 $("#mobile").attr("value", row.mobile);
+        //                 $("#channelMarking").attr("value", "0002");
+        //                 $("#id").attr("value", row.id);
+        //                 $("#channelLogo").attr("src", "/img/baofu.png");
+        //                 $("#usual").show();
+        //                 $("#sendSmsCodeBtn").show();
+        //                 $("#unusual").hide();
+        //                 $("#signModalBody").html($("#signTableInfo").html());
+        //                 $("#signModal").modal();
+        //             }
+        //         }
+        //     });
+        // },
 
         'click .cpcn-action': function (e, value, row, index) {
             $.ajax({
@@ -385,53 +385,53 @@
                 }
             });
         },
-        'click .pingan-action': function (e, value, row, index) {
-            $.ajax({
-                url: "/channelDispatchController/registration.do",
-                method: "post",
-                data: {"id": row.id, "channel": "0009"},
-                success: function (data) {
-                    if (data.code == "0000") {
-                        $("#accountNameInContractTable").attr("value", row.accountName);
-                        $("#accountNameInContractTable").attr("readonly", "readonly");
-                        $("#account").attr("value", row.account);
-                        $("#account").attr("readonly", "readonly");
-                        $("#certificateType").attr("value", row.certificateType);
-                        $("#certificateType").attr("readonly", "readonly");
-                        $("#certificateNo").attr("value", row.certificateNo);
-                        $("#certificateNo").attr("readonly", "readonly");
-                        $("#mobile").attr("value", row.mobile);
-                        $("#channelMarking").attr("value", "0009");
-                        $("#id").attr("value", row.id);
-                        $("#channelLogo").attr("src", "/img/cpcn.png");
-                        $("#usual").hide();
-                        $("#unusual").show();
-                        $("#signModalBody").html($("#signTableInfo").html());
-                        $("#signModal").modal();
-                    } else {
-                        noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
-                    }
-
-                }
-            });
-        }
+        // 'click .pingan-action': function (e, value, row, index) {
+        //     $.ajax({
+        //         url: "/channelDispatchController/registration.do",
+        //         method: "post",
+        //         data: {"id": row.id, "channel": "0009"},
+        //         success: function (data) {
+        //             if (data.code == "0000") {
+        //                 $("#accountNameInContractTable").attr("value", row.accountName);
+        //                 $("#accountNameInContractTable").attr("readonly", "readonly");
+        //                 $("#account").attr("value", row.account);
+        //                 $("#account").attr("readonly", "readonly");
+        //                 $("#certificateType").attr("value", row.certificateType);
+        //                 $("#certificateType").attr("readonly", "readonly");
+        //                 $("#certificateNo").attr("value", row.certificateNo);
+        //                 $("#certificateNo").attr("readonly", "readonly");
+        //                 $("#mobile").attr("value", row.mobile);
+        //                 $("#channelMarking").attr("value", "0009");
+        //                 $("#id").attr("value", row.id);
+        //                 $("#channelLogo").attr("src", "/img/cpcn.png");
+        //                 $("#usual").hide();
+        //                 $("#unusual").show();
+        //                 $("#signModalBody").html($("#signTableInfo").html());
+        //                 $("#signModal").modal();
+        //             } else {
+        //                 noty({'text': data.message, 'layout': 'center', 'type': 'error', "timeout": "5000"});
+        //             }
+        //
+        //         }
+        //     });
+        // }
     };
 
     function operateFormatter(value, row, index) {
         if ((staffId == 1) || (staffId == 113) || (staffId == 2371) || (staffId == 1281) || (staffId == 6436) || (staffId == 2338) || (staffId == 114) || (staffId == 2359) || (staffId == 3389)) {
             var operator = [];
-            if (row.unionpayIsSigned != 1) {
-                operator.push('<button type="button" id="unionpayContracteBtn' + index + '" class="unionpay-action btn btn-primary  btn-small" style="margin-right:15px;">银联签约</button>');
-            }
-            if (row.baofuIsSigned != 1) {
-                operator.push('<button type="button" id="baofuContracteBtn' + index + '" class="baofu-action btn btn-primary  btn-small" style="margin-right:15px;">宝付签约</button>');
-            }
+            // if (row.unionpayIsSigned != 1) {
+            //     operator.push('<button type="button" id="unionpayContracteBtn' + index + '" class="unionpay-action btn btn-primary  btn-small" style="margin-right:15px;">银联签约</button>');
+            // }
+            // if (row.baofuIsSigned != 1) {
+            //     operator.push('<button type="button" id="baofuContracteBtn' + index + '" class="baofu-action btn btn-primary  btn-small" style="margin-right:15px;">宝付签约</button>');
+            // }
             if (row.chinaPayClearNetIsSigned != 1) {
                 operator.push('<button type="button" id="cpcnContracteBtn' + index + '" class="cpcn-action btn btn-primary  btn-small" style="margin-right:15px;">中金签约</button>');
             }
-            if (row.pingAnCommercialEntrustIsSigned != 1) {
-                operator.push('<button type="button" id="pingAnContracteBtn' + index + '" class="pingan-action btn btn-primary  btn-small" style="margin-right:15px;">平安签约</button>');
-            }
+            // if (row.pingAnCommercialEntrustIsSigned != 1) {
+            //     operator.push('<button type="button" id="pingAnContracteBtn' + index + '" class="pingan-action btn btn-primary  btn-small" style="margin-right:15px;">平安签约</button>');
+            // }
             return operator.join('');
         }
 
@@ -472,6 +472,9 @@
             }
         }
     }, {
+        field: 'bankName',
+        title: '卡号归属行'
+    },{
         field: 'certificateNo',
         title: '证件号码',
         editable: {
@@ -551,34 +554,35 @@
         //         return {css: {"color": cssObject.color, "background": cssObject.background}};
         //     }
         // },
+        {
+            field: 'chinaPayClearNetIsSigned',
+            title: '中金签约',
+            formatter: function (value, row, index) {
+                if (value == 1) {
+                    return "已签约";
+                } else {
+                    return "未签约";
+                }
+
+            },
+            cellStyle: function (value, row, index) {
+                var cssObject = {};
+
+                if (value == 1) {
+                    cssObject.color = "green";
+                } else {
+                    cssObject.color = "red";
+                }
+                if (index % 2 == 0) {
+                    cssObject.background = "#fff"
+                } else {
+                    cssObject.background = "#aaa"
+                }
+
+                return {css: {"color": cssObject.color, "background": cssObject.background}};
+            }
+        },
         // {
-        //     field: 'chinaPayClearNetIsSigned',
-        //     title: '中金签约',
-        //     formatter: function (value, row, index) {
-        //         if (value == 1) {
-        //             return "已签约";
-        //         } else {
-        //             return "未签约";
-        //         }
-        //
-        //     },
-        //     cellStyle: function (value, row, index) {
-        //         var cssObject = {};
-        //
-        //         if (value == 1) {
-        //             cssObject.color = "green";
-        //         } else {
-        //             cssObject.color = "red";
-        //         }
-        //         if (index % 2 == 0) {
-        //             cssObject.background = "#fff"
-        //         } else {
-        //             cssObject.background = "#aaa"
-        //         }
-        //
-        //         return {css: {"color": cssObject.color, "background": cssObject.background}};
-        //     }
-        // },   {
         //     field: 'pingAnCommercialEntrustIsSigned',
         //     title: '平安商委签约',
         //     formatter: function (value, row, index) {
@@ -628,12 +632,12 @@
                 }
             }
         }
-        // ,{
-        //     field: 'operate',
-        //     title: '操作',
-        //     events: operateEvents,
-        //     formatter: operateFormatter
-        // }
+        ,{
+            field: 'operate',
+            title: '操作',
+            events: operateEvents,
+            formatter: operateFormatter
+        }
     ];
 
     $(function () {
@@ -720,20 +724,20 @@
                     }
                     ;
                 }
-                // ,onClickCell: function (field, value, row, $element) {
-                //     if (field == "bizNo") {
-                //         $("#contractNoInTableInfo").html(row.contractNo);
-                //         $("#accountNameInTableInfo").html(row.accountName);
-                //         $("#bankNameInTableInfo").html(row.bankName);
-                //         $("#accountInTableInfo").html(row.account);
-                //         $("#certificateTypeInTableInfo").html(row.certificateType);
-                //         $("#certificateNoInTableInfo").html(row.certificateNo);
-                //         $("#unionPayProtocolInTableInfo").html(row.unionpayProtocolNo);
-                //         $("#baoFuProtocolInTableInfo").html(row.baofuProtocolNo);
-                //         $("#moreInfoModal").modal();
-                //     }
-                //     return false;
-                // }
+                ,onClickCell: function (field, value, row, $element) {
+                    if (field == "bizNo") {
+                        $("#contractNoInTableInfo").html(row.contractNo);
+                        $("#accountNameInTableInfo").html(row.accountName);
+                        $("#bankNameInTableInfo").html(row.bankName);
+                        $("#accountInTableInfo").html(row.account);
+                        $("#certificateTypeInTableInfo").html(row.certificateType);
+                        $("#certificateNoInTableInfo").html(row.certificateNo);
+                        $("#unionPayProtocolInTableInfo").html(row.unionpayProtocolNo);
+                        $("#baoFuProtocolInTableInfo").html(row.baofuProtocolNo);
+                        $("#moreInfoModal").modal();
+                    }
+                    return false;
+                }
             });
         }
         initTable();
