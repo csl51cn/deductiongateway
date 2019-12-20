@@ -808,7 +808,12 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      * @param nonDeductionRepaymentInfo 非代扣还款信息
      */
     private void trim(NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
-        nonDeductionRepaymentInfo.setContractNo(nonDeductionRepaymentInfo.getContractNo().trim());
-        nonDeductionRepaymentInfo.setCustomerName(nonDeductionRepaymentInfo.getCustomerName().trim());
+        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getContractNo())) {
+            nonDeductionRepaymentInfo.setContractNo(nonDeductionRepaymentInfo.getContractNo().trim());
+        }
+        if(StringUtils.isNotBlank(nonDeductionRepaymentInfo.getCustomerName())){
+            nonDeductionRepaymentInfo.setCustomerName(nonDeductionRepaymentInfo.getCustomerName().trim());
+        }
+
     }
 }

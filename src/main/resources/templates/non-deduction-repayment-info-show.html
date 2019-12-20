@@ -106,6 +106,7 @@
                                                     name="chargeCompany">
                                                 <option value="0" selected>全部</option>
                                                 <option value="润通">润通</option>
+                                                <option value="远璟舟">远璟舟</option>
                                                 <option value="铠岳">铠岳</option>
                                                 <option value="润坤">润坤</option>
                                                 <option value="第三方咨询公司">第三方咨询公司</option>
@@ -267,6 +268,7 @@
                                         <td><label class="control-label" for="txt_charge_company">入账公司</label></td>
                                         <td><select id="txt_charge_company" name="chargeCompany">
                                             <option value="润通">润通</option>
+                                            <option value="远璟舟">远璟舟</option>
                                             <option value="铠岳">铠岳</option>
                                             <option value="润坤">润坤</option>
                                             <option value="第三方咨询公司">第三方咨询公司</option>
@@ -380,6 +382,7 @@
 
     <!-- 入账公司对应入账银行 -->
     var chargeCompanyAndBankName = [{"chargeCompany": "润通", "bankNameList": ["招行0366", "建行3504"]},
+        {"chargeCompany": "远璟舟", "bankNameList": ["工行3435"]},
         {"chargeCompany": "铠岳", "bankNameList": ["建行0334", "招行0202"]},
         {"chargeCompany": "润坤", "bankNameList": ["招行0901", "招行0702"]},
         {"chargeCompany": "第三方咨询公司", "bankNameList": ["重庆银行6559"]},
@@ -428,7 +431,7 @@
         editable: {
             type: 'select',
             title: '入账公司编辑',
-            source: [{value: "润通", text: "润通"}, {value: "铠岳", text: "铠岳"}, {value: "润坤", text: "润坤"}, {
+            source: [{value: "润通", text: "润通"}, {value: "远璟舟", text: "远璟舟"}, {value: "铠岳", text: "铠岳"},{value: "润坤", text: "润坤"}, {
                 value: "第三方咨询公司",
                 text: "第三方咨询公司"
             }, {value: "康润", text: "康润"}],
@@ -1054,7 +1057,7 @@
             if (chargeCompany === "润通") {
                 repaymentType.find("option:contains('本息')").attr("selected", true);
             }
-            if (chargeCompany === "润坤" || chargeCompany === "铠岳" || chargeCompany === "康润") {
+            if (chargeCompany === "远璟舟" || chargeCompany === "润坤" || chargeCompany === "铠岳" || chargeCompany === "康润") {
                 repaymentType.find("option:contains('服务费')").attr("selected", true);
             }
             if (chargeCompany === "第三方咨询公司") {

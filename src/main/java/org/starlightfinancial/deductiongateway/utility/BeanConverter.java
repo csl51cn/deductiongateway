@@ -651,7 +651,7 @@ public class BeanConverter {
         //判断是否是银联代扣
         boolean isChinaPay = CHINA_PAY.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         //是否是宝付
-        boolean isBaoFU = BAO_FU.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
+        boolean isBaoFu = BAO_FU.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         //是否是中金支付
         boolean isChinaPayClearNet = CHINA_PAY_CLEAR_NET.stream().anyMatch(deductionChannelEnum -> StringUtils.equals(deductionChannelEnum.getCode(), mortgageDeduction.getChannel()));
         //是否是平安支付
@@ -665,7 +665,8 @@ public class BeanConverter {
             serviceFeeRepaymentInfo.setRepaymentAmount(mortgageDeduction.getSplitData2());
             //设置服务费入账公司
             serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
-            //设置服务费入账银行:铠岳的银联,宝付,平安渠道都是使用的相同银行进行商户开户的,中金支付的铠岳是另外的卡;润坤的银联,宝付渠道一致,润坤的中金与银联渠道一致
+            //设置服务费入账银行:铠岳的银联,宝付,平安渠道都是使用的相同银行账户进行商户开户的,铠岳的中金支付开户是另外的银行账户;润坤的银联,宝付渠道一致,润坤的中金与平安渠道一致
+            //      远璟舟中金,宝付开户用的银行账户是一样的
             if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
                 //铠岳
                 if (isChinaPayClearNet) {
@@ -675,7 +676,7 @@ public class BeanConverter {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
                 }
 
-            } else {
+            } else if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())){
                 //润坤
                 if (isChinaPayClearNet || isPingAn) {
                     //中金支付
@@ -683,6 +684,9 @@ public class BeanConverter {
                 } else {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
                 }
+            }else {
+                //远璟舟
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.YUAN_JING_ZHOU.getCode());
             }
 
             //设置还款类别
@@ -701,8 +705,8 @@ public class BeanConverter {
                 //设置服务费入账公司手续费
                 serviceFeeRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge().subtract(principalAndInterestHandlingCharge).setScale(2, BigDecimal.ROUND_HALF_UP));
             }
-            if (isBaoFU || isChinaPayClearNet || isPingAn) {
-                //宝付与中金支付只在润通账户扣除手续费
+            if (isBaoFu || isChinaPayClearNet || isPingAn) {
+                //宝付,中金支付和平安只在润通账户扣除手续费
                 principalAndInterestRepaymentInfo.setHandlingCharge(mortgageDeduction.getHandlingCharge());
                 //设置本息入账银行账户
                 principalAndInterestRepaymentInfo.setBankName(AccountBankEnum.RUN_TONG_CMBC_0366.getCode());

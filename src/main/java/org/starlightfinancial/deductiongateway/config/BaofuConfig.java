@@ -223,6 +223,10 @@ public class BaofuConfig {
     @Value("${baofu.classic.api.group.lowest.charge}")
     private BigDecimal classicGroupLowestCharge;
 
+    @Value("${baofu.classic.api.ICBC.handling.charge}")
+    private BigDecimal icbcCharge;
+
+
     public BigDecimal getClassicGroupLowestCharge() {
         return classicGroupLowestCharge;
     }
@@ -511,5 +515,13 @@ public class BaofuConfig {
 
     public void setClassicGroupTwoCharge(BigDecimal classicGroupTwoCharge) {
         this.classicGroupTwoCharge = classicGroupTwoCharge;
+    }
+
+    public BigDecimal getIcbcCharge() {
+        return icbcCharge;
+    }
+
+    public void setIcbcCharge(BigDecimal icbcCharge) {
+        this.icbcCharge = icbcCharge;
     }
 }

@@ -96,12 +96,8 @@ public class Utility {
      * @return
      */
     public static boolean checkBigDecimal2(BigDecimal checkValue) {   // 判断大于0
-        if (checkValue != null
-                && checkValue.compareTo(new BigDecimal("0.00")) == 1) {
-            return true;
-        }
-
-        return false;
+        return checkValue != null
+                && checkValue.compareTo(BigDecimal.ZERO) > 0;
     }
 
     /**

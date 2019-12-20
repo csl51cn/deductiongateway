@@ -30,7 +30,12 @@ public enum ChargeCompanyEnum {
     /**
      * 康润
      */
-    KANG_RUN("康润");
+    KANG_RUN("康润"),
+
+    /**
+     * 远璟舟
+     */
+    YUAN_JING_ZHOU("远璟舟");
 
     private String value;
 

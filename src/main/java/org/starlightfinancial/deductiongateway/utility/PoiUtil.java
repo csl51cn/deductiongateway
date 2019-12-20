@@ -23,8 +23,8 @@ import java.util.*;
  */
 public class PoiUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(PoiUtil.class);
-    private static final String XLS = "xls";
-    private static final String XLSX = "xlsx";
+    public static final String XLS = "xls";
+    public static final String XLSX = "xlsx";
 
     /**
      * 读入excel文件，解析后返回对应的Map,Map的key为sheet名,value为java bean List
@@ -175,9 +175,8 @@ public class PoiUtil {
         String fileName = file.getOriginalFilename();
         //创建Workbook工作薄对象，表示整个excel
         Workbook workbook = null;
-        try {
-            //获取excel文件的io流
-            InputStream is = file.getInputStream();
+        //获取excel文件的io流
+        try (InputStream is = file.getInputStream()) {
             //根据文件后缀名不同(xls和xlsx)获得不同的Workbook实现类对象
             if (fileName.endsWith(XLS)) {
                 //2003

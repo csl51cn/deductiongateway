@@ -3,8 +3,8 @@ package org.starlightfinancial.deductiongateway.service.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
+import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.service.AutoAccountUploadService;
@@ -28,6 +28,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
@@ -48,9 +49,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Autowired
     SysDictRepository sysDictRepository;
 
-    @Autowired
-    private LimitManagerRepository limitManagerRepository;
-
 
     @Autowired
     private ChinaPayConfig chinaPayConfig;
@@ -58,162 +56,160 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     private BeanConverter beanConverter;
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
+    private static final Map<String, String> COLUMN_NAME_MAP = new HashMap<>();
 
+    static {
+        COLUMN_NAME_MAP.put("业务编号", "contractNo");
+        COLUMN_NAME_MAP.put("银行名称", "param1");
+        COLUMN_NAME_MAP.put("卡折标识", "param2");
+        COLUMN_NAME_MAP.put("银行卡号", "param3");
+        COLUMN_NAME_MAP.put("姓名", "param4");
+        COLUMN_NAME_MAP.put("证件类型", "param5");
+        COLUMN_NAME_MAP.put("证件号码", "param6");
+        COLUMN_NAME_MAP.put("分账户数据1", "splitData1");
+        COLUMN_NAME_MAP.put("分账户数据2", "splitData2");
+        COLUMN_NAME_MAP.put("服务费管理司", "target");
+    }
 
     @Override
     public void importCustomerData(MultipartFile uploadedFile, int staffId) {
-        try {
-            if (null == uploadedFile) {
-                log.info("");
+        String fileName = uploadedFile.getOriginalFilename();
+        Workbook workbook = null;
+        try (
+                //获取excel文件的io流
+                InputStream is = uploadedFile.getInputStream()) {
+            //根据文件后缀名不同(xls和xlsx)获得不同的Workbook实现类对象
+            if (fileName.endsWith(PoiUtil.XLS)) {
+                //2003
+                workbook = new HSSFWorkbook(is);
+            } else if (fileName.endsWith(PoiUtil.XLSX)) {
+                //2007
+                workbook = new XSSFWorkbook(is);
+            } else {
+                log.info("手动代扣上传的文件格式不是正确,上传的文件后缀为:{}"
+                        , uploadedFile.getOriginalFilename().substring(uploadedFile.getOriginalFilename().lastIndexOf(".")));
                 return;
             }
-            if (!StringUtils
-                    .endsWith(uploadedFile.getOriginalFilename(), ".xls") && !StringUtils
-                    .endsWith(uploadedFile.getOriginalFilename(), ".xlsx")) {
-                log.info("");
-                return;
-            }
-
-            if (StringUtils
-                    .endsWith(uploadedFile.getOriginalFilename(), ".xls")) {
-                this.readXls(uploadedFile, staffId);
-            } else if (StringUtils
-                    .endsWith(uploadedFile.getOriginalFilename(), ".xlsx")) {
-                this.readXlsx(uploadedFile, staffId);
-            }
-        } catch (Exception e) {
-            log.error("");
-            e.printStackTrace();
+            readExcel(workbook, staffId);
+        } catch (IOException | IllegalAccessException | NoSuchFieldException e) {
+            log.error("手动代扣上传文件导入失败", e);
         }
     }
 
-    private void readXls(MultipartFile uploadedFile, int staffId) throws IllegalAccessException, NoSuchFieldException, IOException {
-        try {
-            List<MortgageDeduction> list = new ArrayList<>();
-            POIFSFileSystem poifsFileSystem = new POIFSFileSystem(uploadedFile.getInputStream());
-            HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
-            HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(0);
+    /**
+     * 读取代扣excel
+     *
+     * @param workbook excel工作簿
+     * @param staffId  操作人id
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
+    private void readExcel(Workbook workbook, int staffId) throws NoSuchFieldException, IllegalAccessException, IOException {
+        List<MortgageDeduction> list = new ArrayList<>();
+        Sheet sheet = workbook.getSheetAt(0);
+        Map<Integer, String> colIndexMap = new HashMap<>();
+        List<SysDict> openBankList = sysDictRepository.findByDicType(DictionaryType.MERID_SOURCE);
+        List<SysDict> cTypeLst = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
 
-            Map<Integer, String> colIndexMap = new HashMap<>();
-            Map<String, String> colNameMap = new HashMap<>();
-            colNameMap.put("业务编号", "contractNo");
-            colNameMap.put("银行名称", "param1");
-            colNameMap.put("卡折标识", "param2");
-            colNameMap.put("银行卡号", "param3");
-            colNameMap.put("姓名", "param4");
-            colNameMap.put("证件类型", "param5");
-            colNameMap.put("证件号码", "param6");
-            colNameMap.put("分账户数据1", "splitData1");
-            colNameMap.put("分账户数据2", "splitData2");
-            colNameMap.put("服务费管理司", "target");
-
-            List<SysDict> openBankList = sysDictRepository.findByDicType(DictionaryType.MERID_SOURCE);
-            List<SysDict> cTypeLst = sysDictRepository.findByDicType(DictionaryType.CERTIFICATE_TYPE);
-
-            if (null != hssfSheet) {
-                HSSFRow firstRow = hssfSheet.getRow(hssfSheet.getFirstRowNum());
-                for (int i = firstRow.getFirstCellNum(); i < firstRow.getLastCellNum(); i++) {
-                    HSSFCell hssfCell = firstRow.getCell(i);
-                    if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_STRING && colNameMap.containsKey(StringUtils.trimToEmpty(hssfCell.getStringCellValue()))) {
-                        String columnName = colNameMap.get(StringUtils.trimToEmpty(hssfCell.getStringCellValue()));
-                        if (StringUtils.isNotBlank(columnName)) {
-                            colIndexMap.put(i, columnName);
-                        }
+        if (null != sheet) {
+            Row firstRow = sheet.getRow(sheet.getFirstRowNum());
+            for (int i = firstRow.getFirstCellNum(); i < firstRow.getLastCellNum(); i++) {
+                Cell cell = firstRow.getCell(i);
+                if (CellType.STRING.compareTo(cell.getCellTypeEnum()) == 0 && COLUMN_NAME_MAP.containsKey(StringUtils.trimToEmpty(cell.getStringCellValue()))) {
+                    String columnName = COLUMN_NAME_MAP.get(StringUtils.trimToEmpty(cell.getStringCellValue()));
+                    if (StringUtils.isNotBlank(columnName)) {
+                        colIndexMap.put(i, columnName);
                     }
                 }
-
-                outterloop:
-                for (int i = hssfSheet.getFirstRowNum() + 1; i <= hssfSheet.getPhysicalNumberOfRows(); i++) {
-                    HSSFRow hssfRow = hssfSheet.getRow(i);
-                    if (null != hssfRow) {
-                        MortgageDeduction mortgageDeduction = new MortgageDeduction();
-                        for (int j = hssfRow.getFirstCellNum(); j < hssfRow.getLastCellNum(); j++) {
-                            HSSFCell hssfCell = hssfRow.getCell(j);
-                            if (StringUtils.isEmpty(ExcelReader.getCellFormatValue(hssfCell))) {
-                                continue outterloop;
-                            }
-                            if (colIndexMap.containsKey(j)) {
-                                String fieldName = colIndexMap.get(j);
-                                Field field = MortgageDeduction.class.getDeclaredField(fieldName);
-                                field.setAccessible(true);
-                                if (field.getType() == String.class) {
-                                    String value = "";
-                                    if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
-                                        value = StringUtils.trimToEmpty(hssfCell.getStringCellValue());
-                                    } else if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
-                                        value = hssfCell.getNumericCellValue() + "";
-                                        if ("0.0".equals(value)) {
-                                            value = "0";
-                                        }
+            }
+            outterloop:
+            for (int i = sheet.getFirstRowNum() + 1; i <= sheet.getPhysicalNumberOfRows(); i++) {
+                Row row = sheet.getRow(i);
+                if (null != row) {
+                    MortgageDeduction mortgageDeduction = new MortgageDeduction();
+                    for (int j = row.getFirstCellNum(); j < row.getLastCellNum(); j++) {
+                        Cell cell = row.getCell(j);
+                        if (StringUtils.isEmpty(ExcelReader.getCellFormatValue(cell))) {
+                            continue outterloop;
+                        }
+                        if (colIndexMap.containsKey(j)) {
+                            String fieldName = colIndexMap.get(j);
+                            Field field = MortgageDeduction.class.getDeclaredField(fieldName);
+                            field.setAccessible(true);
+                            if (field.getType() == String.class) {
+                                String value = "";
+                                if (CellType.STRING.compareTo(cell.getCellTypeEnum()) == 0) {
+                                    value = StringUtils.trimToEmpty(cell.getStringCellValue());
+                                } else if (CellType.NUMERIC.compareTo(cell.getCellTypeEnum()) == 0) {
+                                    value = cell.getNumericCellValue() + "";
+                                    if ("0.0".equals(value)) {
+                                        value = "0";
                                     }
-                                    field.set(mortgageDeduction, value);
                                 }
-                                if (field.getType() == BigDecimal.class) {
-                                    BigDecimal value = BigDecimal.valueOf(hssfCell.getNumericCellValue());
-                                    field.set(mortgageDeduction, value);
-                                }
+                                field.set(mortgageDeduction, value);
+                            }
+                            if (field.getType() == BigDecimal.class) {
+                                BigDecimal value = BigDecimal.valueOf(cell.getNumericCellValue());
+                                field.set(mortgageDeduction, value);
                             }
                         }
-
-                        mortgageDeduction.setIssuccess("2");
-                        mortgageDeduction.setType("1");
-                        mortgageDeduction.setPlanNo(-1);
-                        mortgageDeduction.setCreateDate(new Date());
-                        mortgageDeduction.setSplitType("0001");
-                        mortgageDeduction.setCreatId(staffId);
-                        mortgageDeduction.setCustomerName(mortgageDeduction.getParam4());
-
-                        if (StringUtils.isNotBlank(mortgageDeduction.getParam2()) && "卡".equals(mortgageDeduction.getParam2().trim())) {
-                            mortgageDeduction.setParam2("0");
-                        } else {
-                            mortgageDeduction.setParam2("0");
-                        }
-
-
-                        //处理开户行
-                        for (int k = 0; k < openBankList.size(); k++) {
-                            if (mortgageDeduction.getParam1().equals(openBankList.get(k).getDicValue())) {
-                                mortgageDeduction.setParam1(openBankList.get(k).getDicKey());
-                                break;
-                            }
-                        }
-
-                        //处理证件类型
-                        for (int k = 0; k < cTypeLst.size(); k++) {
-                            if (mortgageDeduction.getParam5().equals(cTypeLst.get(k).getDicValue())) {
-                                mortgageDeduction.setParam5(cTypeLst.get(k).getDicKey());
-                                break;
-                            }
-                        }
-
-                        //处理服务费管理公司
-                        if (StringUtils.equals(mortgageDeduction.getTarget(), "铠岳")) {
-                            mortgageDeduction.setTarget("铠岳");
-                        } else if (StringUtils.equals(mortgageDeduction.getTarget(), "润坤")) {
-                            mortgageDeduction.setTarget("润坤");
-                        } else {
-                            mortgageDeduction.setTarget("润坤");
-                        }
-
-                        if (mortgageDeduction.getParam3() != null && !"".equals(mortgageDeduction.getParam3())) {
-                            list.add(mortgageDeduction);
-                        }
-
-                        //设置是否上传自动入账表格
-                        mortgageDeduction.setIsUploaded("0");
                     }
+
+                    mortgageDeduction.setIssuccess("2");
+                    mortgageDeduction.setType("1");
+                    mortgageDeduction.setPlanNo(-1);
+                    mortgageDeduction.setCreateDate(new Date());
+                    mortgageDeduction.setSplitType("0001");
+                    mortgageDeduction.setCreatId(staffId);
+                    mortgageDeduction.setCustomerName(mortgageDeduction.getParam4());
+
+                    if (StringUtils.isNotBlank(mortgageDeduction.getParam2()) && "卡".equals(mortgageDeduction.getParam2().trim())) {
+                        mortgageDeduction.setParam2("0");
+                    } else {
+                        mortgageDeduction.setParam2("0");
+                    }
+
+
+                    //处理开户行
+                    for (int k = 0; k < openBankList.size(); k++) {
+                        if (mortgageDeduction.getParam1().equals(openBankList.get(k).getDicValue())) {
+                            mortgageDeduction.setParam1(openBankList.get(k).getDicKey());
+                            break;
+                        }
+                    }
+
+                    //处理证件类型
+                    for (int k = 0; k < cTypeLst.size(); k++) {
+                        if (mortgageDeduction.getParam5().equals(cTypeLst.get(k).getDicValue())) {
+                            mortgageDeduction.setParam5(cTypeLst.get(k).getDicKey());
+                            break;
+                        }
+                    }
+
+                    //处理服务费管理公司
+                    if (StringUtils.equals(mortgageDeduction.getTarget(), "远璟舟")) {
+                        mortgageDeduction.setTarget("远璟舟");
+                    } else if (StringUtils.equals(mortgageDeduction.getTarget(), "铠岳")) {
+                        mortgageDeduction.setTarget("铠岳");
+                    } else if (StringUtils.equals(mortgageDeduction.getTarget(), "润坤")) {
+                        mortgageDeduction.setTarget("润坤");
+                    } else {
+                        mortgageDeduction.setTarget("润坤");
+                    }
+
+                    if (mortgageDeduction.getParam3() != null && !"".equals(mortgageDeduction.getParam3())) {
+                        list.add(mortgageDeduction);
+                    }
+
+                    //设置是否上传自动入账表格
+                    mortgageDeduction.setIsUploaded("0");
                 }
-                hssfWorkbook.close();
-
-                mortgageDeductionRepository.save(list);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
+            workbook.close();
 
-    private void readXlsx(MultipartFile uploadedFile, int staffId) {
+            mortgageDeductionRepository.save(list);
+        }
 
     }
 
@@ -395,13 +391,13 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             cell = row.createCell(5);
             cell.setCellValue(mortgageDeduction.getParam3());
             cell = row.createCell(6);
-            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData1()) == true) {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData1())) {
                 cell.setCellValue(mortgageDeduction.getSplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
             cell = row.createCell(7);
-            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData2()) == true) {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getSplitData2())) {
                 cell.setCellValue(mortgageDeduction.getSplitData2().toString());
             } else {
                 cell.setCellValue("");
@@ -455,13 +451,13 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             }
             cell.setCellValue(deductionChannel);
             cell = row.createCell(15);
-            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1()) == true) {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData1())) {
                 cell.setCellValue(mortgageDeduction.getRsplitData1().toString());
             } else {
                 cell.setCellValue("");
             }
             cell = row.createCell(16);
-            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2()) == true) {
+            if (Utility.checkBigDecimal2(mortgageDeduction.getRsplitData2())) {
                 cell.setCellValue(mortgageDeduction.getRsplitData2().toString());
             } else {
                 cell.setCellValue("");

@@ -156,7 +156,10 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
                 || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_09.getId());
         //招行,光大 修改费率,有最低手续费
         boolean isGroupTwo = StringUtils.equals(bank, BankCodeEnum.BANK_CODE_14.getId()) || StringUtils.equals(bank, BankCodeEnum.BANK_CODE_08.getId());
-        if (isGroupOne) {
+        //工行手续费费率调整
+        if (StringUtils.equals(bank, BankCodeEnum.BANK_CODE_01.getId())) {
+            mortgageDeduction.setHandlingCharge(totalAmount.multiply(baofuConfig.getIcbcCharge()));
+        } else if (isGroupOne) {
             BigDecimal charge = totalAmount.multiply(baofuConfig.getClassicGroupOneCharge());
             if (charge.compareTo(baofuConfig.getClassicGroupLowestCharge()) < 0) {
                 charge = baofuConfig.getClassicGroupLowestCharge();
