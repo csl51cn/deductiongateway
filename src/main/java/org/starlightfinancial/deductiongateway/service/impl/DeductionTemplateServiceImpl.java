@@ -151,7 +151,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
                 //应还本息+应还服务费 > 已扣本息+已扣服务费,更新未还本息/服务费
 
                 //数据库中剩余的本息/服务费与新查询出来的剩余本息/服务费比较,相同时不需要做更新操作
-                if (deductionTemplate.getBxRemain().compareTo(remainBx) != 0 && deductionTemplate.getFwfRemain().compareTo(remainFwf) != 0) {
+                if (deductionTemplate.getBxRemain().compareTo(remainBx) != 0 || deductionTemplate.getFwfRemain().compareTo(remainFwf) != 0) {
                     deductionTemplate.setBxRemain(deductionTemplate.getBxAmount().subtract(deductedBx));
                     deductionTemplate.setFwfRemain(deductionTemplate.getFwfAmount().subtract(deductedFwf));
                     toBeUpdateDeductionTemplate.add(deductionTemplate);
