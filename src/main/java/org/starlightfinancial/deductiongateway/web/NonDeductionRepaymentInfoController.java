@@ -175,8 +175,8 @@ public class NonDeductionRepaymentInfoController {
             if (anyMatch) {
                 return "选中了包含已上传的记录";
             }
-            nonDeductionRepaymentInfoService.uploadAutoAccountingFile(nonDeductionRepaymentInfos, session);
-            return "1";
+            return nonDeductionRepaymentInfoService.uploadAutoAccountingFile(nonDeductionRepaymentInfos, session);
+
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("上传自动入账excel文件失败", e);
             return "上传自动入账excel文件失败";

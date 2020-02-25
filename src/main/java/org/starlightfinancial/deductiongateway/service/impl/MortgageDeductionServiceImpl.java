@@ -18,9 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.dto.SurplusTotalAmount;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
-import org.starlightfinancial.deductiongateway.service.AutoAccountUploadService;
-import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.service.*;
 import org.starlightfinancial.deductiongateway.utility.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -54,6 +54,15 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     private ChinaPayConfig chinaPayConfig;
     @Autowired
     private BeanConverter beanConverter;
+
+    @Autowired
+    AccountManagerRepository accountManagerRepository;
+    @Autowired
+    private MultiOverdueService multiOverdueService;
+    @Autowired
+    private ExemptInfoService exemptInfoService;
+    @Autowired
+    private FailEntryAccountService failEntryAccountService;
 
     private static final Logger log = LoggerFactory.getLogger(MortgageDeductionService.class);
     private static final Map<String, String> COLUMN_NAME_MAP = new HashMap<>();
@@ -543,6 +552,49 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         Collection<MortgageDeduction> noDuplicateMortgageDeductionCollections = contractNoMortgageDeductionMap.values();
         //转换list
         ArrayList<MortgageDeduction> noDuplicateMortgageDeductions = new ArrayList<>(noDuplicateMortgageDeductionCollections);
+
+        //############还款日为2020.1-2020.3部分客户因疫情豁免了罚息,入账时需要判断是否能直接结清
+        Iterator<MortgageDeduction> iterator = noDuplicateMortgageDeductions.iterator();
+        while (iterator.hasNext()) {
+            MortgageDeduction mortgageDeduction = iterator.next();
+            AccountManager accountManager = accountManagerRepository.findByAccountAndSortAndContractNo(mortgageDeduction.getParam3(),
+                    1, mortgageDeduction.getContractNo());
+            //判断是否是标记客户
+            if (Objects.nonNull(accountManager) && StringUtils.equals(accountManager.getExemptFlag(), Constant.ENABLED_TRUE.toString())) {
+                SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainSurplusTotalAmount(accountManager, true, mortgageDeduction.getPayTime());
+                if (surplusTotalAmount.getOverdueFlag()) {
+                    //如果有逾期了,需要判断金额是否能结清,如果不能要打印日志,不直接入账
+                    BigDecimal totalAmount = surplusTotalAmount.getPrincipalAndInterest().add(surplusTotalAmount.getServiceFee());
+                    BigDecimal alreadyRepaymentAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
+                    if (alreadyRepaymentAmount.compareTo(totalAmount) >= 0) {
+                        //如果足够结清, 豁免信息入库
+                        exemptInfoService.save(surplusTotalAmount.getPrincipalAndInterestExemptInfos());
+                        exemptInfoService.save(surplusTotalAmount.getServiceFeeExemptInfos());
+                    } else {
+                        //从将要转换为excel的list中移除记录
+                        iterator.remove();
+                        //从原始的list中移除不能足额还款的记录
+                        original.removeIf(deduction -> StringUtils.equals(deduction.getContractNo(), mortgageDeduction.getContractNo()));
+                        log.debug("合同编号:[{}],代扣卡持有人:[{}],已还金额不足以结清,未上传入账文件,代扣渠道", mortgageDeduction.getContractNo(), mortgageDeduction.getCustomerName());
+                        FailEntryAccount existedFailEntryAccount = failEntryAccountService.findByContractNoAndCreateDate(mortgageDeduction.getContractNo(), new Date());
+                        if (Objects.isNull(existedFailEntryAccount)) {
+                            //如果当天已经保存了不能足额还款的记录,不再保存
+                            FailEntryAccount failEntryAccount = new FailEntryAccount();
+                            failEntryAccount.setMortgageDeuctionId(mortgageDeduction.getId());
+                            failEntryAccount.setContractNo(mortgageDeduction.getContractNo());
+                            failEntryAccount.setGmtCreate(new Date());
+                            failEntryAccountService.save(failEntryAccount);
+                        }
+
+                    }
+                }
+            }
+        }
+        if (noDuplicateMortgageDeductions.size() == 0) {
+            //如果没有需要上传入账文件的记录,不再执行后续的操作
+            return;
+        }
+        //############新增结束
         List<AutoAccountingExcelRow> autoAccountingExcelRows = noDuplicateMortgageDeductions.stream().map(mortgageDeduction -> beanConverter.transToAutoAccountingExcelRow(mortgageDeduction)).collect(Collectors.toList());
         //生成Excel
         HSSFWorkbook workbook = AutoAccountUploadService.createWorkBook(autoAccountingExcelRows);

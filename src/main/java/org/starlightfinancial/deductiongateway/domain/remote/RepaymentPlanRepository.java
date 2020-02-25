@@ -3,6 +3,8 @@ package org.starlightfinancial.deductiongateway.domain.remote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Date;
+
 /**
  * @author: Senlin.Deng
  * @Description: 还款计划表Repository
@@ -39,5 +41,15 @@ public interface RepaymentPlanRepository extends JpaRepository<RepaymentPlan, Lo
      */
     Long countByDateIdAndIsWriteOffBadLoan(Long dateId, Integer isWriteOffBadLoan);
 
-
+    /**
+     * 根据条件查询记录数据
+     *
+     * @param dateId       业务流水号
+     * @param planTermDateStart 计划还款开始时间
+     * @param planTermDateEnd 计划还款结束时间
+     * @param planTypeId   还款类别
+     * @param status   结清状态
+     * @return 符合条件的记录数
+     */
+    RepaymentPlan findByDateIdAndPlanTermDateGreaterThanEqualAndPlanTermDateLessThanEqualAndPlanTypeIdAndStatus(Long dateId, Date planTermDateStart,Date planTermDateEnd, Integer planTypeId, String status);
 }

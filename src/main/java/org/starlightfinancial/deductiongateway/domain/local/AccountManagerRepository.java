@@ -60,4 +60,13 @@ public interface AccountManagerRepository extends JpaRepository<AccountManager, 
      * @return
      */
     List<AccountManager> findByBizNo(String bizNo);
+
+    /**
+     * 根据合同编号,顺序查询代扣卡信息
+     *
+     * @param sort
+     * @param contractNo
+     * @return
+     */
+    AccountManager findBySortAndContractNo( int sort, String contractNo);
 }

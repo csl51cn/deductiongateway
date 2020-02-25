@@ -63,7 +63,7 @@ public interface NonDeductionRepaymentInfoService {
      * @throws FieldFormatCheckException 非代扣还款数据属性格式不符合预期时抛出
      * @throws ClassNotFoundException    深复制异常时抛出
      */
-    void uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException;
+    String uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException, FieldFormatCheckException, ClassNotFoundException;
 
 
     /**

@@ -199,4 +199,9 @@ public class AccountManager {
     private String merOrderNo;
 
 
+    /**
+     *豁免罚息标志:2020.1-2020.3特定客户使用
+     */
+    @Column(name = "exempt_flag")
+    private String  exemptFlag;
 }

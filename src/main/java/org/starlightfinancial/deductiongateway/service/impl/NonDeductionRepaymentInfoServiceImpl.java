@@ -14,21 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.config.AllInPayConfig;
-import org.starlightfinancial.deductiongateway.domain.local.AutoAccountingExcelRow;
-import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfo;
-import org.starlightfinancial.deductiongateway.domain.local.NonDeductionRepaymentInfoRepository;
+import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.domain.remote.BusinessTransaction;
+import org.starlightfinancial.deductiongateway.domain.remote.ExemptInfo;
+import org.starlightfinancial.deductiongateway.dto.SurplusTotalAmount;
 import org.starlightfinancial.deductiongateway.enums.*;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.AlreadyUploadedUpdateException;
 import org.starlightfinancial.deductiongateway.exception.nondeduction.FieldFormatCheckException;
-import org.starlightfinancial.deductiongateway.service.AutoAccountUploadService;
-import org.starlightfinancial.deductiongateway.service.CacheService;
-import org.starlightfinancial.deductiongateway.service.NonDeductionRepaymentInfoCalculationService;
-import org.starlightfinancial.deductiongateway.service.NonDeductionRepaymentInfoService;
-import org.starlightfinancial.deductiongateway.utility.BeanConverter;
-import org.starlightfinancial.deductiongateway.utility.PageBean;
-import org.starlightfinancial.deductiongateway.utility.PoiUtil;
-import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.service.*;
+import org.starlightfinancial.deductiongateway.utility.*;
 import org.starlightfinancial.deductiongateway.vo.NonDeductionRepaymentInfoQueryCondition;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -61,6 +55,14 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
     @Autowired
     private AllInPayConfig allInPayConfig;
 
+    @Autowired
+    AccountManagerRepository accountManagerRepository;
+    @Autowired
+    private MultiOverdueService multiOverdueService;
+    @Autowired
+    private ExemptInfoService exemptInfoService;
+    @Autowired
+    private FailEntryAccountService failEntryAccountService;
     /**
      * 新增非代扣还款数据时的Excel列名与字段映射
      */
@@ -346,7 +348,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException,
+    public String uploadAutoAccountingFile(List<NonDeductionRepaymentInfo> nonDeductionRepaymentInfos, HttpSession session) throws IOException,
             FieldFormatCheckException, ClassNotFoundException {
 
         //筛选信息完整和未上传自动入账文件的记录,如果其属性isIntegrated为1和isUploaded为0保留,其余舍弃
@@ -397,6 +399,51 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             }
             return 0;
         });
+        //############还款日为2020.1-2020.3部分客户因疫情豁免了罚息,入账时需要判断是否能直接结清
+        ArrayList<ExemptInfo> exemptInfos = new ArrayList<ExemptInfo>();
+        Iterator<NonDeductionRepaymentInfo> iterator = noDuplicateList.iterator();
+        while (iterator.hasNext()) {
+            NonDeductionRepaymentInfo nonDeductionRepaymentInfo = iterator.next();
+            AccountManager accountManager = accountManagerRepository.findBySortAndContractNo(1, nonDeductionRepaymentInfo.getContractNo());
+            //判断是否是标记客户
+            if (Objects.nonNull(accountManager) && StringUtils.equals(accountManager.getExemptFlag(), Constant.ENABLED_TRUE.toString())) {
+                SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainSurplusTotalAmount(accountManager, true, nonDeductionRepaymentInfo.getRepaymentTermDate());
+                if (surplusTotalAmount.getOverdueFlag()) {
+                    //如果有逾期了,需要判断金额是否能结清,如果不能要打印日志,不直接入账
+                    BigDecimal alreadyRepaymentAmount = nonDeductionRepaymentInfo.getRepaymentAmount();
+
+                    if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), "本息")) {
+                        if (alreadyRepaymentAmount.compareTo(surplusTotalAmount.getPrincipalAndInterest()) >= 0) {
+                            //如果足够结清, 豁免信息入库
+                            exemptInfos.addAll(surplusTotalAmount.getPrincipalAndInterestExemptInfos());
+                        } else {
+                            //如果金额不足以结清,不入账,给出提示
+                            return amountIsNotSufficient(original, iterator, nonDeductionRepaymentInfo);
+                        }
+                    }
+
+                    if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), "服务费")) {
+                        if (alreadyRepaymentAmount.compareTo(surplusTotalAmount.getServiceFee()) >= 0) {
+                            //如果足够结清, 豁免信息入库
+                            exemptInfos.addAll(surplusTotalAmount.getServiceFeeExemptInfos());
+                        } else {
+                            //如果金额不足以结清,不入账,给出提示
+                            return amountIsNotSufficient(original, iterator, nonDeductionRepaymentInfo);
+                        }
+                    }
+
+                }
+            }
+        }
+        if (noDuplicateList.size() == 0) {
+            //如果没有需要上传入账文件的记录,不再执行后续的操作
+            return "1";
+        }
+        // 豁免信息入库
+        if (exemptInfos.size() > 0) {
+            exemptInfoService.save(exemptInfos);
+        }
+        //############新增结束
 
         //将非代扣还款数据转换为自动入账excel表格行元素对应实体类
         List<AutoAccountingExcelRow> autoAccountingExcelRows =
@@ -416,7 +463,25 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
 
         nonDeductionRepaymentInfoRepository.save(original);
         LOGGER.info("上传非代扣还款信息成功,操作人:[{}],上传的记录id:{}", Utility.getLoginUserName(session), afterFilter.stream().map(NonDeductionRepaymentInfo::getId).collect(Collectors.toList()));
+        return "1";
+    }
 
+    /**
+     * 还款金额不足以结清的操作
+     *
+     * @param original
+     * @param iterator
+     * @param nonDeductionRepaymentInfo
+     * @return
+     */
+    private String amountIsNotSufficient(List<NonDeductionRepaymentInfo> original, Iterator<NonDeductionRepaymentInfo> iterator, NonDeductionRepaymentInfo nonDeductionRepaymentInfo) {
+        //从将要转换为excel的list中移除记录
+        iterator.remove();
+        //从原始的list中移除不能足额还款的记录
+        original.removeIf(deduction -> StringUtils.equals(deduction.getContractNo(), nonDeductionRepaymentInfo.getContractNo()));
+        String str = "合同编号:" + nonDeductionRepaymentInfo.getContractNo() + ",还款人:" + nonDeductionRepaymentInfo.getCustomerName() + ",已还金额不足以结清";
+        LOGGER.debug(str + ",未上传入账文件,非代扣渠道");
+        return str + ",本次操作所有还款都未上传入账文件";
     }
 
     /**
@@ -811,7 +876,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getContractNo())) {
             nonDeductionRepaymentInfo.setContractNo(nonDeductionRepaymentInfo.getContractNo().trim());
         }
-        if(StringUtils.isNotBlank(nonDeductionRepaymentInfo.getCustomerName())){
+        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getCustomerName())) {
             nonDeductionRepaymentInfo.setCustomerName(nonDeductionRepaymentInfo.getCustomerName().trim());
         }
 
