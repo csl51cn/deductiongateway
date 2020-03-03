@@ -45,11 +45,10 @@ public interface RepaymentPlanRepository extends JpaRepository<RepaymentPlan, Lo
      * 根据条件查询记录数据
      *
      * @param dateId       业务流水号
-     * @param planTermDateStart 计划还款开始时间
-     * @param planTermDateEnd 计划还款结束时间
+     * @param planTermDate 计划还款日期
      * @param planTypeId   还款类别
      * @param status   结清状态
      * @return 符合条件的记录数
      */
-    RepaymentPlan findByDateIdAndPlanTermDateGreaterThanEqualAndPlanTermDateLessThanEqualAndPlanTypeIdAndStatus(Long dateId, Date planTermDateStart,Date planTermDateEnd, Integer planTypeId, String status);
+    RepaymentPlan findByDateIdAndPlanTermDateAndPlanTypeIdAndStatus(Long dateId,Date planTermDate , Integer planTypeId, String status);
 }

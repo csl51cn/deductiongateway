@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -45,8 +44,9 @@ public class RemoteDataConfig {
         return builder
                 .dataSource(dataSource)
                 .properties(getVendorProperties(dataSource))
-                .packages("org.starlightfinancial.deductiongateway.domain.remote") //设置实体类所在位置
-                .persistenceUnit("primaryPersistenceUnit")
+                //设置实体类所在位置
+                .packages("org.starlightfinancial.deductiongateway.domain.remote")
+                .persistenceUnit("remotePersistenceUnit")
                 .build();
     }
 

@@ -48,7 +48,8 @@ public class LocalDataConfig {
         return builder
                 .dataSource(dataSource)
                 .properties(getVendorProperties(dataSource))
-                .packages("org.starlightfinancial.deductiongateway.domain.local") //设置实体类所在位置
+                //设置实体类所在位置
+                .packages("org.starlightfinancial.deductiongateway.domain.local")
                 .persistenceUnit("primaryPersistenceUnit")
                 .build();
     }
