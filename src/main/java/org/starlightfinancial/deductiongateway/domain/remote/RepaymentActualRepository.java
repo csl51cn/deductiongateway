@@ -19,4 +19,13 @@ public interface RepaymentActualRepository extends JpaRepository<RepaymentActual
      */
     RepaymentActual findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long dateId, Integer planTypeId);
 
+    /**
+     * 根据dateId,还款期数,还款类型查询最后一条还款登记记录
+     * @param dateId 流水号
+     * @param repaymentTerm  还款期数
+     * @param planTypeId 还款类型
+     * @return 还款登记记录
+     */
+    RepaymentActual findFirstByDateIdAndRepaymentTermAndPlanTypeIdOrderByIdDesc(Long dateId, Integer repaymentTerm,Integer planTypeId);
+
 }

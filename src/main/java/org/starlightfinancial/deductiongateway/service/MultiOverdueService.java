@@ -3,6 +3,7 @@ package org.starlightfinancial.deductiongateway.service;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.dto.SurplusTotalAmount;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -16,9 +17,19 @@ public interface MultiOverdueService {
      * 计算剩余应还金额
      *
      * @param accountManager 卡号信息
-     * @param needExemptInfo 是否需要豁免信息
-     * @param applyDate 豁免申请还款时间
      * @return
      */
-    SurplusTotalAmount obtainSurplusTotalAmount(AccountManager accountManager, Boolean needExemptInfo, Date applyDate);
+    SurplusTotalAmount obtainSurplusTotalAmount(AccountManager accountManager);
+
+
+    /**
+     * 获取豁免信息
+     *
+     * @param accountManager         卡号信息
+     * @param repaymentAmount 已还金额
+     * @param applyDate              豁免申请还款时间
+     * @param repaymentType          还款类别
+     * @return
+     */
+    SurplusTotalAmount obtainExemptInfo(AccountManager accountManager, BigDecimal repaymentAmount, Date applyDate, Integer repaymentType);
 }

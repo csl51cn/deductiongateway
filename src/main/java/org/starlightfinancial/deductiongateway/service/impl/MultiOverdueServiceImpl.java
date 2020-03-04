@@ -12,10 +12,10 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author: Senlin.Deng
@@ -42,12 +42,10 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
      * 计算剩余应还金额
      *
      * @param accountManager 卡号信息
-     * @param needExemptInfo 是否需要豁免信息
-     * @param applyDate      豁免申请还款时间
      * @return
      */
     @Override
-    public SurplusTotalAmount obtainSurplusTotalAmount(AccountManager accountManager, Boolean needExemptInfo, Date applyDate) {
+    public SurplusTotalAmount obtainSurplusTotalAmount(AccountManager accountManager) {
 
         SurplusTotalAmount surplusTotalAmount = new SurplusTotalAmount();
         surplusTotalAmount.setOverdueFlag(false);
@@ -94,13 +92,7 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
             RepaymentPlan principalAndInterestRepaymentPlan = repaymentPlanRepository.findByDateIdAndPlanTermDateAndPlanTypeIdAndStatus(Long.parseLong(accountManager.getDateId().toString()), startDate, 1212, "0");
             BigDecimal currentPrincipalAndInterest = BigDecimal.ZERO;
             if (Objects.nonNull(principalAndInterestRepaymentPlan)) {
-                //查询本息剩余挂账金额
-                RepaymentActual repaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long.parseLong(accountManager.getDateId().toString()), 1212);
                 currentPrincipalAndInterest = BigDecimal.valueOf(principalAndInterestRepaymentPlan.getPlanTotalAmount()).setScale(2, RoundingMode.HALF_UP);
-                if (Objects.nonNull(repaymentActual) && repaymentActual.getTotalHangingAmount() > 0) {
-                    //如果最后一条还款登记记录有大于0的挂账金额,需要减去挂账
-                    currentPrincipalAndInterest = currentPrincipalAndInterest.subtract(BigDecimal.valueOf(repaymentActual.getTotalHangingAmount()));
-                }
             }
 
             //当期应还的服务费
@@ -108,16 +100,21 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
             BigDecimal currentServiceFee = BigDecimal.ZERO;
             if (Objects.nonNull(serviceFeeRepaymentPlan)) {
                 //如果当期应还服务费不为空，有些业务可能没有服务费
-                //查询本息剩余挂账金额
-                RepaymentActual serviceFeeRepaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long.parseLong(accountManager.getDateId().toString()), 1214);
                 currentServiceFee = BigDecimal.valueOf(serviceFeeRepaymentPlan.getPlanTotalAmount()).setScale(2, RoundingMode.HALF_UP);
-                if (Objects.nonNull(serviceFeeRepaymentActual) && serviceFeeRepaymentActual.getTotalHangingAmount() > 0) {
-                    //如果最后一条还款登记记录有大于0的挂账金额,需要减去挂账
-                    currentServiceFee = currentServiceFee.subtract(BigDecimal.valueOf(serviceFeeRepaymentActual.getTotalHangingAmount()));
-                }
             }
 
-
+            //查询本息剩余挂账金额
+            RepaymentActual repaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long.parseLong(accountManager.getDateId().toString()), 1212);
+            if (Objects.nonNull(repaymentActual) && repaymentActual.getTotalHangingAmount() > 0) {
+                //如果最后一条还款登记记录有大于0的挂账金额,需要减去挂账
+                totalPrincipalAndInterest = totalPrincipalAndInterest.subtract(BigDecimal.valueOf(repaymentActual.getTotalHangingAmount()));
+            }
+            //查询本息剩余挂账金额
+            RepaymentActual serviceFeeRepaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long.parseLong(accountManager.getDateId().toString()), 1214);
+            if (Objects.nonNull(serviceFeeRepaymentActual) && serviceFeeRepaymentActual.getTotalHangingAmount() > 0) {
+                //如果最后一条还款登记记录有大于0的挂账金额,需要减去挂账
+                totalServiceFee = totalServiceFee.subtract(BigDecimal.valueOf(serviceFeeRepaymentActual.getTotalHangingAmount()));
+            }
             //逾期本息(罚息)汇总
             totalPrincipalAndInterest = totalPrincipalAndInterest.add(principalAndInterestWithoutPenalty).add(currentPrincipalAndInterest).setScale(2, RoundingMode.HALF_UP);
             //逾期服务费(罚息)汇总
@@ -125,20 +122,77 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
             surplusTotalAmount.setPrincipalAndInterest(totalPrincipalAndInterest);
             surplusTotalAmount.setServiceFee(totalServiceFee);
 
+        }
 
-            //豁免信息
-            if (needExemptInfo) {
-                //格式化豁免申请还款时间为yyyy-MM-dd格式
-                Date applyRepaymentDate = Utility.convertToDate(Utility.convertToString(applyDate, "yyyy-MM-dd"), "yyyy-MM-dd");
-                DataWorkInfo dataWorkInfo = dataWorkInfoRepository.findByDateId(accountManager.getDateId());
-                //本息豁免信息
-                List<ExemptInfo> principalAndInterestExemptInfo = overdueList.stream().filter(multiOverdue -> Utility.between(multiOverdue.getPlanTermDate(), date) <= 0 && multiOverdue.getPlanTypeId() == 1212)
-                        .map(multiOverdue -> createExemptInfo(dataWorkInfo, applyRepaymentDate, multiOverdue, 1212)).collect(Collectors.toList());
-                //本息豁免信息
-                List<ExemptInfo> serviceFeeExemptInfo = overdueList.stream().filter(multiOverdue -> Utility.between(multiOverdue.getPlanTermDate(), date) <= 0 && multiOverdue.getPlanTypeId() == 1214)
-                        .map(multiOverdue -> createExemptInfo(dataWorkInfo, applyRepaymentDate, multiOverdue, 1214)).collect(Collectors.toList());
-                surplusTotalAmount.setPrincipalAndInterestExemptInfos(principalAndInterestExemptInfo);
-                surplusTotalAmount.setServiceFeeExemptInfos(serviceFeeExemptInfo);
+        return surplusTotalAmount;
+    }
+
+    /**
+     * 获取豁免信息
+     *
+     * @param accountManager  卡号信息
+     * @param repaymentAmount 已还金额
+     * @param applyDate       豁免申请还款时间
+     * @param repaymentType   还款类别
+     * @return
+     */
+    @Override
+    public SurplusTotalAmount obtainExemptInfo(AccountManager accountManager, BigDecimal repaymentAmount, Date applyDate, Integer repaymentType) {
+        SurplusTotalAmount surplusTotalAmount = new SurplusTotalAmount();
+        surplusTotalAmount.setOverdueFlag(false);
+        surplusTotalAmount.setClearFlag(false);
+        surplusTotalAmount.setPrincipalAndInterestExemptInfos(new ArrayList<>());
+        surplusTotalAmount.setServiceFeeExemptInfos(new ArrayList<>());
+        //判断是否逾期,没有逾期的话不需要特别的处理,直接计算当期应还金额
+        List<MultiOverdue> overdueList =
+                multiOverdueRepository.findByDateIdAndPlanTypeIdAndPlanTermDateLessThanEqualAndOverdueDaysGreaterThanOrderByPlanTermDateAsc(accountManager.getDateId(), repaymentType, applyDate, 0);
+        DataWorkInfo dataWorkInfo = dataWorkInfoRepository.findByDateId(accountManager.getDateId());
+        if (overdueList.size() > 0) {
+            surplusTotalAmount.setOverdueFlag(true);
+            surplusTotalAmount.setClearFlag(true);
+            //循环判断足够结清几期
+            Date date = Utility.convertToDate("2020-01-01", "yyyy-MM-dd");
+            long between = 0L;
+            for (int i = 0; i < overdueList.size(); i++) {
+                MultiOverdue multiOverdue = overdueList.get(i);
+                //当期应还总金额
+                BigDecimal planTotalAmount = multiOverdue.getPlanTotalAmount();
+                //计算2020-1-1  -  计划还款日 差值
+                between = Utility.between(multiOverdue.getPlanTermDate(), date);
+                //计算罚息
+                BigDecimal penalty = calculatePenalty(multiOverdue, applyDate, dataWorkInfo);
+                multiOverdue.setSerplusRepaymentPenalty(penalty);
+
+                if (between > 0) {
+                    //如果计划还款时间是在2020-1-1之前的,不能豁免罚息,应还金额需要加上罚息
+                    planTotalAmount = planTotalAmount.add(penalty);
+
+                } else {
+                    //如果是在2020-1-1之后的,需要豁免罚息,目前规则只运行到3月31日
+                    ExemptInfo exemptInfo = createExemptInfo(applyDate, multiOverdue);
+                    if (repaymentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                        //剩余金额大于0时才保存豁免信息
+                        if (multiOverdue.getPlanTypeId() == 1212) {
+                            surplusTotalAmount.getPrincipalAndInterestExemptInfos().add(exemptInfo);
+                        } else {
+                            surplusTotalAmount.getServiceFeeExemptInfos().add(exemptInfo);
+                        }
+                    }
+                }
+
+                if (repaymentAmount.compareTo(planTotalAmount) >= 0) {
+                    //如果还款金额>=当期应还总金额 ,还款金额-当期应还总金额 后继续循环
+                    repaymentAmount = repaymentAmount.subtract(planTotalAmount).setScale(2, RoundingMode.HALF_UP);
+
+                } else {
+                    //如果还款金额<当期应还总金额
+                    if (i == 0) {
+                        //如果i=0说明还款金额不足以结清逾期第一期,需要给出提示或保存记录,如果i>0,说明第i期没有完全结清,不用特殊操作
+                        surplusTotalAmount.setClearFlag(false);
+                        break;
+                    }
+                }
+
             }
         }
 
@@ -146,16 +200,52 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
     }
 
     /**
-     * 生成豁免申请信息
+     * 计算罚息
      *
+     * @param multiOverdue  逾期信息
+     * @param repaymentDate 还款日期
      * @param dataWorkInfo
-     * @param applyRepaymentDate 申请还款日期
-     * @param multiOverdue       逾期信息
-     * @param planTypeId         还款类别
      * @return
      */
-    private ExemptInfo createExemptInfo(DataWorkInfo dataWorkInfo, Date applyRepaymentDate, MultiOverdue multiOverdue, Integer planTypeId) {
-        int amountType = planTypeId == 1212 ? 1224 : 1228;
+    private BigDecimal calculatePenalty(MultiOverdue multiOverdue, Date repaymentDate, DataWorkInfo dataWorkInfo) {
+        //查询某期的最近一次还款记录
+        RepaymentActual repaymentActual = repaymentActualRepository.findFirstByDateIdAndRepaymentTermAndPlanTypeIdOrderByIdDesc(Long.parseLong(multiOverdue.getDateId().toString()), multiOverdue.getPlanTerm(), multiOverdue.getPlanTypeId());
+        //计划还款日期
+        Date planTermDate = multiOverdue.getPlanTermDate();
+        if (Objects.nonNull(repaymentActual)) {
+            //如果最近一次还款记录不为空,比较还款日期与计划还款日期,取较大值
+            //最后一次还款记录还款日期 -  计划还款日
+            long between = Utility.between(planTermDate, repaymentActual.getRepaymentTermDate());
+            if (between > 0) {
+                //计划还款日期在最后一次还款日期及其以后,使用计划还款日期计算逾期天数,
+                //计划还款日期在最后一次还款日期之前,使用最后一次还款日期计算逾期天数
+                planTermDate = repaymentActual.getRepaymentTermDate();
+            }
+        }
+
+        //计算逾期天数
+        long overdueDays = Utility.between(planTermDate, repaymentDate);
+        //计算罚息:分为本息和服务费两种情况
+        BigDecimal planTotalAmount = multiOverdue.getPlanTotalAmount();
+        if (multiOverdue.getPlanTypeId() == 1212) {
+            return planTotalAmount.multiply(BigDecimal.valueOf(1.5)).multiply(BigDecimal.valueOf(dataWorkInfo.getRate()))
+                    .multiply(BigDecimal.valueOf(overdueDays)).divide(BigDecimal.valueOf(3000), 2, RoundingMode.HALF_UP);
+        } else {
+            return planTotalAmount.multiply(BigDecimal.valueOf(0.001)).multiply(BigDecimal.valueOf(overdueDays)).setScale(2, RoundingMode.HALF_UP);
+        }
+
+    }
+
+
+    /**
+     * 生成豁免申请信息
+     *
+     * @param applyRepaymentDate 申请还款日期
+     * @param multiOverdue       逾期信息
+     * @return
+     */
+    private ExemptInfo createExemptInfo(Date applyRepaymentDate, MultiOverdue multiOverdue) {
+        int amountType = multiOverdue.getPlanTypeId() == 1212 ? 1224 : 1228;
         ExemptInfo exemptInfo = new ExemptInfo();
         exemptInfo.setDateId(multiOverdue.getDateId());
         exemptInfo.setPlanTerm(multiOverdue.getPlanTerm());
@@ -166,21 +256,8 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
         exemptInfo.setExemptDamage(0f);
         exemptInfo.setPlanPrincipal(multiOverdue.getSerplusRepaymentPrincipal().floatValue());
         exemptInfo.setPlanInterest(multiOverdue.getSerplusRepaymentInterest().floatValue());
-        //计算罚息
-        BigDecimal planPenalty;
-        //计算逾期天数
-        long overdueDays = Math.abs(Utility.between(applyRepaymentDate, multiOverdue.getPlanTermDate()));
-        BigDecimal planTotalAmount = multiOverdue.getPlanTotalAmount();
-        if (planTypeId == 1212) {
-            //本息罚息计算:未还本息*1.5*月利率/100/30*逾期天数
-            planPenalty = planTotalAmount.multiply(BigDecimal.valueOf(1.5)).multiply(BigDecimal.valueOf(dataWorkInfo.getRate()))
-                    .divide(BigDecimal.valueOf(3000), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(overdueDays)).setScale(2, RoundingMode.HALF_UP);
-        } else {
-            //服务费罚息计算:未还本息*0.001*逾期天数
-            planPenalty = planTotalAmount.multiply(BigDecimal.valueOf(0.001)).multiply(BigDecimal.valueOf(overdueDays)).setScale(2, RoundingMode.HALF_UP);
-        }
-        exemptInfo.setExemptPenalty(planPenalty.floatValue());
-        exemptInfo.setPlanPenalty(planPenalty.floatValue());
+        exemptInfo.setExemptPenalty(multiOverdue.getSerplusRepaymentPenalty().floatValue());
+        exemptInfo.setPlanPenalty(multiOverdue.getSerplusRepaymentPenalty().floatValue());
         exemptInfo.setPlanDamage(0f);
         exemptInfo.setReason("");
         exemptInfo.setApplyDate(new Date());
@@ -195,7 +272,7 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
         exemptInfo.setFinalReviewerNo(2214);
         exemptInfo.setFinalReviewer("黄钟峤");
         exemptInfo.setApplyStatus(99);
-        exemptInfo.setPlanTypeId(planTypeId);
+        exemptInfo.setPlanTypeId(multiOverdue.getPlanTypeId());
         exemptInfo.setExemptItem(1221);
         exemptInfo.setAmountType(amountType);
         exemptInfo.setDepartment("");

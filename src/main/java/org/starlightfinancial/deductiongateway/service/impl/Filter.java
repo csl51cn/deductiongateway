@@ -52,7 +52,7 @@ public class Filter extends Decorator {
 
         //############还款日为2020.1-2020.3部分客户因疫情豁免了罚息,代扣金额需要重新计算
         if (Objects.nonNull(accountManager) && StringUtils.equals(accountManager.getExemptFlag(), Constant.ENABLED_TRUE.toString())) {
-            SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainSurplusTotalAmount(accountManager,false,null);
+            SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainSurplusTotalAmount(accountManager);
             if (surplusTotalAmount.getOverdueFlag()) {
                 //如果逾期了,才需要重新设置金额
                 autoBatchDeduction.setBxAmount(surplusTotalAmount.getPrincipalAndInterest());

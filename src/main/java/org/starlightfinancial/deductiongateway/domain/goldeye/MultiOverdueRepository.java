@@ -14,11 +14,23 @@ import java.util.List;
 public interface MultiOverdueRepository extends JpaRepository<MultiOverdue, Integer> {
 
     /**
-     * 通过dateId,date,overdueDay查询数据
-     * @param dateId 流水号
-     * @param date  计划还款日期
+     * 通过dateId,计划还款日期,逾期天数查询数据
+     *
+     * @param dateId     流水号
+     * @param date       计划还款日期
      * @param overdueDay 逾期天数
      * @return
      */
     List<MultiOverdue> findByDateIdAndPlanTermDateLessThanEqualAndOverdueDaysGreaterThanOrderByPlanTermDateAsc(Integer dateId, Date date, Integer overdueDay);
+
+    /**
+     * 通过dateId,还款类别,计划还款日期,逾期天数查询数据
+     *
+     * @param dateId     流水号
+     * @param planTypeId 还款类别
+     * @param date       计划还款日期
+     * @param overdueDay 逾期天数
+     * @return
+     */
+    List<MultiOverdue> findByDateIdAndPlanTypeIdAndPlanTermDateLessThanEqualAndOverdueDaysGreaterThanOrderByPlanTermDateAsc(Integer dateId, Integer planTypeId, Date date, Integer overdueDay);
 }

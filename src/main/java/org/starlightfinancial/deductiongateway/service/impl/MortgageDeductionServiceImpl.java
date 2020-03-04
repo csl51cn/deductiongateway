@@ -561,31 +561,28 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     1, mortgageDeduction.getContractNo());
             //判断是否是标记客户
             if (Objects.nonNull(accountManager) && StringUtils.equals(accountManager.getExemptFlag(), Constant.ENABLED_TRUE.toString())) {
-                SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainSurplusTotalAmount(accountManager, true, mortgageDeduction.getPayTime());
-                if (surplusTotalAmount.getOverdueFlag()) {
-                    //如果有逾期了,需要判断金额是否能结清,如果不能要打印日志,不直接入账
-                    BigDecimal totalAmount = surplusTotalAmount.getPrincipalAndInterest().add(surplusTotalAmount.getServiceFee());
-                    BigDecimal alreadyRepaymentAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-                    if (alreadyRepaymentAmount.compareTo(totalAmount) >= 0) {
-                        //如果足够结清, 豁免信息入库
-                        exemptInfoService.save(surplusTotalAmount.getPrincipalAndInterestExemptInfos());
-                        exemptInfoService.save(surplusTotalAmount.getServiceFeeExemptInfos());
+                //本息处理.
+                Date repaymentDate = Utility.convertToDate(Utility.convertToString(mortgageDeduction.getPayTime(), "yyyy-MM-dd"), "yyyy-MM-dd");
+                SurplusTotalAmount principalAnInterestSurplusTotalAmount = multiOverdueService.obtainExemptInfo(accountManager, mortgageDeduction.getSplitData1(), repaymentDate, 1212);
+                //服务费处理
+                if (mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0) {
+                    //如果服务费不为0
+                    SurplusTotalAmount serviceFeeSurplusTotalAmount = multiOverdueService.obtainExemptInfo(accountManager, mortgageDeduction.getSplitData2(), repaymentDate, 1214);
+                    if (principalAnInterestSurplusTotalAmount.getClearFlag() && serviceFeeSurplusTotalAmount.getClearFlag()) {
+                        //能同时结清时,才允许入账,否则打印日志,不直接入账
+                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getPrincipalAndInterestExemptInfos());
+                        exemptInfoService.save(serviceFeeSurplusTotalAmount.getServiceFeeExemptInfos());
                     } else {
                         //从将要转换为excel的list中移除记录
-                        iterator.remove();
-                        //从原始的list中移除不能足额还款的记录
-                        original.removeIf(deduction -> StringUtils.equals(deduction.getContractNo(), mortgageDeduction.getContractNo()));
-                        log.debug("合同编号:[{}],代扣卡持有人:[{}],已还金额不足以结清,未上传入账文件,代扣渠道", mortgageDeduction.getContractNo(), mortgageDeduction.getCustomerName());
-                        FailEntryAccount existedFailEntryAccount = failEntryAccountService.findByContractNoAndCreateDate(mortgageDeduction.getContractNo(), new Date());
-                        if (Objects.isNull(existedFailEntryAccount)) {
-                            //如果当天已经保存了不能足额还款的记录,不再保存
-                            FailEntryAccount failEntryAccount = new FailEntryAccount();
-                            failEntryAccount.setMortgageDeuctionId(mortgageDeduction.getId());
-                            failEntryAccount.setContractNo(mortgageDeduction.getContractNo());
-                            failEntryAccount.setGmtCreate(new Date());
-                            failEntryAccountService.save(failEntryAccount);
-                        }
-
+                        handleFailEntry(original, iterator, mortgageDeduction);
+                    }
+                } else {
+                    if (principalAnInterestSurplusTotalAmount.getClearFlag()) {
+                        //如果能够结清,允许入账
+                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getPrincipalAndInterestExemptInfos());
+                    } else {
+                        //从将要转换为excel的list中移除记录
+                        handleFailEntry(original, iterator, mortgageDeduction);
                     }
                 }
             }
@@ -613,6 +610,30 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
         );
 
+    }
+
+    /**
+     * 如果不能入账的处理
+     *
+     * @param original          原始的list
+     * @param iterator          迭代器
+     * @param mortgageDeduction 代扣信息
+     */
+    private void handleFailEntry(List<MortgageDeduction> original, Iterator<MortgageDeduction> iterator, MortgageDeduction mortgageDeduction) {
+        //从将要转换为excel的list中移除记录
+        iterator.remove();
+        //从原始的list中移除不能足额还款的记录
+        original.removeIf(deduction -> StringUtils.equals(deduction.getContractNo(), mortgageDeduction.getContractNo()));
+        log.debug("合同编号:[{}],代扣卡持有人:[{}],已还金额不足以结清,未上传入账文件,代扣渠道", mortgageDeduction.getContractNo(), mortgageDeduction.getCustomerName());
+        FailEntryAccount existedFailEntryAccount = failEntryAccountService.findByContractNoAndCreateDate(mortgageDeduction.getContractNo(), new Date());
+        if (Objects.isNull(existedFailEntryAccount)) {
+            //如果当天已经保存了不能足额还款的记录,不再保存
+            FailEntryAccount failEntryAccount = new FailEntryAccount();
+            failEntryAccount.setMortgageDeuctionId(mortgageDeduction.getId());
+            failEntryAccount.setContractNo(mortgageDeduction.getContractNo());
+            failEntryAccount.setGmtCreate(new Date());
+            failEntryAccountService.save(failEntryAccount);
+        }
     }
 
 

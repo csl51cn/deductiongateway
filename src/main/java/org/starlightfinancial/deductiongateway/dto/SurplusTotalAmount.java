@@ -41,4 +41,10 @@ public class SurplusTotalAmount {
     private List<ExemptInfo> serviceFeeExemptInfos;
 
 
+    /**
+     * 标志能否入账:true-可以,false-不可以
+     */
+    private Boolean clearFlag;
+
+
 }
