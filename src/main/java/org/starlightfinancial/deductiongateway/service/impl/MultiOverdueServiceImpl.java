@@ -156,7 +156,7 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
             for (int i = 0; i < overdueList.size(); i++) {
                 MultiOverdue multiOverdue = overdueList.get(i);
                 //当期应还总金额
-                BigDecimal planTotalAmount = multiOverdue.getSerplusRepaymentPrincipal().add(multiOverdue.getPlanRepaymentInterest());
+                BigDecimal planTotalAmount = multiOverdue.getSerplusRepaymentPrincipal().add(multiOverdue.getSerplusRepaymentInterest());
                 //计算2020-1-1  -  计划还款日 差值
                 between = Utility.between(multiOverdue.getPlanTermDate(), date);
                 //计算罚息
@@ -226,10 +226,14 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
         //计算逾期天数
         long overdueDays = Utility.between(planTermDate, repaymentDate);
         //计算罚息:分为本息和服务费两种情况
-        BigDecimal planTotalAmount = multiOverdue.getPlanRepaymentPrincipal().add(multiOverdue.getPlanRepaymentInterest());
+        BigDecimal planTotalAmount = multiOverdue.getSerplusRepaymentPrincipal().add(multiOverdue.getSerplusRepaymentInterest());
         if (multiOverdue.getPlanTypeId() == 1212) {
-            return planTotalAmount.multiply(BigDecimal.valueOf(1.5)).multiply(BigDecimal.valueOf(dataWorkInfo.getRate()))
-                    .multiply(BigDecimal.valueOf(overdueDays)).divide(BigDecimal.valueOf(3000), 2, RoundingMode.HALF_UP);
+            BigDecimal rate = BigDecimal.valueOf(dataWorkInfo.getRate()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal result = planTotalAmount.multiply(BigDecimal.valueOf(1.5));
+            result = result.multiply(rate);
+            result = result.multiply(BigDecimal.valueOf(overdueDays));
+            result = result.divide(BigDecimal.valueOf(3000),RoundingMode.HALF_UP);
+            return result;
         } else {
             return planTotalAmount.multiply(BigDecimal.valueOf(0.001)).multiply(BigDecimal.valueOf(overdueDays)).setScale(2, RoundingMode.HALF_UP);
         }
@@ -284,6 +288,5 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
         exemptInfo.setUsedStatus(0);
         return exemptInfo;
     }
-
 
 }
