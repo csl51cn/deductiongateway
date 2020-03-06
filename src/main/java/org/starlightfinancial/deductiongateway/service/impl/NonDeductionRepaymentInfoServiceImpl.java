@@ -408,28 +408,22 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
             //判断是否是标记客户
             if (Objects.nonNull(accountManager) && StringUtils.equals(accountManager.getExemptFlag(), Constant.ENABLED_TRUE.toString())) {
                 //是本息还是服务费
-                int planType = 0;
+                int repaymentType = 0;
                 if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), "本息")) {
-                    planType = 1212;
+                    repaymentType = 1212;
                 } else if (StringUtils.equals(nonDeductionRepaymentInfo.getRepaymentType(), "服务费")) {
-                    planType = 1214;
+                    repaymentType = 1214;
                 } else {
                     //如果是其他费用种类,跳过
                     continue;
                 }
                 SurplusTotalAmount surplusTotalAmount = multiOverdueService.obtainExemptInfo(accountManager
-                        , nonDeductionRepaymentInfo.getRepaymentAmount(), nonDeductionRepaymentInfo.getAccountingDate(), planType);
+                        , nonDeductionRepaymentInfo.getRepaymentAmount(), nonDeductionRepaymentInfo.getAccountingDate(), repaymentType);
                 if (surplusTotalAmount.getOverdueFlag()) {
                     //如果有逾期了,需要判断金额是否能结清,如果不能要打印日志,不直接入账
                     if (surplusTotalAmount.getClearFlag()) {
                         //如果能够结清
-                        if(planType ==1212){
-                            //如果足够结清, 本息豁免信息入库
-                            exemptInfos.addAll(surplusTotalAmount.getPrincipalAndInterestExemptInfos());
-                        }else{
-                            //如果足够结清, 服务费豁免信息入库
-                            exemptInfos.addAll(surplusTotalAmount.getServiceFeeExemptInfos());
-                        }
+                        exemptInfos.addAll(surplusTotalAmount.getExemptInfos());
                     } else {
                         //如果不能够结清,给出提示
                         return amountIsNotSufficient(original, iterator, nonDeductionRepaymentInfo);

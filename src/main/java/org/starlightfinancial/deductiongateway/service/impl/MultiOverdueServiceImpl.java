@@ -141,9 +141,8 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
         SurplusTotalAmount surplusTotalAmount = new SurplusTotalAmount();
         surplusTotalAmount.setOverdueFlag(false);
         surplusTotalAmount.setClearFlag(false);
-        surplusTotalAmount.setPrincipalAndInterestExemptInfos(new ArrayList<>());
-        surplusTotalAmount.setServiceFeeExemptInfos(new ArrayList<>());
-        //判断是否逾期,没有逾期的话不需要特别的处理,直接计算当期应还金额
+        surplusTotalAmount.setExemptInfos(new ArrayList<>());
+        //判断是否逾期,没有逾期的话不需要特别的处理
         List<MultiOverdue> overdueList =
                 multiOverdueRepository.findByDateIdAndPlanTypeIdAndPlanTermDateLessThanEqualAndOverdueDaysGreaterThanOrderByPlanTermDateAsc(accountManager.getDateId(), repaymentType, applyDate, 0);
         DataWorkInfo dataWorkInfo = dataWorkInfoRepository.findByDateId(accountManager.getDateId());
@@ -168,15 +167,11 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
                     planTotalAmount = planTotalAmount.add(penalty);
 
                 } else {
-                    //如果是在2020-1-1之后的,需要豁免罚息,目前规则只运行到3月31日
-                    ExemptInfo exemptInfo = createExemptInfo(applyDate, multiOverdue);
-                    if (repaymentAmount.compareTo(BigDecimal.ZERO) > 0) {
-                        //剩余金额大于0时才保存豁免信息
-                        if (multiOverdue.getPlanTypeId() == 1212) {
-                            surplusTotalAmount.getPrincipalAndInterestExemptInfos().add(exemptInfo);
-                        } else {
-                            surplusTotalAmount.getServiceFeeExemptInfos().add(exemptInfo);
-                        }
+                    //如果是在2020-1-1之后的,如果有罚息的需要豁免罚息,目前规则只运行到3月31日
+                    if (penalty.compareTo(BigDecimal.ZERO) > 0 && repaymentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                        //剩余还款金额大于0时才保存豁免信息
+                        ExemptInfo exemptInfo = createExemptInfo(applyDate, multiOverdue);
+                        surplusTotalAmount.getExemptInfos().add(exemptInfo);
                     }
                 }
 
@@ -232,7 +227,7 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
             BigDecimal result = planTotalAmount.multiply(BigDecimal.valueOf(1.5));
             result = result.multiply(rate);
             result = result.multiply(BigDecimal.valueOf(overdueDays));
-            result = result.divide(BigDecimal.valueOf(3000),RoundingMode.HALF_UP);
+            result = result.divide(BigDecimal.valueOf(3000), RoundingMode.HALF_UP);
             return result;
         } else {
             return planTotalAmount.multiply(BigDecimal.valueOf(0.001)).multiply(BigDecimal.valueOf(overdueDays)).setScale(2, RoundingMode.HALF_UP);

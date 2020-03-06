@@ -31,14 +31,9 @@ public class SurplusTotalAmount {
     private Boolean overdueFlag;
 
     /**
-     * 本息豁免信息
+     * 豁免信息
      */
-    private List<ExemptInfo> principalAndInterestExemptInfos;
-
-    /**
-     * 服务费豁免信息
-     */
-    private List<ExemptInfo> serviceFeeExemptInfos;
+    private List<ExemptInfo> exemptInfos;
 
 
     /**

@@ -570,8 +570,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     SurplusTotalAmount serviceFeeSurplusTotalAmount = multiOverdueService.obtainExemptInfo(accountManager, mortgageDeduction.getSplitData2(), repaymentDate, 1214);
                     if (principalAnInterestSurplusTotalAmount.getClearFlag() && serviceFeeSurplusTotalAmount.getClearFlag()) {
                         //能同时结清时,才允许入账,否则打印日志,不直接入账
-                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getPrincipalAndInterestExemptInfos());
-                        exemptInfoService.save(serviceFeeSurplusTotalAmount.getServiceFeeExemptInfos());
+                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getExemptInfos());
+                        exemptInfoService.save(serviceFeeSurplusTotalAmount.getExemptInfos());
                     } else {
                         //从将要转换为excel的list中移除记录
                         handleFailEntry(original, iterator, mortgageDeduction);
@@ -579,7 +579,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 } else {
                     if (principalAnInterestSurplusTotalAmount.getClearFlag()) {
                         //如果能够结清,允许入账
-                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getPrincipalAndInterestExemptInfos());
+                        exemptInfoService.save(principalAnInterestSurplusTotalAmount.getExemptInfos());
                     } else {
                         //从将要转换为excel的list中移除记录
                         handleFailEntry(original, iterator, mortgageDeduction);
