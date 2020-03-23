@@ -76,32 +76,15 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
                 totalPrincipalAndInterest = totalPrincipalAndInterest.add(principalAndInterestAndPenalty.setScale(2, RoundingMode.HALF_UP));
                 totalServiceFee = totalServiceFee.add(serviceFeePrincipalAndPenalty.setScale(2, RoundingMode.HALF_UP));
             }
-            //2020.1.1之后逾期的本息没有罚息
+            //2020.1.1之后逾期的本息没有罚息,凌晨跑出来的数据多期逾期表中包含了当天应还款的本息
             BigDecimal principalAndInterestWithoutPenalty = overdueList.stream().filter(multiOverdue -> Utility.between(multiOverdue.getPlanTermDate(), date) <= 0 && multiOverdue.getPlanTypeId() == 1212)
                     .reduce(BigDecimal.ZERO, (amount, multiOverdue) -> amount.add(multiOverdue.getPlanRepaymentPrincipal()).add(multiOverdue.getPlanRepaymentInterest())
                             , BigDecimal::add);
-            //2020.1.1之前逾期的服务费没有罚息
+            //2020.1.1之前逾期的服务费没有罚息,凌晨跑出来的数据多期逾期表中包含了当天应还款的本息
             BigDecimal serviceFeePrincipalWithoutPenalty = overdueList.stream().filter(multiOverdue -> Utility.between(multiOverdue.getPlanTermDate(), date) <= 0 && multiOverdue.getPlanTypeId() == 1214)
                     .reduce(BigDecimal.ZERO, (amount, multiOverdue) -> amount.add(multiOverdue.getPlanRepaymentPrincipal()).add(multiOverdue.getPlanRepaymentInterest())
                             , BigDecimal::add);
-            //通过计划还款日期查询当日应还,仅限2020.3月份,限制查询的起止日期.3月份之后需要及时清理标记信息.
-            Date startDate = Utility.convertToDate(Utility.convertToString(new Date(), "yyyy-MM-dd"), "yyyy-MM-dd");
 
-
-            //当期应还的本息
-            RepaymentPlan principalAndInterestRepaymentPlan = repaymentPlanRepository.findByDateIdAndPlanTermDateAndPlanTypeIdAndStatus(Long.parseLong(accountManager.getDateId().toString()), startDate, 1212, "0");
-            BigDecimal currentPrincipalAndInterest = BigDecimal.ZERO;
-            if (Objects.nonNull(principalAndInterestRepaymentPlan)) {
-                currentPrincipalAndInterest = BigDecimal.valueOf(principalAndInterestRepaymentPlan.getPlanTotalAmount()).setScale(2, RoundingMode.HALF_UP);
-            }
-
-            //当期应还的服务费
-            RepaymentPlan serviceFeeRepaymentPlan = repaymentPlanRepository.findByDateIdAndPlanTermDateAndPlanTypeIdAndStatus(Long.parseLong(accountManager.getDateId().toString()), startDate, 1214, "0");
-            BigDecimal currentServiceFee = BigDecimal.ZERO;
-            if (Objects.nonNull(serviceFeeRepaymentPlan)) {
-                //如果当期应还服务费不为空，有些业务可能没有服务费
-                currentServiceFee = BigDecimal.valueOf(serviceFeeRepaymentPlan.getPlanTotalAmount()).setScale(2, RoundingMode.HALF_UP);
-            }
 
             //查询本息剩余挂账金额
             RepaymentActual repaymentActual = repaymentActualRepository.findFirstByDateIdAndPlanTypeIdOrderByIdDesc(Long.parseLong(accountManager.getDateId().toString()), 1212);
@@ -116,9 +99,9 @@ public class MultiOverdueServiceImpl implements MultiOverdueService {
                 totalServiceFee = totalServiceFee.subtract(BigDecimal.valueOf(serviceFeeRepaymentActual.getTotalHangingAmount()));
             }
             //逾期本息(罚息)汇总
-            totalPrincipalAndInterest = totalPrincipalAndInterest.add(principalAndInterestWithoutPenalty).add(currentPrincipalAndInterest).setScale(2, RoundingMode.HALF_UP);
+            totalPrincipalAndInterest = totalPrincipalAndInterest.add(principalAndInterestWithoutPenalty).setScale(2, RoundingMode.HALF_UP);
             //逾期服务费(罚息)汇总
-            totalServiceFee = totalServiceFee.add(serviceFeePrincipalWithoutPenalty).add(currentServiceFee).setScale(2, RoundingMode.HALF_UP);
+            totalServiceFee = totalServiceFee.add(serviceFeePrincipalWithoutPenalty).setScale(2, RoundingMode.HALF_UP);
             surplusTotalAmount.setPrincipalAndInterest(totalPrincipalAndInterest);
             surplusTotalAmount.setServiceFee(totalServiceFee);
 
