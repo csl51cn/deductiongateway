@@ -25,7 +25,7 @@ import java.util.List;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AccountManagerRepositoryTest {
 
     @Autowired

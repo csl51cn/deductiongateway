@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -21,10 +22,11 @@ import java.util.Date;
 @Data
 @Entity(name = "BU_DEFAULT_CHANNEL")
 @EntityListeners(AuditingEntityListener.class)
-public class DefaultChannel {
+public class DefaultChannel implements Serializable {
 
+    private static final long serialVersionUID = 4647880809050371387L;
     @Id
-    @GeneratedValue()
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
 

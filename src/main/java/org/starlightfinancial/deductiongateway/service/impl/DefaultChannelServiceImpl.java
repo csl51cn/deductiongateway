@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.starlightfinancial.deductiongateway.domain.local.DefaultChannel;
 import org.starlightfinancial.deductiongateway.domain.local.DefaultChannelRepository;
 import org.starlightfinancial.deductiongateway.service.DefaultChannelService;
@@ -92,6 +93,7 @@ public class DefaultChannelServiceImpl implements DefaultChannelService {
      * @param defaultChannel
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateDefaultChannel(DefaultChannel defaultChannel) {
         DefaultChannel defaultChannelOriginal = defaultChannelRepository.findOne(defaultChannel.getId());
         String differenceFieldValue = Utility.compareObjectFieldValue(defaultChannelOriginal, defaultChannel);
