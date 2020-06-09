@@ -98,6 +98,11 @@ public enum LoanIssueBankEnum {
      * 江苏银行
      */
     BANK2110(2110, "江苏银行"),
+
+    /**
+     * 重庆银行
+     */
+    BANK2274(2274, "重庆银行"),
     ;
 
 
