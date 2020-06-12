@@ -203,29 +203,12 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
     @Override
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
-        //对于工行特殊处理
-        if (StringUtils.equals("0102", mortgageDeduction.getParam1())) {
-            mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getIcbcCharge()));
-            return;
+        //中金单笔代扣每笔按金额*费率收手续费费率,并且手续费有最低值,如果低于最低值按照最低值收取费用
+        BigDecimal charge = totalAmount.multiply(chinaPayClearNetConfig.getClassicCharge());
+        if (charge.compareTo(chinaPayClearNetConfig.getClassicLowestCharge()) < 0) {
+            charge = chinaPayClearNetConfig.getClassicLowestCharge();
         }
-        //对中国银行特殊处理
-        if(StringUtils.equals("0104", mortgageDeduction.getParam1())){
-            mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getBocCharge()));
-            return;
-        }
-        //对中国建设银行特殊处理
-        if(StringUtils.equals("0105", mortgageDeduction.getParam1())){
-            mortgageDeduction.setHandlingCharge(totalAmount.multiply(chinaPayClearNetConfig.getCcbCharge()));
-            return;
-        }
-        if (totalAmount.compareTo(TWENTY_THOUSAND) <= 0) {
-            //代扣金额<=20000
-            mortgageDeduction.setHandlingCharge(chinaPayClearNetConfig.getLevelOne());
-        } else {
-            //代扣金额>20000
-            mortgageDeduction.setHandlingCharge(chinaPayClearNetConfig.getLevelTwo());
-        }
-
+        mortgageDeduction.setHandlingCharge(charge);
     }
 
 }

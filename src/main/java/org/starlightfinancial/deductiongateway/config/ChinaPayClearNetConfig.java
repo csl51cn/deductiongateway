@@ -34,18 +34,6 @@ public class ChinaPayClearNetConfig {
 
 
     /**
-     * 单笔代扣(0,20000]手续费
-     */
-    @Value("${cpcn.classic.api.less_than_included_20000.handling.charge}")
-    private BigDecimal levelOne;
-
-    /**
-     * 单笔代扣(20000,∞)手续费
-     */
-    @Value("${cpcn.classic.api.over_20000.handling.charge}")
-    private BigDecimal levelTwo;
-
-    /**
      * 快捷支付签约状态查询地址
      */
     @Value("${cpcn.quick.realtime.api.sign-status.url}")
@@ -82,25 +70,12 @@ public class ChinaPayClearNetConfig {
     @Value("${cpcn.quick.realtime.api.charge}")
     private BigDecimal quickRealTimeCharge;
 
+    @Value("${cpcn.classic.api.charge}")
+    private  BigDecimal  classicCharge;
 
-    /**
-     * 工行 单笔(2011)和批量(1610)代扣费率
-     */
-    @Value("${cpcn.classic.api.ICBC.handling.charge}")
-    private BigDecimal icbcCharge;
+    @Value("${cpcn.classic.api.lowest.charge}")
+    private BigDecimal classicLowestCharge;
 
-
-    /**
-     * 中国银行 单笔(2011)和批量(1610)代扣费率
-     */
-    @Value("${cpcn.classic.api.BOC.handling.charge}")
-    private BigDecimal bocCharge;
-
-    /**
-     * 中国建设银行 单笔(2011)和批量(1610)代扣费率
-     */
-    @Value("${cpcn.classic.api.CCB.handling.charge}")
-    private BigDecimal ccbCharge;
 
     public String getClassicMemberId() {
         return classicMemberId;
@@ -126,21 +101,7 @@ public class ChinaPayClearNetConfig {
         this.classicQueryResultUrl = classicQueryResultUrl;
     }
 
-    public BigDecimal getLevelOne() {
-        return levelOne;
-    }
 
-    public void setLevelOne(BigDecimal levelOne) {
-        this.levelOne = levelOne;
-    }
-
-    public BigDecimal getLevelTwo() {
-        return levelTwo;
-    }
-
-    public void setLevelTwo(BigDecimal levelTwo) {
-        this.levelTwo = levelTwo;
-    }
 
     public String getQuickRealTimeSignStatusUrl() {
         return quickRealTimeSignStatusUrl;
@@ -190,27 +151,19 @@ public class ChinaPayClearNetConfig {
         this.quickRealTimeCharge = quickRealTimeCharge;
     }
 
-    public BigDecimal getIcbcCharge() {
-        return icbcCharge;
+    public BigDecimal getClassicCharge() {
+        return classicCharge;
     }
 
-    public void setIcbcCharge(BigDecimal icbcCharge) {
-        this.icbcCharge = icbcCharge;
+    public void setClassicCharge(BigDecimal classicCharge) {
+        this.classicCharge = classicCharge;
     }
 
-    public BigDecimal getBocCharge() {
-        return bocCharge;
+    public BigDecimal getClassicLowestCharge() {
+        return classicLowestCharge;
     }
 
-    public void setBocCharge(BigDecimal bocCharge) {
-        this.bocCharge = bocCharge;
-    }
-
-    public BigDecimal getCcbCharge() {
-        return ccbCharge;
-    }
-
-    public void setCcbCharge(BigDecimal ccbCharge) {
-        this.ccbCharge = ccbCharge;
+    public void setClassicLowestCharge(BigDecimal classicLowestCharge) {
+        this.classicLowestCharge = classicLowestCharge;
     }
 }
