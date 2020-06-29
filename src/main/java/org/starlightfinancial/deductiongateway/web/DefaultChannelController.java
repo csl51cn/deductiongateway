@@ -35,12 +35,14 @@ public class DefaultChannelController {
      * 条件查询记录
      *
      * @param pageBean       分页参数
-     * @param defaultChannel 包含了查询条件
+     * @param defaultChannelVO 包含了查询条件
      * @return
      */
     @RequestMapping(value = "/queryDefaultChannel.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public Map<String, Object> queryDefaultChannel(PageBean pageBean, DefaultChannel defaultChannel) {
+    public Map<String, Object> queryDefaultChannel(PageBean pageBean, DefaultChannelVO defaultChannelVO) {
+        DefaultChannel defaultChannel = new DefaultChannel();
+        BeanUtils.copyProperties(defaultChannelVO, defaultChannel);
         PageBean result = defaultChannelService.queryDefaultChannel(pageBean, defaultChannel);
         return Utility.pageBean2Map(result);
     }
@@ -66,13 +68,15 @@ public class DefaultChannelController {
     /**
      * 保存记录
      *
-     * @param defaultChannel
+     * @param defaultChannelVO
      * @return
      */
     @RequestMapping(value = "/saveDefaultChannel.do")
-    public Message saveDefaultChannel(DefaultChannel defaultChannel) {
+    public Message saveDefaultChannel(DefaultChannelVO defaultChannelVO) {
         Message message;
         try {
+            DefaultChannel defaultChannel = new DefaultChannel();
+            BeanUtils.copyProperties(defaultChannelVO, defaultChannel);
             defaultChannelService.saveDefaultChannel(defaultChannel);
             message = Message.success();
         } catch (Exception e) {
