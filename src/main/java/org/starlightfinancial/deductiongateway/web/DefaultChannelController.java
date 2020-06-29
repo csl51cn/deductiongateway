@@ -1,6 +1,7 @@
 package org.starlightfinancial.deductiongateway.web;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import org.starlightfinancial.deductiongateway.domain.local.DefaultChannel;
 import org.starlightfinancial.deductiongateway.service.DefaultChannelService;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.vo.DefaultChannelVO;
 
 import java.util.Map;
 
@@ -83,13 +85,15 @@ public class DefaultChannelController {
     /**
      * 更新记录
      *
-     * @param defaultChannel
+     * @param defaultChannelVO
      * @return
      */
     @RequestMapping("/updateDefaultChannel")
-    public Message updateDefaultChannel(DefaultChannel defaultChannel) {
+    public Message updateDefaultChannel(DefaultChannelVO defaultChannelVO) {
         Message message;
         try {
+            DefaultChannel defaultChannel = new DefaultChannel();
+            BeanUtils.copyProperties(defaultChannelVO, defaultChannel);
             defaultChannelService.updateDefaultChannel(defaultChannel);
             message = Message.success();
         } catch (Exception e) {
