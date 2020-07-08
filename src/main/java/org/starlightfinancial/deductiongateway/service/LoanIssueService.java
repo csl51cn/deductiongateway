@@ -91,4 +91,11 @@ public interface LoanIssueService {
      * @return
      */
     boolean checkLoanIssue(String password);
+
+    /**
+     * 发送贷款发放成功提醒
+     *
+     * @param loanIssueBasicInfos
+     */
+    void sendLoanIssueNotice(List<LoanIssueBasicInfo> loanIssueBasicInfos);
 }

@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.starlightfinancial.deductiongateway.config.BaofuConfig;
+import org.starlightfinancial.deductiongateway.async.AsyncManager;
+import org.starlightfinancial.deductiongateway.async.factory.AsyncTaskFactory;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransContent;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransHead;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.TransReqDataWrapper;
@@ -23,6 +24,8 @@ import org.starlightfinancial.deductiongateway.baofu.domain.payment.response.Tra
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.response.TransRespBF0040003;
 import org.starlightfinancial.deductiongateway.baofu.domain.payment.response.TransRespBF0040004;
 import org.starlightfinancial.deductiongateway.common.Message;
+import org.starlightfinancial.deductiongateway.common.UserContext;
+import org.starlightfinancial.deductiongateway.config.BaofuConfig;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssue;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfo;
 import org.starlightfinancial.deductiongateway.domain.local.LoanIssueBasicInfoRepository;
@@ -30,7 +33,6 @@ import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.enums.*;
 import org.starlightfinancial.deductiongateway.strategy.LoanIssueStrategy;
 import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
-import org.starlightfinancial.deductiongateway.common.UserContext;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.persistence.criteria.Predicate;
@@ -172,6 +174,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                             }
                         }
                         loanIssueBasicInfoRepository.save(loanIssueBasicInfos);
+                        AsyncManager.getInstance().execute(AsyncTaskFactory.sendLoanIssueNotice(loanIssueBasicInfos));
                         return Message.success();
                     } else {
                         return Message.fail("查询失败,返回的消息是:" + returnTransHead.getReturnMsg());

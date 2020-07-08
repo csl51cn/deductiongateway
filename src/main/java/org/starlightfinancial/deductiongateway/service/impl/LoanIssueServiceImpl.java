@@ -1,19 +1,27 @@
 package org.starlightfinancial.deductiongateway.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.starlightfinancial.deductiongateway.config.BaofuConfig;
 import org.starlightfinancial.deductiongateway.common.Message;
+import org.starlightfinancial.deductiongateway.config.BaofuConfig;
 import org.starlightfinancial.deductiongateway.dao.BusinessTransactionDao;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.domain.remote.LoanApplicantInfo;
+import org.starlightfinancial.deductiongateway.domain.remote.LoanApplicantInfoRepository;
+import org.starlightfinancial.deductiongateway.dto.LoanIssueNotice;
 import org.starlightfinancial.deductiongateway.enums.ConstantsEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueBankEnum;
 import org.starlightfinancial.deductiongateway.enums.LoanIssueChannelEnum;
@@ -39,6 +47,7 @@ import java.util.stream.Collectors;
  * @Modified By:
  */
 @Service
+@Slf4j
 public class LoanIssueServiceImpl implements LoanIssueService {
 
     @Autowired
@@ -58,6 +67,13 @@ public class LoanIssueServiceImpl implements LoanIssueService {
 
     @Autowired
     private SystemService systemService;
+
+    @Autowired
+    private LoanApplicantInfoRepository loanApplicantInfoRepository;
+
+    @Qualifier("remoteJmsTemplate")
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
     private static final String CHECK_USER = "hong.li";
 
@@ -404,6 +420,37 @@ public class LoanIssueServiceImpl implements LoanIssueService {
         //目前只有指定的用户具有复核权限
         SysUser loginUser = systemService.findSysUser(CHECK_USER, password);
         return loginUser == null;
+    }
+
+    /**
+     * 发送贷款发放成功提醒
+     *
+     * @param loanIssueBasicInfos
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public void sendLoanIssueNotice(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
+
+        for (LoanIssueBasicInfo loanIssueBasicInfo : loanIssueBasicInfos) {
+
+            LoanIssue theLastRecord = findTheLastRecord(loanIssueBasicInfo);
+            if (!StringUtils.equals(theLastRecord.getTransactionStatus(), LoanIssueStatusEnum.STATUS1.getCode())) {
+                //如果没有成功,不发送已放款消息
+                continue;
+            }
+            //需要主借人的姓名,身份证号,放款卡号,交易时间,交易金额
+            LoanApplicantInfo loanApplicantInfo = loanApplicantInfoRepository.findByMainDateId(loanIssueBasicInfo.getDateId());
+            LoanIssueNotice loanIssueNotice = LoanIssueNotice.builder().dateId(loanIssueBasicInfo.getDateId()).customerName(loanApplicantInfo.getApplicant())
+                    .identityNo(loanApplicantInfo.getIdentityNo()).account(loanIssueBasicInfo.getToAccountNo())
+                    .amount(loanIssueBasicInfo.getIssueAmount()).loanIssueId(loanIssueBasicInfo.getId())
+                    .transactionEndTime(theLastRecord.getTransactionEndTime()).build();
+            String s = JSONObject.toJSONString(loanIssueNotice);
+            System.out.println(s);
+            jmsTemplate.convertAndSend(new ActiveMQQueue("loanIssueNoticeQueue"), JSONObject.toJSONString(loanIssueNotice));
+            log.info("贷款发放成功消息推送完成,合同编号:[{}],收款人:[{}]", loanIssueBasicInfo.getContractNo(), loanIssueBasicInfo.getToAccountName());
+        }
+
+
     }
 
     private LoanIssue findTheLastRecord(LoanIssueBasicInfo loanIssueBasicInfo) {

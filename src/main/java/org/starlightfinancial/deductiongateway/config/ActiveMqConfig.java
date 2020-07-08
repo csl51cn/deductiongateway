@@ -3,9 +3,11 @@ package org.starlightfinancial.deductiongateway.config;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.command.ActiveMQQueue;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -44,40 +46,51 @@ public class ActiveMqConfig {
         return redeliveryPolicy;
     }
 
-    @Bean
-    public ActiveMQConnectionFactory activeMQConnectionFactory(@Value("${spring.activemq.broker-url}") String url, RedeliveryPolicy redeliveryPolicy) {
-        ActiveMQConnectionFactory activeMQConnectionFactory =
+    /**
+     * 创建active mq连接工厂
+     *
+     * @param url              broker-url
+     * @param userName         用户名
+     * @param password         密码
+     * @param redeliveryPolicy 重发策略
+     * @return
+     */
+    private ActiveMQConnectionFactory createActiveMqConnectionFactory(String url, String userName, String password, RedeliveryPolicy redeliveryPolicy) {
+        ActiveMQConnectionFactory activeMqConnectionFactory =
                 new ActiveMQConnectionFactory(
-                        "admin",
-                        "admin",
+                        userName,
+                        password,
                         url);
-        activeMQConnectionFactory.setRedeliveryPolicy(redeliveryPolicy);
-        return activeMQConnectionFactory;
+        activeMqConnectionFactory.setRedeliveryPolicy(redeliveryPolicy);
+        return activeMqConnectionFactory;
     }
 
-    @Bean
-    public JmsTemplate jmsTemplate(ActiveMQConnectionFactory activeMQConnectionFactory, Queue queue) {
+    /**
+     * 创建 JmsTemplate
+     *
+     * @param mqConnectionFactory 连接工厂
+     * @return
+     */
+    private JmsTemplate createJmsTemplate(ActiveMQConnectionFactory mqConnectionFactory) {
         JmsTemplate jmsTemplate = new JmsTemplate();
         //进行持久化配置 1表示非持久化，2表示持久化
         jmsTemplate.setDeliveryMode(2);
-        jmsTemplate.setConnectionFactory(activeMQConnectionFactory);
-        //此处可不设置默认，在发送消息时也可设置队列
-        jmsTemplate.setDefaultDestination(queue);
+        jmsTemplate.setConnectionFactory(mqConnectionFactory);
         //客户端签收模式
         jmsTemplate.setSessionAcknowledgeMode(4);
         return jmsTemplate;
     }
 
-    /***
-     * 定义一个消息监听器连接工厂，这里定义的是点对点模式的监听器连接工厂
-     * @param activeMQConnectionFactory
+    /**
+     * 定义一个消息监听器容器工厂，这里定义的是点对点模式的监听器容器工厂
+     *
+     * @param mqConnectionFactory
      * @return
      */
-    @Bean(name = "jmsQueueListener")
-    public DefaultJmsListenerContainerFactory jmsQueueListenerContainerFactory(ActiveMQConnectionFactory activeMQConnectionFactory) {
+    private DefaultJmsListenerContainerFactory createDefaultJmsListenerContainerFactory(ActiveMQConnectionFactory mqConnectionFactory) {
         DefaultJmsListenerContainerFactory factory =
                 new DefaultJmsListenerContainerFactory();
-        factory.setConnectionFactory(activeMQConnectionFactory);
+        factory.setConnectionFactory(mqConnectionFactory);
         //设置连接数
         factory.setConcurrency("1-10");
         //重连间隔时间
@@ -85,4 +98,71 @@ public class ActiveMqConfig {
         factory.setSessionAcknowledgeMode(4);
         return factory;
     }
+
+
+    @Bean(name = "localActiveMQConnectionFactory")
+    @Primary
+    public ActiveMQConnectionFactory activeMQConnectionFactory(@Value("${spring.local.activemq.broker-url}") String url,
+                                                               @Value("${spring.local.activemq.user}") String userName,
+                                                               @Value("${spring.local.activemq.password}") String password,
+                                                               RedeliveryPolicy redeliveryPolicy) {
+        return createActiveMqConnectionFactory(url, userName, password, redeliveryPolicy);
+    }
+
+    @Bean(name = "localJmsTemplate")
+    @Primary
+    public JmsTemplate jmsTemplate(@Qualifier("localActiveMQConnectionFactory") ActiveMQConnectionFactory activeMQConnectionFactory) {
+        return createJmsTemplate(activeMQConnectionFactory);
+    }
+
+    /***
+     * 定义一个消息监听器连接工厂，这里定义的是点对点模式的监听器连接工厂
+     * @param activeMQConnectionFactory
+     * @return
+     */
+    @Bean(name = "localJmsQueueListener")
+    @Primary
+    public DefaultJmsListenerContainerFactory jmsQueueListenerContainerFactory(@Qualifier("localActiveMQConnectionFactory") ActiveMQConnectionFactory activeMQConnectionFactory) {
+        return createDefaultJmsListenerContainerFactory(activeMQConnectionFactory);
+    }
+
+    /**
+     * 创建云服务器 MQ 的连接工厂
+     *
+     * @param url
+     * @param userName
+     * @param password
+     * @param redeliveryPolicy
+     * @return
+     */
+    @Bean(name = "remoteActiveMQConnectionFactory")
+    public ActiveMQConnectionFactory remoteActiveMqConnectionFactory(@Value("${spring.remote.activemq.broker-url}") String url,
+                                                                     @Value("${spring.remote.activemq.user}") String userName,
+                                                                     @Value("${spring.remote.activemq.user}") String password, RedeliveryPolicy redeliveryPolicy) {
+        return createActiveMqConnectionFactory(url, userName, password, redeliveryPolicy);
+    }
+
+    /**
+     * 创建服务器 MQ 的 JmsTemplate
+     *
+     * @param mqConnectionFactory
+     * @return
+     */
+    @Bean(name = "remoteJmsTemplate")
+    public JmsTemplate remoteJmsTemplate(@Qualifier("remoteActiveMQConnectionFactory") ActiveMQConnectionFactory mqConnectionFactory) {
+        return createJmsTemplate(mqConnectionFactory);
+    }
+
+    /**
+     * 创建服务器 MQ 的监听器容器工厂
+     *
+     * @param mqConnectionFactory
+     * @return
+     */
+    @Bean(name = "remoteJmsQueueListener")
+    public DefaultJmsListenerContainerFactory remoteJmsQueueListenerContainerFactory(@Qualifier("remoteActiveMQConnectionFactory") ActiveMQConnectionFactory mqConnectionFactory) {
+        return createDefaultJmsListenerContainerFactory(mqConnectionFactory);
+    }
+
+
 }

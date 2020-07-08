@@ -54,7 +54,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "chinaPayQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "chinaPayQueue", containerFactory = "localJmsQueueListener")
     public void receiveChinaPayQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -105,7 +105,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "baofuQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "baofuQueue", containerFactory = "localJmsQueueListener")
     public void receiveBaoFuQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -155,7 +155,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "chinaPayClearNetQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "chinaPayClearNetQueue", containerFactory = "localJmsQueueListener")
     public void receiveChinaPayClearNetQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
@@ -212,7 +212,7 @@ public class BackgroundNotificationConsumer {
      * @param textMessage
      * @param session
      */
-    @JmsListener(destination = "PingAnQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "PingAnQueue", containerFactory = "localJmsQueueListener")
     public void receivePingAnQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();

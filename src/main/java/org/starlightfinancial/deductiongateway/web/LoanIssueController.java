@@ -58,7 +58,7 @@ public class LoanIssueController {
      * @param session     会话session
      * @throws JMSException 获取消息异常时抛出
      */
-    @JmsListener(destination = "loanIssueQueue", containerFactory = "jmsQueueListener")
+    @JmsListener(destination = "loanIssueQueue", containerFactory = "localJmsQueueListener")
     public void saveLoanIssueFromMessageQueue(TextMessage textMessage, Session session) throws JMSException {
         try {
             String text = textMessage.getText();
