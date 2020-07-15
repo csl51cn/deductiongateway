@@ -87,13 +87,13 @@
             //自动计算页脚中的年份
             var now = new Date();
             var year = now.getFullYear();
-            $("#footer").html("版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ");
+            $("#footer").html("©版权所有 2011-" + year + " 重庆市两江新区润通小额贷款有限公司 ");
 
             //贷款放款指定人可见
             var session = [[${session}]];
             if (session.loginUser) {
                 var staffId = session.loginUser.staffId;
-                if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211 || staffId == 7524) {
+                if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == 1211 || staffId == 1194) {
                     $("#loanIssueLi").css("display", "block")
                 }
             }
