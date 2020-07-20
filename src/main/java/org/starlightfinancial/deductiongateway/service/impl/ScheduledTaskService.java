@@ -43,6 +43,11 @@ public class ScheduledTaskService {
     Job deductionTemplatBatchImport;
 
     @Autowired
+    @Qualifier("accountAutoBatchImport")
+    Job accountAutoBatchImport;
+
+
+    @Autowired
     private HolidayRepository holidayRepository;
 
     public JobParameters jobParameters;
@@ -162,5 +167,20 @@ public class ScheduledTaskService {
         } catch (Exception e) {
             LOGGER.error("**********导入还款数据到业务系统异常**********", e);
         }
+    }
+
+
+    /**
+     * 每天上午9点20导入昨天放款的代扣信息
+     * @throws Exception
+     */
+    @Scheduled(cron = "00 20 09 * * ? ")
+    public void executeAccountAutoBatchImport() throws Exception {
+        LOGGER.info("**********开始导入昨天放款的代扣卡号**********");
+        LocalDate lastLoanDate = LocalDate.now().minusDays(1);
+        jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("lastLoanDate", lastLoanDate.toString()).toJobParameters();
+        jobLauncher.run(accountAutoBatchImport, jobParameters);
+        LOGGER.info("**********导入昨天放款的代扣卡号成功**********");
+
     }
 }
