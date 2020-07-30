@@ -70,12 +70,31 @@ public class ChinaPayClearNetConfig {
     @Value("${cpcn.quick.realtime.api.charge}")
     private BigDecimal quickRealTimeCharge;
 
+    /**
+     * 除中国银行外的费率
+     */
     @Value("${cpcn.classic.api.charge}")
-    private  BigDecimal  classicCharge;
+    private BigDecimal classicCharge;
 
+    /**
+     * 封底费用
+     */
     @Value("${cpcn.classic.api.lowest.charge}")
     private BigDecimal classicLowestCharge;
 
+    /**
+     * 中国银行费率
+     */
+    @Value("${cpcn.classic.api.BOC.charge}")
+    private BigDecimal bocCharge;
+
+    public BigDecimal getBocCharge() {
+        return bocCharge;
+    }
+
+    public void setBocCharge(BigDecimal bocCharge) {
+        this.bocCharge = bocCharge;
+    }
 
     public String getClassicMemberId() {
         return classicMemberId;
@@ -100,7 +119,6 @@ public class ChinaPayClearNetConfig {
     public void setClassicQueryResultUrl(String classicQueryResultUrl) {
         this.classicQueryResultUrl = classicQueryResultUrl;
     }
-
 
 
     public String getQuickRealTimeSignStatusUrl() {

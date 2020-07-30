@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
+import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.config.ChinaPayClearNetConfig;
 import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
-import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.domain.local.AccountManager;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRepository;
@@ -204,7 +205,16 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
     public void calculateHandlingCharge(MortgageDeduction mortgageDeduction) {
         BigDecimal totalAmount = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
         //中金单笔代扣每笔按金额*费率收手续费费率,并且手续费有最低值,如果低于最低值按照最低值收取费用
-        BigDecimal charge = totalAmount.multiply(chinaPayClearNetConfig.getClassicCharge());
+        //中国银行与其余银行费率不同
+        String bank = mortgageDeduction.getParam1();
+        BigDecimal charge;
+        if (StringUtils.equals(bank, BankCodeEnum.BANK_CODE_04.getId())) {
+            //中国银行
+            charge = totalAmount.multiply(chinaPayClearNetConfig.getBocCharge());
+        } else {
+            //其余银行
+            charge = totalAmount.multiply(chinaPayClearNetConfig.getClassicCharge());
+        }
         if (charge.compareTo(chinaPayClearNetConfig.getClassicLowestCharge()) < 0) {
             charge = chinaPayClearNetConfig.getClassicLowestCharge();
         }
