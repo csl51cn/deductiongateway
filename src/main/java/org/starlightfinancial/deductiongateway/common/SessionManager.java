@@ -58,6 +58,8 @@ public class SessionManager {
         SESSIONID_USER.put(session.getId(), user.getId());
         session.setAttribute("loginUser", user);
         session.removeAttribute("msg");
+        //设置两个小时过期 2 * 60 * 60=7200
+        session.setMaxInactiveInterval(7200);
 
     }
 
@@ -82,8 +84,8 @@ public class SessionManager {
         session.removeAttribute("loginUser");
     }
 
-    public  static  Integer getUserId(String sessionId){
-        return SESSIONID_USER.getOrDefault(sessionId,-1);
+    public static Integer getUserId(String sessionId) {
+        return SESSIONID_USER.getOrDefault(sessionId, -1);
     }
 
 }
