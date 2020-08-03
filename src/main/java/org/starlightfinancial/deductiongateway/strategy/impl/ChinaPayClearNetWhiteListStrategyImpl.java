@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * @author: Senlin.Deng
- * @Description:
+ * @Description: 中金白名单文件生成
  * @date: Created in 2019/7/15 13:09
  * @Modified By:
  */
@@ -49,7 +49,7 @@ public class ChinaPayClearNetWhiteListStrategyImpl implements WhiteListStrategy 
         //文件名格式:商户号_年月日_时分秒
         String fileName = fileNameStringBuilder.append("_").append(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .append("_").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"))).append(".txt").toString();
-        map.put(fileNameStringBuilder.toString(), content.toString());
+        map.put(fileName, content.toString());
         return map;
     }
 }

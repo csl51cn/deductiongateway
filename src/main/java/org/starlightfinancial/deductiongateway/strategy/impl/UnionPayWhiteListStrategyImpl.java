@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * @author: Senlin.Deng
- * @Description:
+ * @Description: 银联白名单文件生成
  * @date: Created in 2019/7/15 13:08
  * @Modified By:
  */
@@ -42,13 +42,15 @@ public class UnionPayWhiteListStrategyImpl implements WhiteListStrategy {
                     .append("\r\n");
 
         });
-
+        //删除最后一个换行符
+        int i = content.lastIndexOf("\r\n");
+        content.delete(i, content.length());
         HashMap<String, String> map = new HashMap<>(4);
         StringBuilder fileNameStringBuilder = new StringBuilder(chinaPayConfig.getClassicMerId());
         //文件名格式例子:商户号_20190709_001_V
         String fileName = fileNameStringBuilder.append("_").append(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .append("_").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"))).append("_V.txt").toString();
-        map.put(fileNameStringBuilder.toString(), content.toString());
+        map.put(fileName, content.toString());
         return map;
     }
 

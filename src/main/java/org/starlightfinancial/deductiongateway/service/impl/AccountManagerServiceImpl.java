@@ -80,14 +80,14 @@ public class AccountManagerServiceImpl implements AccountManagerService {
             public Predicate toPredicate(Root<AccountManager> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 //不为空则加条件
-                if (StringUtils.isNotBlank(accountManagerVO.getContractNo())) {
+                if (StringUtils.isNotBlank(accountManagerVO.getContractNo().trim())) {
                     predicates.add(cb.equal(root.get("contractNo"), accountManagerVO.getContractNo()));
                 }
                 if (StringUtils.isNotBlank(accountManagerVO.getBizNo())) {
-                    predicates.add(cb.equal(root.get("bizNo"), accountManagerVO.getBizNo()));
+                    predicates.add(cb.equal(root.get("bizNo"), accountManagerVO.getBizNo().trim()));
                 }
                 if (StringUtils.isNotBlank(accountManagerVO.getAccountName())) {
-                    predicates.add(cb.equal(root.get("accountName"), accountManagerVO.getAccountName()));
+                    predicates.add(cb.equal(root.get("accountName"), accountManagerVO.getAccountName().trim()));
                 }
 
                 if (Objects.nonNull(accountManagerVO.getLoanStartDate())) {
