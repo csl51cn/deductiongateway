@@ -161,6 +161,10 @@
 
                         </div>
                         <div class="modal-body">
+                            <mark id="mark_yuezhiyu" style="background:#ff8c00 ">
+                                银联,宝付不支持悦至渝服务费代扣.如果选择的渠道不支持代扣悦至渝服务费,系统会自动选择手续费最低的渠道代扣悦至渝服务费
+                            </mark>
+                            <br>
                             <mark id="recommendChannel" style=""></mark>
                             <input type="text" style="display:none;" id="rowId">
                             <div class="flex-container">
@@ -306,9 +310,16 @@
 
         'click .action': function (e, value, row, index) {
             $("#rowId").val(row.id);
+            let mark = $('#mark_yuezhiyu');
+            if (row.target === '悦至渝') {
+                mark.show();
+            } else {
+                mark.hide();
+            }
+
             var recommendChannel = $("#recommendChannel");
             recommendChannel.html("");
-            $.ajax({
+            let getHandlingChargeLowestChannel = $.ajax({
                 url: "/channelDispatchController/getHandlingChargeLowestChannel.do",
                 timeout: 900000,
                 method: "POST",
@@ -323,7 +334,7 @@
                     }
                 }
             });
-            $.ajax({
+            let getEnabledChannel = $.ajax({
                 url: "/channelDispatchController/getEnabledChannel.do",
                 timeout: 900000,
                 method: "POST",
@@ -336,18 +347,26 @@
                         noty({'text': "暂无支持渠道", 'layout': 'center', 'type': 'error', "timeout": "4000"});
                     } else {
                         //所有渠道设置隐藏
-                        jQuery.each(channelObj, function(key, val) {
+                        jQuery.each(channelObj, function (key, val) {
                             $("#" + key).hide();
                         });
                         showChannelSpan.forEach(function (channelID, index) {
                             $("#" + channelID).show();
                         });
-                        $('#actionModal').modal();
+
                     }
 
                 }
             });
+            $.when(
+                getHandlingChargeLowestChannel,
+                getEnabledChannel
+            ).done(function () {
 
+                $('#actionModal').modal();
+            }).fail(function () {
+                noty({'text': "操作失败", 'layout': 'center', 'type': 'error', "timeout": "4000"});
+            });
 
         }
     };
@@ -681,7 +700,7 @@
                                 'text': '执行失败,' + data,
                                 'layout': 'center',
                                 'type': 'error',
-                                "timeout": "4000"
+                                "timeout": "5000"
                             });
 
                         } else {

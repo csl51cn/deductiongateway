@@ -11,7 +11,6 @@ import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,21 +36,22 @@ public class Delivery extends Decorator {
         List<MortgageDeduction> list = ((Splitter) this.route).getDeductionList();
         if (list.size() > 0) {
             //过滤时有可能剔除记录,所以要判断list的元素数量大于0.
-
-            //目前(2019年5月14日)自动代扣不存在同一代扣记录使用多个代扣渠道组合代扣:比如代扣金额5万,中金扣3万,宝付扣1万,银联扣1万.
-            //可以直接使用List中任意一个代扣对象的代扣渠道,这个渠道是在使用OperationStrategy的split方法时设置的
-            OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(list.get(0).getChannel());
+            //目前(2019年5月14日)自动代扣存在同一代扣记录使用多个代扣渠道组合代扣:比如代扣金额5万,中金扣3万,宝付扣1万,银联扣1万.
+            //使用每条代扣记录的代扣渠道进行代扣,这个渠道是在使用OperationStrategy的split方法时设置的
             for (MortgageDeduction mortgageDeduction : list) {
                 try {
-                    operationStrategy.pay(Collections.singletonList(mortgageDeduction));
+                    OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(mortgageDeduction.getChannel());
+                    System.out.println(operationStrategy);
+//                    operationStrategy.pay(Collections.singletonList(mortgageDeduction));
                 } catch (Exception e) {
                     e.printStackTrace();
                     LOGGER.error("自动代扣时异常:合同号{},客户名称{},卡号{},渠道{}"
-                            ,mortgageDeduction.getContractNo(),mortgageDeduction.getCustomerName(),mortgageDeduction.getParam3()
+                            , mortgageDeduction.getContractNo(), mortgageDeduction.getCustomerName(), mortgageDeduction.getParam3()
                             , DeductionChannelEnum.getDescByCode(mortgageDeduction.getChannel()));
                 }
+                result.add(mortgageDeduction);
             }
-            result.addAll(list);
+
         }
 
     }

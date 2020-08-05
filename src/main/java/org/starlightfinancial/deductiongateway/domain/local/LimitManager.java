@@ -75,8 +75,7 @@ public class LimitManager {
     /**
      * 是否支持悦至渝分账:0-否,1-是
      */
-//    @Column(name = "support_yuezhiyu")
-    @Transient
+    @Column(name = "support_yuezhiyu")
     private String supportYuezhiyu;
 
     /**

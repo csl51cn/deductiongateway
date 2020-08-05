@@ -16,6 +16,7 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.domain.local.SysUser;
 import org.starlightfinancial.deductiongateway.service.ChannelDispatchService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
+import org.starlightfinancial.deductiongateway.utility.Constant;
 import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import javax.servlet.http.HttpServletRequest;
@@ -107,10 +108,9 @@ public class ChannelDispatchController {
                     ((SysUser) session.getAttribute("loginUser")).getLoginName(), ipAddress, ids, reGenerate, channel);
 
             List<MortgageDeduction> list = mortgageDeductionService.findMortgageDeductionListByIds(ids);
-            ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<MortgageDeduction>();
-            if ("1".equals(reGenerate)) {
-                for (int i = 0; i < list.size(); i++) {
-                    MortgageDeduction oldMortgageDeduction = list.get(i);
+            ArrayList<MortgageDeduction> mortgageDeductionList = new ArrayList<>();
+            if (Constant.CHECK_SUCCESS.equals(reGenerate)) {
+                for (MortgageDeduction oldMortgageDeduction : list) {
                     MortgageDeduction newMortgageDeduction = new MortgageDeduction();
                     BeanUtils.copyProperties(oldMortgageDeduction, newMortgageDeduction);
                     newMortgageDeduction.setId(null);
@@ -126,7 +126,10 @@ public class ChannelDispatchController {
                 list = mortgageDeductionList;
             }
             channelDispatchService.doPay(list, channel);
-            return "1";
+            return Constant.CHECK_SUCCESS;
+        } catch (UnsupportedOperationException e) {
+            e.printStackTrace();
+            return "代扣渠道不支持当前银行卡";
         } catch (Exception e) {
             e.printStackTrace();
             return "error";

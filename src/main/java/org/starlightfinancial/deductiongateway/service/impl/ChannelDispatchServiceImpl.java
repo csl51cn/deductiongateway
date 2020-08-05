@@ -101,32 +101,26 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
      */
     @Override
     public void doPay(List<MortgageDeduction> list, String channel) throws Exception {
-        if (StringUtils.isNotBlank(channel)) {
-            //选择了代扣渠道,使用指定的代扣渠道先进行拆分,然后进行代扣
-            for (MortgageDeduction mortgageDeduction : list) {
-                Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, channel);
-                OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
-                List<MortgageDeduction> mortgageDeductions = split.get(channel);
-//                operationStrategy.pay(mortgageDeductions);
-                mortgageDeductionRepository.save(mortgageDeductions);
-            }
-        } else {
-            //未选择代扣渠道,计算手续费最低的渠道进行代扣.首次进行代扣时,用此分支
-            for (MortgageDeduction mortgageDeduction : list) {
-                Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, null);
-                if (split.size() == 1) {
-                    String handlingChargeLowestChannel = split.keySet().iterator().next();
-                    OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(handlingChargeLowestChannel);
-                    List<MortgageDeduction> mortgageDeductions = split.get(handlingChargeLowestChannel);
-//                    operationStrategy.pay(mortgageDeductions);
-                    mortgageDeductionRepository.save(mortgageDeductions);
-                } else {
-                    //如果所有渠道都不支持此银行,给出提示
-                    mortgageDeduction.setErrorResult("暂无支持此银行的代扣渠道");
-                    mortgageDeductionRepository.save(mortgageDeduction);
+        for (MortgageDeduction mortgageDeduction : list) {
+            //split 方法会判断channel是否为空,这里不需要先判断
+            Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, channel);
+            if (split.size() == 1) {
+                String handlingChargeLowestChannel = split.keySet().iterator().next();
+                List<MortgageDeduction> mortgageDeductions = split.get(handlingChargeLowestChannel);
+                //可能存在不同的渠道进行代扣同一条记录,服务费与本息通过不同渠道代扣.对拆分后的list的代扣渠道分组,同一代扣渠道统一进行代扣
+                Map<String, List<MortgageDeduction>> collect = mortgageDeductions.stream().collect(Collectors.groupingBy(MortgageDeduction::getChannel));
+                for (Map.Entry<String, List<MortgageDeduction>> entry : collect.entrySet()) {
+                    OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(entry.getKey());
+                    System.out.println(operationStrategy);
+//                    operationStrategy.pay(entry.getValue());
                 }
-
+                mortgageDeductionRepository.save(mortgageDeductions);
+            } else {
+                //如果所有渠道都不支持此银行,给出提示
+                mortgageDeduction.setErrorResult("暂无支持此银行的代扣渠道");
+                mortgageDeductionRepository.save(mortgageDeduction);
             }
+
         }
     }
 
@@ -171,20 +165,25 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
             //如果指定了代扣渠道,使用它进行拆分
             OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
             LimitManager limitManager = limitManagerRepository.findByBankCodeAndEnabledAndChannel(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode(), channel);
-            operationStrategy.split(candidateMap, mortgageDeduction, limitManager,limitManagers);
+            if(Objects.isNull(limitManager)){
+                throw new UnsupportedOperationException("代扣记录合同号["+mortgageDeduction.getContractNo()+"]指定的代扣渠道["+channel+"]不支持当前银行卡所属银行代扣");
+            }
+            operationStrategy.split(candidateMap, mortgageDeduction, limitManager, limitManagers);
         } else {
             //如果没有指定代扣渠道,对每个渠道应用拆分方法
             limitManagers.forEach(limitManager -> {
                 OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(limitManager.getChannel());
-                operationStrategy.split(candidateMap, mortgageDeduction, limitManager,limitManagers);
+                operationStrategy.split(candidateMap, mortgageDeduction, limitManager, limitManagers);
             });
         }
 
         //获取手续费最小的渠道
         Optional<BigDecimal> min = candidateMap.keySet().stream().min(BigDecimal::compareTo);
         List<MortgageDeduction> mortgageDeductions = candidateMap.get(min.get());
+        //将代扣渠道使用逗号分隔,如"代扣渠道1,代扣渠道2"如果是一个渠道只会有"代扣渠道1"
+        String deductionChannel = mortgageDeductions.stream().map(MortgageDeduction::getChannel).distinct().collect(Collectors.joining(","));
         HashMap<String, List<MortgageDeduction>> deductionChannelEnumListHashMap = new HashMap<>(4);
-        deductionChannelEnumListHashMap.put(mortgageDeductions.get(0).getChannel(), mortgageDeductions);
+        deductionChannelEnumListHashMap.put(deductionChannel, mortgageDeductions);
         return deductionChannelEnumListHashMap;
     }
 
@@ -230,7 +229,16 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, null);
         if (split.size() == 1) {
             message = Message.success();
-            message.setData("手续费最少渠道:" + DeductionChannelEnum.getDescByCode(split.keySet().iterator().next()));
+            String handlingChargeLowestChannel = split.keySet().iterator().next();
+            //代扣渠道目前最多有两个,本息渠道与服务费渠道
+            String[] channels = handlingChargeLowestChannel.split(",");
+            String msg;
+            if (channels.length > 1) {
+                msg = "手续费最少的代扣方式如下,本息:" + DeductionChannelEnum.getDescByCode(channels[0]) + ",服务费:" + DeductionChannelEnum.getDescByCode(channels[1]);
+            } else {
+                msg = "手续费最少渠道:" + DeductionChannelEnum.getDescByCode(split.keySet().iterator().next());
+            }
+            message.setData(msg);
         } else {
             message = Message.fail("暂无手续费最少渠道");
         }

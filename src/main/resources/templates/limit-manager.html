@@ -132,6 +132,13 @@
                                             <option value="0">停用</option>
                                         </select></td>
                                     </tr>
+                                    <tr>
+                                        <td><label class="control-label" for="txt_support_yuezhiyu">是否支持悦至渝</label></td>
+                                        <td><select name="support_yuezhiyu" id="txt_support_yuezhiyu">
+                                            <option value="0">不支持</option>
+                                            <option value="1">支持</option>
+                                        </select></td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </form>
@@ -201,6 +208,16 @@
         "0006": "中金代扣",
         "0007": "中金快捷支付",
         "0009": "平安代扣"
+    };
+    const  channelIsSupportYuezhiyu ={
+        "0001": "0",
+        "0002": "0",
+        "0003": "0",
+        "0004": "0",
+        "0005": "0",
+        "0006": "1",
+        "0007": "1",
+        "0009": "0"
     };
     var bank = [[${@systemServiceImpl.findByDicType('726')}]];
     var staffId = [[${session.loginUser.staffId}]];
@@ -291,6 +308,17 @@
             }
         }
 
+    }, {
+        field: 'supportYuezhiyu',
+        title: '悦至渝分账',
+        editable: {
+            type: 'select',
+            title: '是否支持悦至渝',
+            source: [ {value: 0, text: "不支持"},{value: 1, text: "支持"}],
+            validate: function (v) {
+                if (!v) return '不能为空';
+            }
+        }
     }];
     $(function () {
         function initTable() {
@@ -362,7 +390,7 @@
             var channelSelect = $("#txt_channel");
             var queryChannel = $("#query_channel");
             queryChannel.append("<option value=''> 所有</option>")
-            for (var item  in  channelObj) {
+            for (var item in channelObj) {
                 channelSelect.append("<option value='" + item + "'>" + channelObj[item] + "</option>");
                 queryChannel.append("<option value='" + item + "'>" + channelObj[item] + "</option>")
             }
@@ -388,6 +416,11 @@
                     }
                 }
             });
+            channelSelect.change(function(){
+                let selectedChannel = $(this).children('option:selected').val();
+                let supportYuezhiyu= channelIsSupportYuezhiyu[selectedChannel];
+                $("#txt_support_yuezhiyu").val(supportYuezhiyu);
+            })
         }
 
         initEditModal();
