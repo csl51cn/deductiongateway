@@ -33,9 +33,9 @@ public enum ChargeCompanyEnum {
     KANG_RUN("康润"),
 
     /**
-     * 远璟舟
+     * 悦至渝
      */
-    YUAN_JING_ZHOU("远璟舟");
+    YUE_ZHI_YU("悦至渝");
 
     private String value;
 

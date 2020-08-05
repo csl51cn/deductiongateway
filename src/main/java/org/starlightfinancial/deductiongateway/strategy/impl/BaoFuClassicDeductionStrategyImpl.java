@@ -1,13 +1,10 @@
 package org.starlightfinancial.deductiongateway.strategy.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.baofu.domain.RequestParams;
-import org.starlightfinancial.deductiongateway.baofu.rsa.RsaCodingUtil;
-import org.starlightfinancial.deductiongateway.baofu.util.SecurityUtil;
 import org.starlightfinancial.deductiongateway.common.Message;
 import org.starlightfinancial.deductiongateway.config.BaofuConfig;
 import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
@@ -17,12 +14,10 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeductionRep
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.utility.BeanConverter;
-import org.starlightfinancial.deductiongateway.utility.HttpClientUtil;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author: Senlin.Deng
@@ -106,26 +101,26 @@ public class BaoFuClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setPayTime(new Date());
             //设置渠道信息
             mortgageDeduction.setChannel(DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode());
-            try {
-                Map map = HttpClientUtil.send(baofuConfig.getClassicUrl(), requestParams.switchToNvpList());
-                String returnData = (String) map.get("returnData");
-                returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getClassicCerFile());
-                returnData = SecurityUtil.Base64Decode(returnData);
-                JSONObject parse = (JSONObject) JSONObject.parse(returnData);
-                String respMsg = parse.getObject("resp_msg", String.class);
-                if (StringUtils.equals("交易成功", respMsg)) {
-                    mortgageDeduction.setIssuccess("1");
-                    //计算并设置手续费
-                    calculateHandlingCharge(mortgageDeduction);
-                } else {
-                    mortgageDeduction.setIssuccess("0");
-                }
-                String respCode = parse.getObject("resp_code", String.class);
-                mortgageDeduction.setResult(respCode);
-                mortgageDeduction.setErrorResult(respMsg);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Map map = HttpClientUtil.send(baofuConfig.getClassicUrl(), requestParams.switchToNvpList());
+//                String returnData = (String) map.get("returnData");
+//                returnData = RsaCodingUtil.decryptByPubCerFile(returnData, baofuConfig.getClassicCerFile());
+//                returnData = SecurityUtil.Base64Decode(returnData);
+//                JSONObject parse = (JSONObject) JSONObject.parse(returnData);
+//                String respMsg = parse.getObject("resp_msg", String.class);
+//                if (StringUtils.equals("交易成功", respMsg)) {
+//                    mortgageDeduction.setIssuccess("1");
+//                    //计算并设置手续费
+//                    calculateHandlingCharge(mortgageDeduction);
+//                } else {
+//                    mortgageDeduction.setIssuccess("0");
+//                }
+//                String respCode = parse.getObject("resp_code", String.class);
+//                mortgageDeduction.setResult(respCode);
+//                mortgageDeduction.setErrorResult(respMsg);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         }
     }
 

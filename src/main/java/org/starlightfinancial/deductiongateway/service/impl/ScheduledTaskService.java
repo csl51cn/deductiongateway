@@ -125,7 +125,7 @@ public class ScheduledTaskService {
     /**
      * 自动上传代扣成功的记录:从12点-23点每小时处理一次
      */
-    @Scheduled(cron = "0 55 12-23 * * ?")
+//    @Scheduled(cron = "0 55 12-23 * * ?")
     public void uploadAutoAccountingFile() {
         if (!StringUtils.equals(SpringContextUtil.getActiveProfile(), "prod")) {
             //如果不是生产环境,不执行

@@ -107,7 +107,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
                 Map<String, List<MortgageDeduction>> split = split(mortgageDeduction, channel);
                 OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
                 List<MortgageDeduction> mortgageDeductions = split.get(channel);
-                operationStrategy.pay(mortgageDeductions);
+//                operationStrategy.pay(mortgageDeductions);
                 mortgageDeductionRepository.save(mortgageDeductions);
             }
         } else {
@@ -118,7 +118,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
                     String handlingChargeLowestChannel = split.keySet().iterator().next();
                     OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(handlingChargeLowestChannel);
                     List<MortgageDeduction> mortgageDeductions = split.get(handlingChargeLowestChannel);
-                    operationStrategy.pay(mortgageDeductions);
+//                    operationStrategy.pay(mortgageDeductions);
                     mortgageDeductionRepository.save(mortgageDeductions);
                 } else {
                     //如果所有渠道都不支持此银行,给出提示
@@ -165,37 +165,18 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
     @Override
     public Map<String, List<MortgageDeduction>> split(MortgageDeduction mortgageDeduction, String channel) {
         HashMap<BigDecimal, List<MortgageDeduction>> candidateMap = new HashMap<>(10);
+        //首先查询支持这个银行的代扣渠道,然后剔除当前卡号不支持的快捷支付,再用剩下的代扣渠道各自拆分
+        List<LimitManager> limitManagers = getAllowLimitManagers(mortgageDeduction);
         if (StringUtils.isNotBlank(channel)) {
             //如果指定了代扣渠道,使用它进行拆分
             OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
             LimitManager limitManager = limitManagerRepository.findByBankCodeAndEnabledAndChannel(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode(), channel);
-            operationStrategy.split(candidateMap, mortgageDeduction, limitManager);
+            operationStrategy.split(candidateMap, mortgageDeduction, limitManager,limitManagers);
         } else {
-            //如果没有指定代扣渠道,首先查询支持这个银行的代扣渠道,然后剔除当前卡号不支持的快捷支付,再用剩下的代扣渠道各自拆分
-            List<LimitManager> limitManagers = limitManagerRepository.findByBankCodeAndEnabled(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode());
-            AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(),
-                    mortgageDeduction.getParam3(), mortgageDeduction.getCustomerName(), mortgageDeduction.getParam6());
-            if (Objects.nonNull(accountManager)) {
-                //判断银行卡号是否绑定快捷支付,来决定是否要删除快捷支付的代扣渠道
-                if (!StringUtils.equals(String.valueOf(accountManager.getUnionpayIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
-                    limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode()));
-                }
-                if (!StringUtils.equals(String.valueOf(accountManager.getBaofuIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
-                    limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode()));
-                }
-                if (!StringUtils.equals(String.valueOf(accountManager.getChinaPayClearNetIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
-                    limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getCode()));
-                }
-                if (!StringUtils.equals(String.valueOf(accountManager.getPingAnCommercialEntrustIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
-                    limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.PING_AN_COMMERCIAL_ENTRUST.getCode()));
-                }
-            }
-
-
-            //对每个渠道应用拆分方法
+            //如果没有指定代扣渠道,对每个渠道应用拆分方法
             limitManagers.forEach(limitManager -> {
                 OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(limitManager.getChannel());
-                operationStrategy.split(candidateMap, mortgageDeduction, limitManager);
+                operationStrategy.split(candidateMap, mortgageDeduction, limitManager,limitManagers);
             });
         }
 
@@ -205,6 +186,35 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         HashMap<String, List<MortgageDeduction>> deductionChannelEnumListHashMap = new HashMap<>(4);
         deductionChannelEnumListHashMap.put(mortgageDeductions.get(0).getChannel(), mortgageDeductions);
         return deductionChannelEnumListHashMap;
+    }
+
+
+    /**
+     * 通过银行卡所属银行获取允许的代扣渠道
+     *
+     * @param mortgageDeduction 代扣信息
+     * @return 代扣渠道
+     */
+    private List<LimitManager> getAllowLimitManagers(MortgageDeduction mortgageDeduction) {
+        List<LimitManager> limitManagers = limitManagerRepository.findByBankCodeAndEnabled(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode());
+        AccountManager accountManager = accountManagerRepository.findByContractNoAndAccountAndAccountNameAndCertificateNo(mortgageDeduction.getContractNo(),
+                mortgageDeduction.getParam3(), mortgageDeduction.getCustomerName(), mortgageDeduction.getParam6());
+        if (Objects.nonNull(accountManager)) {
+            //判断银行卡号是否绑定快捷支付,来决定是否要删除快捷支付的代扣渠道
+            if (!StringUtils.equals(String.valueOf(accountManager.getUnionpayIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
+                limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_EXPRESS_REALTIME.getCode()));
+            }
+            if (!StringUtils.equals(String.valueOf(accountManager.getBaofuIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
+                limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode()));
+            }
+            if (!StringUtils.equals(String.valueOf(accountManager.getChinaPayClearNetIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
+                limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_QUICK.getCode()));
+            }
+            if (!StringUtils.equals(String.valueOf(accountManager.getPingAnCommercialEntrustIsSigned()), ConstantsEnum.SUCCESS.getCode())) {
+                limitManagers.removeIf(limitManager -> StringUtils.equals(limitManager.getChannel(), DeductionChannelEnum.PING_AN_COMMERCIAL_ENTRUST.getCode()));
+            }
+        }
+        return limitManagers;
     }
 
     /**

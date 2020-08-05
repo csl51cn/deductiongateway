@@ -227,10 +227,15 @@ public class BeanConverter {
         }
         baoFuRequestParams.setTxnAmt(String.valueOf(m1 + m2));
         StringBuilder shareInfo = new StringBuilder();
-        shareInfo.append(baofuConfig.getProtocolMemberId()).append(",").append(m1);
+        if (m1 > 0) {
+            shareInfo.append(baofuConfig.getProtocolMemberId()).append(",").append(m1);
+        }
         //设置分账信息 有服务费时才分账
         if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
-            shareInfo.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode()));
+            if (m1 > 0) {
+                shareInfo.append(";");
+            }
+            shareInfo.append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.BAO_FU_PROTOCOL_PAY.getCode()));
             shareInfo.append(",").append(m2);
         }
         baoFuRequestParams.setShareInfo(shareInfo.toString());
@@ -377,9 +382,15 @@ public class BeanConverter {
 
         //设置分账信息 有服务费时才分账
         StringBuilder shareInfo = new StringBuilder();
-        shareInfo.append(baofuConfig.getClassicMemberId()).append(",").append(m1);
+        if (m1 > 0) {
+            shareInfo.append(baofuConfig.getClassicMemberId()).append(",").append(m1);
+        }
         if (mortgageDeduction.getSplitData2().doubleValue() > 0) {
-            shareInfo.append(";").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode()))
+            if (shareInfo.length() > 0) {
+                //如果m1>0,需要添加分号分隔m2的信息
+                shareInfo.append(";");
+            }
+            shareInfo.append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.BAO_FU_CLASSIC_DEDUCTION.getCode()))
                     .append(",").append(m2);
         }
         dataContent.setShareInfo(shareInfo.toString());
@@ -676,7 +687,7 @@ public class BeanConverter {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.KAI_YUE_CCB_0334.getCode());
                 }
 
-            } else if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())){
+            } else if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.RUN_KUN.getValue())) {
                 //润坤
                 if (isChinaPayClearNet || isPingAn) {
                     //中金支付
@@ -684,9 +695,9 @@ public class BeanConverter {
                 } else {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
                 }
-            }else {
+            } else {
                 //远璟舟
-                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.YUAN_JING_ZHOU.getCode());
+                serviceFeeRepaymentInfo.setBankName(AccountBankEnum.YUE_ZHI_YU.getCode());
             }
 
             //设置还款类别

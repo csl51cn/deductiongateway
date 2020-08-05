@@ -73,6 +73,13 @@ public class LimitManager {
 
 
     /**
+     * 是否支持悦至渝分账:0-否,1-是
+     */
+//    @Column(name = "support_yuezhiyu")
+    @Transient
+    private String supportYuezhiyu;
+
+    /**
      * 创建人
      */
     @Column(name = "create_by")
@@ -197,5 +204,13 @@ public class LimitManager {
 
     public void setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+    }
+
+    public String getSupportYuezhiyu() {
+        return supportYuezhiyu;
+    }
+
+    public void setSupportYuezhiyu(String supportYuezhiyu) {
+        this.supportYuezhiyu = supportYuezhiyu;
     }
 }
