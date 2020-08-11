@@ -11,6 +11,7 @@ import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategyContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,8 +42,7 @@ public class Delivery extends Decorator {
             for (MortgageDeduction mortgageDeduction : list) {
                 try {
                     OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(mortgageDeduction.getChannel());
-                    System.out.println(operationStrategy);
-//                    operationStrategy.pay(Collections.singletonList(mortgageDeduction));
+                    operationStrategy.pay(Collections.singletonList(mortgageDeduction));
                 } catch (Exception e) {
                     e.printStackTrace();
                     LOGGER.error("自动代扣时异常:合同号{},客户名称{},卡号{},渠道{}"

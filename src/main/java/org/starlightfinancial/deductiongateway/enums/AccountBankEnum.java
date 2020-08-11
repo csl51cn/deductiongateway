@@ -45,9 +45,9 @@ public enum AccountBankEnum {
     KANG_RUN_0101("2109", "招行0101"),
 
     /**
-     * 悦至渝入账银行:工行3435
+     * 悦至渝入账银行:兴业5279
      */
-    YUE_ZHI_YU("2121", "工行3435");
+    YUE_ZHI_YU("2121", "兴业5279");
 
 
     private String code;

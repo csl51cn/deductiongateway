@@ -111,8 +111,7 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
                 Map<String, List<MortgageDeduction>> collect = mortgageDeductions.stream().collect(Collectors.groupingBy(MortgageDeduction::getChannel));
                 for (Map.Entry<String, List<MortgageDeduction>> entry : collect.entrySet()) {
                     OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(entry.getKey());
-                    System.out.println(operationStrategy);
-//                    operationStrategy.pay(entry.getValue());
+                    operationStrategy.pay(entry.getValue());
                 }
                 mortgageDeductionRepository.save(mortgageDeductions);
             } else {

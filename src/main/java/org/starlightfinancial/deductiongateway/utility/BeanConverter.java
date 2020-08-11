@@ -677,7 +677,7 @@ public class BeanConverter {
             //设置服务费入账公司
             serviceFeeRepaymentInfo.setChargeCompany(mortgageDeduction.getTarget());
             //设置服务费入账银行:铠岳的银联,宝付,平安渠道都是使用的相同银行账户进行商户开户的,铠岳的中金支付开户是另外的银行账户;润坤的银联,宝付渠道一致,润坤的中金与平安渠道一致
-            //      远璟舟中金,宝付开户用的银行账户是一样的
+            // 悦至渝目前只有一个账户
             if (StringUtils.equals(serviceFeeRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.KAI_YUE.getValue())) {
                 //铠岳
                 if (isChinaPayClearNet) {
@@ -696,7 +696,7 @@ public class BeanConverter {
                     serviceFeeRepaymentInfo.setBankName(AccountBankEnum.RUN_KUN_CMBC_0702.getCode());
                 }
             } else {
-                //远璟舟
+                //悦至渝
                 serviceFeeRepaymentInfo.setBankName(AccountBankEnum.YUE_ZHI_YU.getCode());
             }
 
@@ -794,6 +794,10 @@ public class BeanConverter {
             if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.THIRD_PARTY_CONSULT.getValue())) {
                 //第三方咨询公司
                 repaymentInfo.setBankName(AccountBankEnum.THIRD_PARTY_CONSULT_BCQ_6559.getCode());
+            }
+            if (StringUtils.equals(nonDeductionRepaymentInfo.getChargeCompany(), ChargeCompanyEnum.YUE_ZHI_YU.getValue())) {
+                //悦至渝
+                repaymentInfo.setBankName(AccountBankEnum.YUE_ZHI_YU.getCode());
             }
         }
 
