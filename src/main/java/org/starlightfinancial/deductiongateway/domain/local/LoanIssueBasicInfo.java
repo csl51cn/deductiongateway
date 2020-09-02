@@ -44,6 +44,13 @@ public class LoanIssueBasicInfo {
     @Column(name = "business_no")
     private String businessNo;
 
+
+    /**
+     * 主借人
+     */
+    @Column(name = "customer_name")
+    private String customerName;
+
     /**
      * 收款人类型:1-个人,2-企业
      */
@@ -325,5 +332,13 @@ public class LoanIssueBasicInfo {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 }
