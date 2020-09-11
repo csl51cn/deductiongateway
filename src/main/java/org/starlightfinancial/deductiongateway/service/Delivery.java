@@ -1,5 +1,6 @@
 package org.starlightfinancial.deductiongateway.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class Delivery extends Decorator {
                 try {
                     OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(mortgageDeduction.getChannel());
                     operationStrategy.pay(Collections.singletonList(mortgageDeduction));
-                    if (mortgageDeduction.getErrorResult().contains("不足")) {
+                    if (StringUtils.isNotBlank(mortgageDeduction.getErrorResult()) && mortgageDeduction.getErrorResult().contains("不足")) {
                         //只要额度/余额不足,后面不再自动代扣了
                         break;
                     }
