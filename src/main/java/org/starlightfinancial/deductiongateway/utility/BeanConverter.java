@@ -907,17 +907,23 @@ public class BeanConverter {
         tx2011Req.setAmount(m1 + m2);
         //设置分账两个相关参数
         //设置分账方式:按金额分账,10不分账,20按比例分账,30按金额分账
-        if (m2 != 0) {
+        StringBuilder settlementFlag =new StringBuilder();
+        if (m1 > 0 && m2 > 0) {
             tx2011Req.setSplitType("30");
-        } else {
-            tx2011Req.setSplitType("10");
-        }
-        //不分账settlementFlag格式为0001
-        StringBuilder settlementFlag = new StringBuilder("0001");
-        if (StringUtils.isNotBlank(mortgageDeduction.getTarget()) && m2 != 0) {
             //设置分账信息:格式0001_5000,0002_1000,0003_4000，总金额是10000分，0001结算标识分账5000分，0002结算标识分账1000分，0003结算标识分账4000分
-            settlementFlag.append("_").append(m1);
+            settlementFlag.append("0001").append("_").append(m1);
             settlementFlag.append(",").append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode())).append("_").append(m2);
+        } else {
+            //此时m1<=0或者m2<=0
+            tx2011Req.setSplitType("10");
+            //不分账settlementFlag格式为0001(商户号)
+            if(m1>0){
+                settlementFlag.append("0001");
+            }
+
+            if(m2>0){
+                settlementFlag.append(serviceCompanyConfig.getServiceCompanyCode(mortgageDeduction.getTarget(), DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode()));
+            }
         }
         tx2011Req.setSettlementFlag(settlementFlag.toString());
 
