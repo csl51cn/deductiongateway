@@ -167,6 +167,7 @@
                             <br>
                             <mark id="recommendChannel" style=""></mark>
                             <input type="text" style="display:none;" id="rowId">
+                            <input type="text" style="display:none;" id="isSuccess">
                             <div class="flex-container">
                                  <span class="half-width-span" id="0003"> <img src="/img/unionpay.png"
                                                                                style="max-width:30%;">
@@ -310,6 +311,7 @@
 
         'click .action': function (e, value, row, index) {
             $("#rowId").val(row.id);
+            $("#isSuccess").val(row.issuccess)
             let mark = $('#mark_yuezhiyu');
             if (row.target === '悦至渝') {
                 mark.show();
@@ -423,7 +425,7 @@
             } else if (value == '0') {
                 return '交易失败';
             } else {
-                return '暂无结果,请查询'
+                return '未发起代扣交易'
             }
         }
     }, {
@@ -591,43 +593,43 @@
         <!--银联快捷支付按钮功能-->
         // $("#deductionBtn").click(function () {
         //     var url  ="/channelDispatchController/doPay.do";
-        //     executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0001"},url);
+        //     executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1","channel":"0001"},url);
         // });
         <!--宝付协议支付按钮功能-->
         $("#baoFuDeductionBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0002"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0002"}, url);
         });
 
         <!--银联白名单-->
         $("#chinaPayClassicDeductionBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0003"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0003"}, url);
         });
         <!--银联新无卡代扣-->
         // $("#chinaPayNewDeductionBtn").click(function () {
         //     var url  ="/channelDispatchController/doPay.do";
-        //     executeAction({"ids": $("#rowId").val(), "reGenerate": "1","channel":"0004"},url);
+        //     executeAction({"ids": $("#rowId").val(), "reGenerate":$("#isSuccess").val() === "2" ? "0" : "1","channel":"0004"},url);
         // });
         <!--宝付代扣-->
         $("#baoFuClassicDeductionBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0005"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0005"}, url);
         });
         <!--中金单笔代扣-->
         $("#chinaPayClearNetClassicDeductionBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0006"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0006"}, url);
         });
         <!--中金协议支付-->
         $("#chinaPayClearNetClassicQuickBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0007"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0007"}, url);
         });
         <!--平安商委支付-->
         $("#pingAnDeductionBtn").click(function () {
             var url = "/channelDispatchController/doPay.do";
-            executeAction({"ids": $("#rowId").val(), "reGenerate": "1", "channel": "0009"}, url);
+            executeAction({"ids": $("#rowId").val(), "reGenerate": $("#isSuccess").val() === "2" ? "0" : "1", "channel": "0009"}, url);
         });
 
         var value;

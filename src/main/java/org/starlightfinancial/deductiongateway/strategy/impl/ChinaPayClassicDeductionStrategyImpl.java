@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.common.Message;
+import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
 import org.starlightfinancial.deductiongateway.domain.local.*;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.strategy.OperationStrategy;
@@ -153,8 +153,6 @@ public class ChinaPayClassicDeductionStrategyImpl implements OperationStrategy {
             mortgageDeduction.setHandlingCharge(chinaPayConfig.getLevelThree());
         }
     }
-
-
 
 
 }

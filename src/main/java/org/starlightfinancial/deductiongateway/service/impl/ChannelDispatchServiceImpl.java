@@ -161,18 +161,18 @@ public class ChannelDispatchServiceImpl implements ChannelDispatchService {
         //首先查询支持这个银行的代扣渠道,然后剔除当前卡号不支持的快捷支付,再用剩下的代扣渠道各自拆分
         List<LimitManager> limitManagers = getAllowLimitManagers(mortgageDeduction);
         if (StringUtils.isNotBlank(channel)) {
-            //如果指定了代扣渠道,使用它进行拆分
+            //如果指定了代扣渠道,使用它进行拆分,但是可能存在指定的代扣渠道不支持当前卡所属银行
             OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(channel);
             LimitManager limitManager = limitManagerRepository.findByBankCodeAndEnabledAndChannel(mortgageDeduction.getParam1(), ConstantsEnum.SUCCESS.getCode(), channel);
-            if(Objects.isNull(limitManager)){
-                throw new UnsupportedOperationException("代扣记录合同号["+mortgageDeduction.getContractNo()+"]指定的代扣渠道["+channel+"]不支持当前银行卡所属银行代扣");
+            if (Objects.isNull(limitManager)) {
+                throw new UnsupportedOperationException("代扣记录合同号[" + mortgageDeduction.getContractNo() + "]指定的代扣渠道[" + channel + "]不支持当前银行卡所属银行代扣");
             }
-            operationStrategy.split(candidateMap, mortgageDeduction, limitManager, limitManagers);
+            operationStrategy.splitWithSingleFeeType(candidateMap, mortgageDeduction, limitManager, limitManagers);
         } else {
             //如果没有指定代扣渠道,对每个渠道应用拆分方法
             limitManagers.forEach(limitManager -> {
                 OperationStrategy operationStrategy = operationStrategyContext.getOperationStrategy(limitManager.getChannel());
-                operationStrategy.split(candidateMap, mortgageDeduction, limitManager, limitManagers);
+                operationStrategy.splitWithSingleFeeType(candidateMap, mortgageDeduction, limitManager, limitManagers);
             });
         }
 

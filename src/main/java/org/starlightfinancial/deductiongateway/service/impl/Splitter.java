@@ -15,10 +15,7 @@ import org.starlightfinancial.deductiongateway.utility.Utility;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by sili.chen on 2017/8/23
@@ -35,7 +32,7 @@ public class Splitter extends Decorator {
     private DefaultChannelService defaultChannelService;
     private List<MortgageDeduction> deductionList;
 
-    public List getDeductionList() {
+    public List<MortgageDeduction> getDeductionList() {
         return deductionList;
     }
 
@@ -52,25 +49,54 @@ public class Splitter extends Decorator {
             boolean isHoliday = Utility.isHoliday(LocalDate.now());
             BigDecimal total = mortgageDeduction.getSplitData1().add(mortgageDeduction.getSplitData2());
             boolean matchLimit = total.compareTo(BigDecimal.valueOf(50000)) >= 0 && total.compareTo(BigDecimal.valueOf(100000)) <= 0;
-            Map<String, List<MortgageDeduction>> split;
+            this.deductionList = new ArrayList<>();
             DefaultChannel defaultChannel = defaultChannelService.getByBankCode(mortgageDeduction.getParam1());
+            //如果一条记录中同时有本息和服务费,分离本息和服务费
+            List<MortgageDeduction> mortgageDeductions = splitPrincipalInterestAndServiceFee(mortgageDeduction);
+            String channelString;
             if (Objects.nonNull(defaultChannel) && StringUtils.isNotBlank(DeductionChannelEnum.getOrderDescByCode(defaultChannel.getDefaultChannel()))) {
                 //如果默认渠道记录不为空,并且设置的默认渠道是有效的,直接使用
-                split = channelDispatchService.split(mortgageDeduction, defaultChannel.getDefaultChannel());
+                channelString = defaultChannel.getDefaultChannel();
             } else if (isICBC && isHoliday & matchLimit) {
-                split = channelDispatchService.split(mortgageDeduction, DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode());
+                //在节假日中,工商银行扣款金额在[5万,10万]范围,使用中金代扣
+                channelString = DeductionChannelEnum.CHINA_PAY_CLEAR_NET_DEDUCTION.getCode();
             } else {
-                split = channelDispatchService.split(mortgageDeduction, null);
+                //没有指定渠道
+                channelString = null;
             }
-            if (split.size() == 1) {
-                this.deductionList = split.get(split.keySet().iterator().next());
-            } else {
-                this.deductionList = Collections.EMPTY_LIST;
+
+            for (MortgageDeduction deduction : mortgageDeductions) {
+                //根据限额拆分记录
+                Map<String, List<MortgageDeduction>> stringListMap = channelDispatchService.split(deduction, channelString);
+                stringListMap.forEach((channel, list) -> deductionList.addAll(list));
             }
         } else {
             this.deductionList = Collections.EMPTY_LIST;
         }
-
-
     }
+
+    /**
+     * 分割本息和服务费.如果一条代扣记录有本息和服务费,需要将它分成两条,一条只有本息,一条只有服务费.
+     *
+     * @return 返回list
+     */
+    private List<MortgageDeduction> splitPrincipalInterestAndServiceFee(MortgageDeduction mortgageDeduction) {
+        //同时有本息和服务费,需要拆分
+        boolean needSplit = mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) > 0 & mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0;
+        ArrayList<MortgageDeduction> mortgageDeductions = new ArrayList<MortgageDeduction>();
+        if (needSplit) {
+            MortgageDeduction newDeduction = mortgageDeduction.cloneSelf();
+            //设置原来代扣记录的服务费为0
+            mortgageDeduction.setSplitData2(BigDecimal.ZERO);
+            //设置复制的代扣记录的本息为0
+            newDeduction.setSplitData1(BigDecimal.ZERO);
+            mortgageDeductions.add(mortgageDeduction);
+            mortgageDeductions.add(newDeduction);
+        } else {
+            mortgageDeductions.add(mortgageDeduction);
+        }
+        return mortgageDeductions;
+    }
+
+
 }

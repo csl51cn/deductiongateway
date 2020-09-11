@@ -435,13 +435,13 @@ public class MortgageDeduction implements Serializable, Cloneable {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        return  super.clone();
+        return super.clone();
     }
 
-    public MortgageDeduction cloneSelf(){
-        MortgageDeduction o  =null;
+    public MortgageDeduction cloneSelf() {
+        MortgageDeduction o = null;
         try {
-            o= (MortgageDeduction) clone();
+            o = (MortgageDeduction) clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }

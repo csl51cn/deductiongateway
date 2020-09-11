@@ -61,7 +61,7 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
         PageRequest pageRequest = Utility.buildPageRequest(pageBean, 1);
         Page<DeductionTemplate> deductionTemplatePage = deductionTemplateRepository.findAll(specification, pageRequest);
         if (deductionTemplatePage.hasContent()) {
-            /**将代扣未扣完的代扣模板记录筛选出来,使用合同号,代扣起止日期查询已执行了的代扣记录,并计算当前已扣本息和服务费,
+            /*将代扣未扣完的代扣模板记录筛选出来,使用合同号,代扣起止日期查询已执行了的代扣记录,并计算当前已扣本息和服务费,
              然后比较计划扣款金额,更新代扣模板状态,剩余本息和服务费
              */
             ArrayList<DeductionTemplate> failContractNos = new ArrayList<>();
@@ -113,12 +113,12 @@ public class DeductionTemplateServiceImpl implements DeductionTemplateService {
         };
         List<MortgageDeduction> deductedRecords = mortgageDeductionRepository.findAll(deductedSpecification);
         //保存已扣本息的map
-        HashMap<String, BigDecimal> bxMap = new HashMap<String, BigDecimal>();
+        HashMap<String, BigDecimal> bxMap = new HashMap<>();
         //保存已扣服务费的map
-        HashMap<String, BigDecimal> fwfMap = new HashMap<String, BigDecimal>();
+        HashMap<String, BigDecimal> fwfMap = new HashMap<>();
         for (MortgageDeduction mortgageDeduction : deductedRecords) {
-            bxMap.merge(mortgageDeduction.getContractNo(), mortgageDeduction.getSplitData1(), (oldValue, newValue) -> oldValue.add(newValue));
-            fwfMap.merge(mortgageDeduction.getContractNo(), mortgageDeduction.getSplitData2(), (oldValue, newValue) -> oldValue.add(newValue));
+            bxMap.merge(mortgageDeduction.getContractNo(), mortgageDeduction.getSplitData1(), BigDecimal::add);
+            fwfMap.merge(mortgageDeduction.getContractNo(), mortgageDeduction.getSplitData2(), BigDecimal::add);
         }
 
         //已扣本息总额

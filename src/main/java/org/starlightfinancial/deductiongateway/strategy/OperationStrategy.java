@@ -9,10 +9,7 @@ import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.Constant;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -78,7 +75,7 @@ public interface OperationStrategy {
     /**
      * 根据单笔限额拆分记录
      *
-     * @param candidateMap      候选的拆分方案
+     * @param candidateMap      候选的拆分方案Map<手续费,拆分list>
      * @param mortgageDeduction 代扣信息
      * @param limitManager      限额
      * @return
@@ -127,9 +124,9 @@ public interface OperationStrategy {
     }
 
     /**
-     * 根据限额拆分代扣记录
+     * 根据限额拆分代扣记录.本息与服务费是一条记录
      *
-     * @param candidateMap      候选的拆分方案
+     * @param candidateMap      候选的拆分方案Map<手续费,拆分list>
      * @param mortgageDeduction 代扣信息
      * @param limitManager      限额
      * @param limitManagers     支持当前代扣卡的所有代扣渠道
@@ -198,7 +195,7 @@ public interface OperationStrategy {
             });
             //按升序排序后的服务费手续费
             List<BigDecimal> collect = serviceFeeMap.keySet().stream().sorted().collect(Collectors.toList());
-            //服务费手续费最低的代扣渠道
+            //服务费手续费最低的代扣渠道的拆分方案
             List<MortgageDeduction> mortgageDeductions = serviceFeeMap.get(collect.get(0));
             result.addAll(mortgageDeductions);
             BigDecimal handlingCharge = result.stream().map(MortgageDeduction::getHandlingCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -206,10 +203,85 @@ public interface OperationStrategy {
         } else {
             //如果当前服务费入账账户不是悦至渝或者当前代扣渠道支持悦至渝分账,使用单个渠道代扣
             split(candidateMap, mortgageDeduction, limitManager);
-
         }
 
     }
+
+    /**
+     * 传入的代扣记录只有一种费用类型,要么是本息,要么是服务费.
+     * 根据限额拆分代扣记录
+     *
+     * @param candidateMap      候选的拆分方案Map<手续费,拆分list>
+     * @param mortgageDeduction 代扣信息
+     * @param limitManager      限额
+     * @param limitManagers     支持当前代扣卡的所有代扣渠道
+     */
+    default void splitWithSingleFeeType(Map<BigDecimal, List<MortgageDeduction>> candidateMap, MortgageDeduction mortgageDeduction, LimitManager limitManager, List<LimitManager> limitManagers) {
+        //判断是有本息还是服务费,如果都有,使用上面的split方法拆分.
+        boolean hasPrincipalAndInterest = mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) > 0;
+        boolean hasServiceFee = mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0;
+        if (hasPrincipalAndInterest && hasServiceFee) {
+            //同时有本息和服务费,可能是代扣新版本以前的记录
+            split(candidateMap, mortgageDeduction, limitManager, limitManagers);
+            return;
+        }
+
+        List<LimitManager> filteredLimitMangers;
+        //只有服务费并且入账账户是悦至渝并且当前代扣渠道不支持悦至渝分账
+        boolean isYuezhiyu = hasServiceFee && StringUtils.equals(mortgageDeduction.getTarget(), "悦至渝") &&
+                !StringUtils.equals(limitManager.getSupportYuezhiyu(), Constant.CHECK_SUCCESS);
+        if (isYuezhiyu) {
+            //过滤不支持悦至渝的代扣渠道
+            filteredLimitMangers = limitManagers.stream().filter(l -> StringUtils.equals(l.getSupportYuezhiyu(), Constant.CHECK_SUCCESS)).collect(Collectors.toList());
+        } else {
+            //使用指定的代扣渠道 limitManager
+            filteredLimitMangers = Collections.singletonList(limitManager);
+        }
+        //手续费与拆分方案映射Map
+        TreeMap<BigDecimal, List<MortgageDeduction>> handlingFeeMap = new TreeMap<>();
+
+        // map<手续费,拆分方案>
+        filteredLimitMangers.forEach(limit -> {
+            ArrayList<MortgageDeduction> mortgageDeductions = new ArrayList<>();
+            BigDecimal singleLimit = limit.getSingleLimit();
+            MortgageDeduction candidateMortgageDeduction = mortgageDeduction.cloneSelf();
+            candidateMortgageDeduction.setChannel(limit.getChannel());
+            BigDecimal deductionAmount;
+            if (hasPrincipalAndInterest) {
+                deductionAmount = candidateMortgageDeduction.getSplitData1();
+            } else {
+                deductionAmount = candidateMortgageDeduction.getSplitData2();
+            }
+            while (deductionAmount.compareTo(singleLimit) > 0) {
+                //如果代扣金额>单笔限额,新建一笔代扣记录,金额为单笔限额,将代扣金额-单笔限额继续循环直到≤单笔限额
+                MortgageDeduction newMortgageDeduction = candidateMortgageDeduction.cloneSelf();
+                newMortgageDeduction.setId(null);
+                deductionAmount = deductionAmount.subtract(singleLimit);
+                if (hasPrincipalAndInterest) {
+                    newMortgageDeduction.setSplitData1(singleLimit);
+                    newMortgageDeduction.setSplitData2(BigDecimal.ZERO);
+                    candidateMortgageDeduction.setSplitData1(deductionAmount);
+                } else {
+                    newMortgageDeduction.setSplitData1(BigDecimal.ZERO);
+                    newMortgageDeduction.setSplitData2(singleLimit);
+                    candidateMortgageDeduction.setSplitData2(deductionAmount);
+                }
+                calculateHandlingCharge(newMortgageDeduction);
+                mortgageDeductions.add(newMortgageDeduction);
+            }
+            calculateHandlingCharge(candidateMortgageDeduction);
+            mortgageDeductions.add(candidateMortgageDeduction);
+            BigDecimal handlingCharge = mortgageDeductions.stream().map(MortgageDeduction::getHandlingCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+            handlingFeeMap.put(handlingCharge, mortgageDeductions);
+        });
+        //按升序排序后的手续费
+        List<BigDecimal> collect = handlingFeeMap.keySet().stream().sorted().collect(Collectors.toList());
+        //手续费最低的代扣渠道的拆分方案
+        List<MortgageDeduction> mortgageDeductions = handlingFeeMap.get(collect.get(0));
+        BigDecimal handlingCharge = mortgageDeductions.stream().map(MortgageDeduction::getHandlingCharge).reduce(BigDecimal.ZERO, BigDecimal::add);
+        candidateMap.put(handlingCharge, mortgageDeductions);
+    }
+
 
     /**
      * 平安域账户注册

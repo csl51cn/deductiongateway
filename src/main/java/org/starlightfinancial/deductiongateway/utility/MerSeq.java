@@ -2,13 +2,26 @@ package org.starlightfinancial.deductiongateway.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MerSeq {
 
     public static int seq = 0;
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     public static int tickSeq() {
-        return seq++;
+        int seqNo;
+        LOCK.lock();
+        try {
+            seqNo = seq++;
+            if (seq < 0) {
+                //溢出后重置为0
+                seq = 0;
+            }
+        } finally {
+            LOCK.unlock();
+        }
+        return seqNo;
     }
 
     public static String format(int num, int width) {

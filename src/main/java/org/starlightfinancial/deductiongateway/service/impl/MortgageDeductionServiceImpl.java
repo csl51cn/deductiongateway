@@ -574,7 +574,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         if (typeArr.length == 1) {
             sort = new Sort(Sort.Direction.ASC, "id");
         } else {
-            sort = new Sort(Sort.Direction.DESC, "id");
+            sort = new Sort(Sort.Direction.DESC, "payTime","id");
         }
         Integer pageNumber = pageBean.getPageNumber();
         Integer pageSize = pageBean.getPageSize();
