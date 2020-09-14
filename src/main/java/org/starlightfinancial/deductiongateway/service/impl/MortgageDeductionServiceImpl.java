@@ -187,6 +187,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                     } else {
                         mortgageDeduction.setTarget("悦至渝");
                     }
+                    // 设置是否上传自动入账表格
+                    mortgageDeduction.setIsUploaded("0");
                     if (mortgageDeduction.getParam3() != null && !"".equals(mortgageDeduction.getParam3())) {
                         if (mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) != 0
                                 && mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) != 0) {
@@ -196,8 +198,6 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                             list.add(mortgageDeduction);
                         }
                     }
-                    //设置是否上传自动入账表格
-                    mortgageDeduction.setIsUploaded("0");
                 }
             }
             workbook.close();
