@@ -531,7 +531,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     @Override
     public void uploadAutoAccountingFile() throws IOException, ClassNotFoundException {
         Date yesterday = Utility.toMidNight(Utility.addDay(new Date(), -1));
-        List<MortgageDeduction> original = mortgageDeductionRepository.findByIsUploadedAndIssuccessAndCreateDateAfterOrderByPayTimeDesc(String.valueOf(0), String.valueOf(1), yesterday);
+        List<MortgageDeduction> original = mortgageDeductionRepository.findByIsUploadedAndIssuccessAndPayTimeAfterOrderByPayTimeDesc(String.valueOf(0), String.valueOf(1), yesterday);
         List<MortgageDeduction> mortgageDeductions = Utility.deepCopy(original);
         if (mortgageDeductions.size() <= 0) {
             log.info("暂无需要上传的代扣记录");

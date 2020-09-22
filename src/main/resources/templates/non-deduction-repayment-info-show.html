@@ -361,7 +361,7 @@
 
 <script type="text/javascript" th:inline="javascript">
     var staffId = [[${session.loginUser.staffId}]];
-    if (staffId == 1 || staffId == 3384 || staffId == 7525 || staffId == 7526) {
+    if (staffId == 1 || staffId == 2337 || staffId == 7525 || staffId == 7526) {
         $("#uploadBtn").show();
         $("#freshBtn").show();
         $("#splitBtn").show();
@@ -667,7 +667,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 3384 || staffId == 7525 || staffId == 7526 || staffId == 1194) {
+                    if (staffId == 1 || staffId == 1304 || staffId == 2337 || staffId == row.createId || staffId == 2337 || staffId == 7525 || staffId == 7526 || staffId == 1194) {
                         if (row.isUploaded == "1") {
                             noty({'text': '已经上传不允许修改', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                             setTimeout(query, 4000);

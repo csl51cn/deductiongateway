@@ -59,10 +59,10 @@ public interface MortgageDeductionRepository extends JpaRepository<MortgageDeduc
      *
      * @param isUploaded 发送状态:0-未发送,1-已发送
      * @param isSuccess  代扣状态:0-失败,1-成功,其他-暂无结果
-     * @param startDate  查询startDate之后创建的记录
+     * @param startDate  查询startDate之后代扣成功的记录
      * @return 返回查询到代扣记录
      */
-    List<MortgageDeduction> findByIsUploadedAndIssuccessAndCreateDateAfterOrderByPayTimeDesc(String isUploaded, String isSuccess, Date startDate);
+    List<MortgageDeduction> findByIsUploadedAndIssuccessAndPayTimeAfterOrderByPayTimeDesc(String isUploaded, String isSuccess, Date startDate);
 
 
     /**
