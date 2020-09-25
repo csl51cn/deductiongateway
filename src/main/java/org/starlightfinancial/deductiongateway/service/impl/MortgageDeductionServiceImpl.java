@@ -243,8 +243,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate));
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate));
+
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotBlank(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
@@ -255,10 +254,16 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
                 String[] typeArr = type.split(",");
                 predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
+                //日期查询字段名称
+                String queryDateFieldName = "payTime";
                 //代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
                 if (typeArr.length == 1) {
                     predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
+                    queryDateFieldName = "createDate";
                 }
+
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(queryDateFieldName), startDate));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(queryDateFieldName), endDate));
                 return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
 
             }
@@ -584,7 +589,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         if (typeArr.length == 1) {
             sort = new Sort(Sort.Direction.ASC, "id");
         } else {
-            sort = new Sort(Sort.Direction.DESC, "payTime","id");
+            sort = new Sort(Sort.Direction.DESC, "payTime", "id");
         }
         Integer pageNumber = pageBean.getPageNumber();
         Integer pageSize = pageBean.getPageSize();
