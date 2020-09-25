@@ -243,8 +243,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate));
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotBlank(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
@@ -371,8 +371,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate));
                 predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotEmpty(customerName)) {
