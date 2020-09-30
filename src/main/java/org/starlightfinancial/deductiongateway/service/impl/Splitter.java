@@ -82,7 +82,7 @@ public class Splitter extends Decorator {
      */
     private List<MortgageDeduction> splitPrincipalInterestAndServiceFee(MortgageDeduction mortgageDeduction) {
         //同时有本息和服务费,需要拆分
-        boolean needSplit = mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) > 0 & mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0;
+        boolean needSplit = mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) > 0 && mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) > 0;
         ArrayList<MortgageDeduction> mortgageDeductions = new ArrayList<MortgageDeduction>();
         if (needSplit) {
             MortgageDeduction newDeduction = mortgageDeduction.cloneSelf();

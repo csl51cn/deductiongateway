@@ -176,6 +176,10 @@ public class ScheduledTaskService {
      */
     @Scheduled(cron = "00 20 09 * * ? ")
     public void executeAccountAutoBatchImport() throws Exception {
+        if (!StringUtils.equals(SpringContextUtil.getActiveProfile(), "prod")) {
+            //如果不是生产环境,不执行
+            return;
+        }
         LOGGER.info("**********开始导入昨天放款的代扣卡号**********");
         LocalDate lastLoanDate = LocalDate.now().minusDays(1);
         jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).addString("lastLoanDate", lastLoanDate.toString()).toJobParameters();
