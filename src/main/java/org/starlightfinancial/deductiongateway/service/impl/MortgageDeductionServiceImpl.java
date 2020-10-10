@@ -384,13 +384,18 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             @Override
             public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate));
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate));
                 predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
                 //客户名非空判断。不为空则加此条件
                 if (StringUtils.isNotEmpty(customerName)) {
                     predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
                 }
+                Predicate payTimeStart = criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate);
+                Predicate payTimeEnd = criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate);
+                Predicate createDateStart = criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate);
+                Predicate createDateEnd = criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate);
+                Predicate predicateStart = criteriaBuilder.or(payTimeStart, createDateStart);
+                Predicate predicateEnd = criteriaBuilder.or(payTimeEnd, createDateEnd);
+                predicates.add(criteriaBuilder.and(predicateStart, predicateEnd));
                 criteriaQuery.where(predicates.toArray(new Predicate[0]));
                 criteriaQuery.orderBy(criteriaBuilder.desc(root.get("payTime")));
                 return criteriaQuery.getRestriction();
