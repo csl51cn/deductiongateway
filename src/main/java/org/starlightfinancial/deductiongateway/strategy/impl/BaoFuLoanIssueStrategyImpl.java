@@ -153,7 +153,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                                 if (Objects.nonNull(progress) && progress.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
                                 }
-                                if (Objects.nonNull(fail) && fail.size() > 0 && success.size() > 0) {
+                                if (Objects.nonNull(fail) && fail.size() > 0 && Objects.nonNull(success) && success.size() > 0) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS4.getCode());
                                 }
                                 if (Objects.nonNull(fail) && fail.size() == transRespBF0040002s.size()) {
