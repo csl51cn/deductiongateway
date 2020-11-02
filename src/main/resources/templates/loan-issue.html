@@ -421,7 +421,7 @@
                 },
                 source: function () {
                     var sourceInfo = [];
-                    for (var bankNameId in  bankNameIdMap) {
+                    for (var bankNameId in bankNameIdMap) {
                         sourceInfo.push({"value": bankNameId, text: bankNameIdMap[bankNameId]})
                     }
                     return sourceInfo;
@@ -764,7 +764,7 @@
             if (amount <= 100000) {
                 $('#confirmModal').modal();
                 var confirmdobtn = $("#confirmdobtn");
-                confirmdobtn.unbind("click").click(function(){
+                confirmdobtn.unbind("click").click(function () {
                     doLoanIssue(ids);
                 });
             } else {
@@ -772,22 +772,27 @@
                 $("#passwordConfirmdobtn").val("");
                 $('#passwordConfirmModal').modal();
                 var passwordConfirmdobtn = $("#passwordConfirmdobtn");
-                passwordConfirmdobtn.unbind("click").click(function(){
-                    var  password  = $("#password").val();
-                    if (!password){
+                passwordConfirmdobtn.unbind("click").click(function () {
+                    var password = $("#password").val();
+                    if (!password) {
                         noty({'text': '放款操作未执行,请先填写确认密码', 'layout': 'center', 'type': 'error', "timeout": "4000"});
                         return;
                     }
                     $.ajax({
                         type: "post",
                         url: "/loanIssueController/checkLoanIssue.do",
-                        data: {"password":password},
+                        data: {"password": password},
                         dataType: 'JSON',
                         success: function (data) {
                             if (data == "1") {
                                 doLoanIssue(ids);
                             } else {
-                                noty({'text': '放款操作未执行,确认密码错误', 'layout': 'center', 'type': 'error', "timeout": "4000"});
+                                noty({
+                                    'text': '放款操作未执行,确认密码错误',
+                                    'layout': 'center',
+                                    'type': 'error',
+                                    "timeout": "4000"
+                                });
                             }
 
                         }
@@ -796,8 +801,9 @@
             }
 
         });
+
         <!--放款请求的具体方法 -->
-        function doLoanIssue (ids) {
+        function doLoanIssue(ids) {
             value = 0;
             increment();
             $('#myModal').modal('show');
@@ -879,6 +885,16 @@
                                 "timeout": "6000"
                             });
                         }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        value = 0;
+                        $('#myModal').modal('hide');
+                        noty({
+                            'text': "代扣系统内部处理有异常,查询失败",
+                            'layout': 'center',
+                            'type': 'error',
+                            "timeout": "6000"
+                        });
                     }
                 })
             });
