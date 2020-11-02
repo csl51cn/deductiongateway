@@ -92,6 +92,7 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
      * @param loanIssueBasicInfos 贷款发放基本信息
      * @return 返回请求情况
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Message queryLoanIssueResult(List<LoanIssueBasicInfo> loanIssueBasicInfos) {
         SysUser user = UserContext.getUser();
@@ -145,20 +146,29 @@ public class BaoFuLoanIssueStrategyImpl implements LoanIssueStrategy {
                                 List<TransRespBF0040002> fail = groupByStateMap.get(LoanIssueStatusEnum.STATUS2.getBaoFuCode());
                                 //退款的集合
                                 List<TransRespBF0040002> refund = groupByStateMap.get(LoanIssueStatusEnum.STATUS3.getBaoFuCode());
+                                //全部成功
                                 if (Objects.nonNull(success) && success.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS1.getCode());
                                     Optional<Date> maxTransEndTime = success.stream().map(transRespBF0040002 -> Utility.convertToDate(transRespBF0040002.getTransEndTime(), "yyyy-MM-dd HH:mm:ss")).max((date, anotherDate) -> date != null ? date.compareTo(anotherDate) : 0);
                                     loanIssue.setTransactionEndTime(maxTransEndTime.get());
                                 }
+                                //处理中
                                 if (Objects.nonNull(progress) && progress.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS0.getCode());
                                 }
+                                //部分成功,部分失败
                                 if (Objects.nonNull(fail) && fail.size() > 0 && Objects.nonNull(success) && success.size() > 0) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS4.getCode());
+                                    String transactionRemark = transRespBF0040002s.stream().map(TransRespBF0040002::getTransRemark).collect(Collectors.joining(","));
+                                    loanIssue.setTransactionRemark(transactionRemark);
                                 }
+                                //全部失败
                                 if (Objects.nonNull(fail) && fail.size() == transRespBF0040002s.size()) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS2.getCode());
+                                    String transactionRemark = transRespBF0040002s.stream().map(TransRespBF0040002::getTransRemark).collect(Collectors.joining(","));
+                                    loanIssue.setTransactionRemark(transactionRemark);
                                 }
+                                //退款
                                 if (Objects.nonNull(refund) && refund.size() > 0) {
                                     loanIssue.setTransactionStatus(LoanIssueStatusEnum.STATUS3.getCode());
                                 }
