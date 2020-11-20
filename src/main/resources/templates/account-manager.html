@@ -474,7 +474,7 @@
     }, {
         field: 'bankName',
         title: '卡号归属行'
-    },{
+    }, {
         field: 'certificateNo',
         title: '证件号码',
         editable: {
@@ -484,9 +484,9 @@
                 if (!v) return '证件号码不能为空';
             }
         }
-    },{
-        field:'loanDate',
-        title:'放款日期'
+    }, {
+        field: 'loanDate',
+        title: '放款日期'
     },
         {
             field: 'mobile',
@@ -632,7 +632,7 @@
                 }
             }
         }
-        ,{
+        , {
             field: 'operate',
             title: '操作',
             events: operateEvents,
@@ -695,7 +695,7 @@
 
                 },
                 onEditableSave: function (field, row, oldValue, $el) {
-                    if (staffId == 113 || staffId == 2371 || staffId == 1281 || staffId == 6436 || staffId == 2338 ||  staffId == 1 || staffId == 114 || staffId == 3389) {
+                    if (staffId == 113 || staffId == 2371 || staffId == 1281 || staffId == 6436 || staffId == 2338 || staffId == 1 || staffId == 114 || staffId == 3389 || staffId == 2337) {
                         $.ajax({
                             type: "post",
                             url: "/accountManagerController/updateAccount.do",
@@ -724,7 +724,7 @@
                     }
                     ;
                 }
-                ,onClickCell: function (field, value, row, $element) {
+                , onClickCell: function (field, value, row, $element) {
                     if (field == "bizNo") {
                         $("#contractNoInTableInfo").html(row.contractNo);
                         $("#accountNameInTableInfo").html(row.accountName);
@@ -740,6 +740,7 @@
                 }
             });
         }
+
         initTable();
         $('#table').bootstrapTable('hideColumn', 'id');
         $('#table').bootstrapTable('hideColumn', 'dateId');
@@ -974,8 +975,8 @@
             var accountName = $("#accountName").val();
             var loanStartDate = loanStartDateNode.val();
             var loanEndDate = loanEndDateNode.val();
-            location.href = "/accountManagerController/whiteListExport.do?contractNo="+contractNo+"&bizNo="+bizNo+"&accountName="+accountName
-            +"&loanStartDate="+loanStartDate+"&loanEndDate="+loanEndDate
+            location.href = "/accountManagerController/whiteListExport.do?contractNo=" + contractNo + "&bizNo=" + bizNo + "&accountName=" + accountName
+                + "&loanStartDate=" + loanStartDate + "&loanEndDate=" + loanEndDate
 
         })
 
