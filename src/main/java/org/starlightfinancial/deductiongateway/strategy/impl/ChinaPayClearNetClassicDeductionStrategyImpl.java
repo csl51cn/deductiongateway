@@ -122,8 +122,13 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
                 if (StringUtils.equals(requestResult.getErrorCode(), RsbCodeEnum.ERROR_CODE_01.getCode())) {
                     Tx2011Res tx2011Response = (Tx2011Res) requestResult.getResult().get(0);
                     int status = tx2011Response.getStatus();
-                    //status为20是正在处理,不用特别设置状态,默认就是
-                    if (status == 30) {
+                    if(status == 20){
+                        //status为20是正在处理,需要设置状态
+                        mortgageDeduction.setErrorResult("正在处理中,稍后查询结果");
+                        mortgageDeduction.setResult(tx2011Response.getCode());
+                        mortgageDeduction.setIssuccess("3");
+                        calculateHandlingCharge(mortgageDeduction);
+                    }else  if (status == 30) {
                         //代扣成功
                         mortgageDeduction.setErrorResult("交易成功");
                         mortgageDeduction.setResult(tx2011Response.getCode());
@@ -167,8 +172,13 @@ public class ChinaPayClearNetClassicDeductionStrategyImpl implements OperationSt
             if (StringUtils.equals(requestResult.getErrorCode(), RsbCodeEnum.ERROR_CODE_01.getCode())) {
                 Tx2020Res tx2020Response = (Tx2020Res) requestResult.getResult().get(0);
                 int status = tx2020Response.getStatus();
-                //status为20是正在处理,不用特别设置状态,默认就是
-                if (status == 30) {
+                if(status == 20){
+                    //status为20是正在处理,需要设置状态
+                    mortgageDeduction.setErrorResult("正在处理中,稍后查询结果");
+                    mortgageDeduction.setResult(tx2020Response.getCode());
+                    mortgageDeduction.setIssuccess("3");
+                    calculateHandlingCharge(mortgageDeduction);
+                }else if (status == 30) {
                     //代扣成功
                     mortgageDeduction.setErrorResult("交易成功");
                     mortgageDeduction.setResult(tx2020Response.getCode());

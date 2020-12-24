@@ -84,7 +84,7 @@ public class MortgageDeduction implements Serializable, Cloneable {
     private Date payTime;
 
     /**
-     * 支付状态:0:失败,1:成功,其他展示为暂无结果
+     * 支付状态:0:失败,1:成功,2:暂无结果,3:正在处理中
      */
     @Column(name = "issuccess")
     private String issuccess;

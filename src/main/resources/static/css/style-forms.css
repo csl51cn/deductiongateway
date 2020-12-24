@@ -17,7 +17,7 @@ input[type="tel"],
 input[type="color"],
 input[type="file"],
 .uneditable-input {
-  border-color: #eee !important;	
+  border-color: #eee !important;
   display: inline-block;
   height: 20px;
   padding: 4px 6px;
@@ -124,7 +124,7 @@ input[type="file"] {
 }
 
 select {
-  width: 220px;
+  width: 165px;
   background-color: #ffffff;
   border: 1px solid #cccccc;
 }

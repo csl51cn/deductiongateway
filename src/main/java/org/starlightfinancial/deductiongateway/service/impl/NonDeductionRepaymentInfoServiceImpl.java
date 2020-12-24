@@ -113,6 +113,21 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         resultMap.forEach((chargeCompany, list) -> list.forEach(nonDeductionRepaymentInfo -> {
             //设置入账公司
             nonDeductionRepaymentInfo.setChargeCompany(chargeCompany);
+            //特定公司设置相应收款类型:润通-本息;铠岳、康润、润坤、悦至渝-服务费；第三方咨询公司-调查评估费
+            switch (chargeCompany) {
+                case "润通":
+                    nonDeductionRepaymentInfo.setRepaymentType("本息");
+                    break;
+                case "铠岳":
+                case "康润":
+                case "润坤":
+                case "悦至渝":
+                    nonDeductionRepaymentInfo.setRepaymentType("服务费");
+                    break;
+                case "第三方咨询公司":
+                    nonDeductionRepaymentInfo.setRepaymentType("调查评估费");
+            }
+
             //设置信息是否完整,判断标准:是否有有对应contractNo
             nonDeductionRepaymentInfo.setIsIntegrated(ConstantsEnum.FAIL.getCode());
             //设置是否上传自动入账文件
@@ -811,7 +826,7 @@ public class NonDeductionRepaymentInfoServiceImpl implements NonDeductionRepayme
         if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getContractNo())) {
             nonDeductionRepaymentInfo.setContractNo(nonDeductionRepaymentInfo.getContractNo().trim());
         }
-        if(StringUtils.isNotBlank(nonDeductionRepaymentInfo.getCustomerName())){
+        if (StringUtils.isNotBlank(nonDeductionRepaymentInfo.getCustomerName())) {
             nonDeductionRepaymentInfo.setCustomerName(nonDeductionRepaymentInfo.getCustomerName().trim());
         }
 
