@@ -17,16 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.baofu.domain.BankCodeEnum;
 import org.starlightfinancial.deductiongateway.config.ChinaPayConfig;
+import org.starlightfinancial.deductiongateway.dao.DataWorkInfoDao;
 import org.starlightfinancial.deductiongateway.domain.local.*;
+import org.starlightfinancial.deductiongateway.domain.remote.DataWorkInfo;
 import org.starlightfinancial.deductiongateway.enums.DeductionChannelEnum;
 import org.starlightfinancial.deductiongateway.service.AutoAccountUploadService;
 import org.starlightfinancial.deductiongateway.service.MortgageDeductionService;
 import org.starlightfinancial.deductiongateway.utility.*;
+import org.starlightfinancial.deductiongateway.vo.MortgageDeductionQueryCondition;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -67,6 +67,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     private ChinaPayConfig chinaPayConfig;
     @Autowired
     private BeanConverter beanConverter;
+    @Autowired
+    private DataWorkInfoDao dataWorkInfoDao;
 
     @Override
     public void importCustomerData(MultipartFile uploadedFile, int staffId) {
@@ -102,7 +104,8 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * @throws IllegalAccessException
      * @throws IOException
      */
-    private void readExcel(Workbook workbook, int staffId) throws NoSuchFieldException, IllegalAccessException, IOException {
+    @Transactional(rollbackFor = Exception.class)
+    public void readExcel(Workbook workbook, int staffId) throws NoSuchFieldException, IllegalAccessException, IOException {
         List<MortgageDeduction> list = new ArrayList<>();
         Sheet sheet = workbook.getSheetAt(0);
         Map<Integer, String> colIndexMap = new HashMap<>();
@@ -193,7 +196,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                         if (mortgageDeduction.getSplitData1().compareTo(BigDecimal.ZERO) != 0
                                 && mortgageDeduction.getSplitData2().compareTo(BigDecimal.ZERO) != 0) {
                             List<MortgageDeduction> deductionList = splitServiceMoney(mortgageDeduction);
-                            deductionList.forEach(deduction -> list.add(deduction));
+                            list.addAll(deductionList);
                         } else {
                             list.add(mortgageDeduction);
                         }
@@ -201,6 +204,21 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 }
             }
             workbook.close();
+            //检查服务费入账公司是否正确
+            Map<String, List<MortgageDeduction>> contractNoAndMortgageDeductionMap = list.stream().collect(Collectors.groupingBy(MortgageDeduction::getContractNo));
+            List<String> contractNos = list.stream().map(MortgageDeduction::getContractNo).distinct().collect(Collectors.toList());
+            List<DataWorkInfo> dataWorkInfos = dataWorkInfoDao.findServiceChargeCompanyByContractNoIn(contractNos);
+            for (DataWorkInfo dataWorkInfo : dataWorkInfos) {
+                if (StringUtils.isNotBlank(dataWorkInfo.getServiceChargeCompanyId())) {
+                    //如果dataWorkInfo中的服务费走账公司不为空
+                    List<MortgageDeduction> mortgageDeductions = contractNoAndMortgageDeductionMap.get(dataWorkInfo.getContractNo());
+                    MortgageDeduction deduction = mortgageDeductions.get(0);
+                    if (!StringUtils.equals(deduction.getTarget(), dataWorkInfo.getServiceChargeCompanyId())) {
+                        //如果上传的服务费公司与dataWorkInfo中的服务费公司不一致,更新
+                        mortgageDeductions.forEach(mortgageDeduction -> mortgageDeduction.setTarget(dataWorkInfo.getServiceChargeCompanyId()));
+                    }
+                }
+            }
             mortgageDeductionRepository.save(list);
         }
 
@@ -213,7 +231,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
      * @Description 拷贝对象，将本息和服务费拆分成单独的两条
      * @Date 15:42 2020/9/9
      */
-    private List splitServiceMoney(MortgageDeduction mortgageDeduction) {
+    private List<MortgageDeduction> splitServiceMoney(MortgageDeduction mortgageDeduction) {
         List<MortgageDeduction> list = new ArrayList<>();
         MortgageDeduction mortgageDeduction1 = mortgageDeduction;
         MortgageDeduction mortgageDeduction2 = mortgageDeduction.cloneSelf();
@@ -227,54 +245,47 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     /**
      * 查询代扣数据
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
-     * @param pageBean
-     * @param type         0:已执行代扣,1:未代扣数据
-     * @param contractNo   合同编号
-     * @param creatid
+     * @param mortgageDeductionQueryCondition 查询条件
+     * @param createId                        创建人
      * @return
      */
     @Override
-    public PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, int creatid) {
+    public PageBean queryMortgageDeductionData(MortgageDeductionQueryCondition mortgageDeductionQueryCondition, int createId) {
 
-        Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
-            @Override
-            public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<Predicate>();
-                criteriaQuery.distinct(true);
-                //客户名非空判断。不为空则加此条件
-                if (StringUtils.isNotBlank(customerName)) {
-                    predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
-                }
-                //合同号非空判断。不为空则加此条件
-                if (StringUtils.isNotBlank(contractNo)) {
-                    predicates.add(criteriaBuilder.equal(root.get("contractNo"), contractNo));
-                }
-                String[] typeArr = type.split(",");
-                predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
-
-                //代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
-                if (typeArr.length == 1) {
-                    predicates.add(criteriaBuilder.equal(root.get("creatId"), creatid));
-                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
-                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
-                } else {
-                    Predicate payTimeStart = criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate);
-                    Predicate payTimeEnd = criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate);
-
-                    Predicate createDateStart = criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate);
-                    Predicate createDateEnd = criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate);
-                    Predicate predicateStart = criteriaBuilder.or(payTimeStart, createDateStart);
-                    Predicate predicateEnd = criteriaBuilder.or(payTimeEnd, createDateEnd);
-                    predicates.add(criteriaBuilder.and(predicateStart, predicateEnd));
-
-                }
-
-                return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
-
+        Specification<MortgageDeduction> specification = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            criteriaQuery.distinct(true);
+            //客户名非空判断。不为空则加此条件
+            if (StringUtils.isNotBlank(mortgageDeductionQueryCondition.getCustomerName())) {
+                predicates.add(criteriaBuilder.equal(root.get("customerName"), mortgageDeductionQueryCondition.getCustomerName()));
             }
+            //合同号非空判断。不为空则加此条件
+            if (StringUtils.isNotBlank(mortgageDeductionQueryCondition.getContractNo())) {
+                predicates.add(criteriaBuilder.equal(root.get("contractNo"), mortgageDeductionQueryCondition.getContractNo()));
+            }
+            String[] typeArr = mortgageDeductionQueryCondition.getType().split(",");
+            predicates.add(criteriaBuilder.in(root.get("type")).value(Arrays.asList(typeArr)));
+
+            //代扣结果查询:typeArr为[0,1],代扣执行页面查询:typeArr为[1]
+            if (typeArr.length == 1) {
+                predicates.add(criteriaBuilder.equal(root.get("creatId"), createId));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), mortgageDeductionQueryCondition.getStartDate()));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), mortgageDeductionQueryCondition.getEndDate()));
+            } else {
+                String queryField;
+                if (StringUtils.equals(mortgageDeductionQueryCondition.getDateType(), "0")) {
+                    //dateType为0,使用创建日期查询
+                    queryField = "createDate";
+                } else {
+                    //dateType为1,使用代扣日期查询
+                    queryField = "payTime";
+                }
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(queryField), mortgageDeductionQueryCondition.getStartDate()));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(queryField), mortgageDeductionQueryCondition.getEndDate()));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
+
         };
 
         long count = mortgageDeductionRepository.count(specification);
@@ -282,12 +293,15 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
             //如果查询出来的总记录数为0,直接返回null,避免后续查询代码执行
             return null;
         }
+        PageBean pageBean = new PageBean();
+        pageBean.setPageSize(mortgageDeductionQueryCondition.getPageSize());
+        pageBean.setPageNumber(mortgageDeductionQueryCondition.getPageNumber());
         double tempTotalPageCount = count / (pageBean.getPageSize().doubleValue());
         double totalPageCount = Math.ceil(tempTotalPageCount == 0 ? 1 : tempTotalPageCount);
         if (totalPageCount < pageBean.getPageNumber()) {
             pageBean.setPageNumber(1);
         }
-        PageRequest pageRequest = buildPageRequest(pageBean, type);
+        PageRequest pageRequest = buildPageRequest(pageBean, mortgageDeductionQueryCondition.getType());
         Page<MortgageDeduction> page = mortgageDeductionRepository.findAll(specification, pageRequest);
         if (page.hasContent()) {
             List<MortgageDeduction> mortgageDeductionList = page.getContent();
@@ -345,13 +359,11 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
     /**
      * 导出代扣结果excel
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
+     * @param mortgageDeductionQueryCondition 查询条件
      * @return
      */
     @Override
-    public Workbook exportXLS(Date startDate, Date endDate, String customerName) {
+    public Workbook exportXLS(MortgageDeductionQueryCondition mortgageDeductionQueryCondition) {
 
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("扣款统计");
@@ -380,26 +392,30 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
         numericStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
         int i = 1;
 
-        Specification<MortgageDeduction> specification = new Specification<MortgageDeduction>() {
-            @Override
-            public Predicate toPredicate(Root<MortgageDeduction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<Predicate>();
-                predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
-                //客户名非空判断。不为空则加此条件
-                if (StringUtils.isNotEmpty(customerName)) {
-                    predicates.add(criteriaBuilder.equal(root.get("customerName"), customerName));
-                }
-                Predicate payTimeStart = criteriaBuilder.greaterThanOrEqualTo(root.get("payTime"), startDate);
-                Predicate payTimeEnd = criteriaBuilder.lessThanOrEqualTo(root.get("payTime"), endDate);
-                Predicate createDateStart = criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate);
-                Predicate createDateEnd = criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate);
-                Predicate predicateStart = criteriaBuilder.or(payTimeStart, createDateStart);
-                Predicate predicateEnd = criteriaBuilder.or(payTimeEnd, createDateEnd);
-                predicates.add(criteriaBuilder.and(predicateStart, predicateEnd));
-                criteriaQuery.where(predicates.toArray(new Predicate[0]));
-                criteriaQuery.orderBy(criteriaBuilder.desc(root.get("payTime")));
-                return criteriaQuery.getRestriction();
+        Specification<MortgageDeduction> specification = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            predicates.add(criteriaBuilder.equal(root.get("type"), "0"));
+            //客户名非空判断。不为空则加此条件
+            if (StringUtils.isNotEmpty(mortgageDeductionQueryCondition.getCustomerName())) {
+                predicates.add(criteriaBuilder.equal(root.get("customerName"), mortgageDeductionQueryCondition.getCustomerName()));
             }
+            //合同号非空判断。不为空则加此条件
+            if (StringUtils.isNotBlank(mortgageDeductionQueryCondition.getContractNo())) {
+                predicates.add(criteriaBuilder.equal(root.get("contractNo"), mortgageDeductionQueryCondition.getContractNo()));
+            }
+            String queryField;
+            if (StringUtils.equals(mortgageDeductionQueryCondition.getDateType(), "0")) {
+                //dateType为0,使用创建日期查询
+                queryField = "createDate";
+            } else {
+                //dateType为1,使用代扣日期查询
+                queryField = "payTime";
+            }
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(queryField), mortgageDeductionQueryCondition.getStartDate()));
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(queryField), mortgageDeductionQueryCondition.getEndDate()));
+            criteriaQuery.where(predicates.toArray(new Predicate[0]));
+            criteriaQuery.orderBy(criteriaBuilder.desc(root.get("payTime")));
+            return criteriaQuery.getRestriction();
         };
         List<MortgageDeduction> listCustomer = mortgageDeductionRepository.findAll(specification);
         for (MortgageDeduction mortgageDeduction : listCustomer) {
@@ -455,8 +471,10 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 cell.setCellValue("扣款失败");
             } else if (StringUtils.equals(mortgageDeduction.getIssuccess(), "1")) {
                 cell.setCellValue("扣款成功");
+            } else if (StringUtils.equals(mortgageDeduction.getIssuccess(), "2")) {
+                cell.setCellValue("正在处理中,稍后查询结果");
             } else {
-                cell.setCellValue("暂无结果");
+                cell.setCellValue("未代扣,暂无结果");
             }
 
             cell = row.createCell(12);

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -37,5 +38,11 @@ public class DataSourceConfig {
     public JdbcTemplate secondaryJdbcTemplate(@Qualifier("remoteDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
 
+    }
+
+
+    @Bean(name = "businessNamedJdbcTemplate")
+    public NamedParameterJdbcTemplate businessNamedJdbcTemplate(@Qualifier("remoteDataSource") DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

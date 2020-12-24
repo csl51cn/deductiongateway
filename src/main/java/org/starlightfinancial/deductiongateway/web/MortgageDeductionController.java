@@ -20,6 +20,7 @@ import org.starlightfinancial.deductiongateway.service.impl.ScheduledTaskService
 import org.starlightfinancial.deductiongateway.utility.CalMD5;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
 import org.starlightfinancial.deductiongateway.utility.Utility;
+import org.starlightfinancial.deductiongateway.vo.MortgageDeductionQueryCondition;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -89,38 +90,35 @@ public class MortgageDeductionController {
     /**
      * 查询代扣数据
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
-     * @param pageBean
-     * @param type         0:已执行代扣的数据 1:未执行
-     * @param contractNo   合同编号
+     * @param mortgageDeductionQueryCondition 查询条件
      * @param session
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/queryDeductionData.do")
     @ResponseBody
-    public Map<String, Object> queryDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, HttpSession session) {
-        endDate = Utility.toMidNight(endDate);
-        PageBean result = mortgageDeductionService.queryMortgageDeductionData(startDate, endDate, customerName.trim(), pageBean, type, contractNo.trim(), Utility.getLoginUserId(session));
-        return Utility.pageBean2Map(pageBean);
+    public Map<String, Object> queryDeductionData(MortgageDeductionQueryCondition mortgageDeductionQueryCondition, HttpSession session) {
+        mortgageDeductionQueryCondition.setEndDate(Utility.toMidNight(mortgageDeductionQueryCondition.getEndDate()));
+        mortgageDeductionQueryCondition.setContractNo(mortgageDeductionQueryCondition.getContractNo().trim());
+        mortgageDeductionQueryCondition.setCustomerName(mortgageDeductionQueryCondition.getCustomerName().trim());
+        PageBean result = mortgageDeductionService.queryMortgageDeductionData(mortgageDeductionQueryCondition, Utility.getLoginUserId(session));
+        return Utility.pageBean2Map(result);
     }
 
 
     /**
      * 导出代扣结果Excel
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
+     * @param mortgageDeductionQueryCondition 查询条件
      * @param response
      * @throws IOException
      */
     @RequestMapping(value = "/mortgageDeductionController/exportXLS.do")
-    public void exportXLS(Date startDate, Date endDate, String customerName, HttpServletResponse response) throws IOException {
-        endDate = Utility.toMidNight(endDate);
-        Workbook workbook = mortgageDeductionService.exportXLS(startDate, endDate, customerName.trim());
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+    public void exportXLS(MortgageDeductionQueryCondition mortgageDeductionQueryCondition, HttpServletResponse response) throws IOException {
+        mortgageDeductionQueryCondition.setEndDate(Utility.toMidNight(mortgageDeductionQueryCondition.getEndDate()));
+        mortgageDeductionQueryCondition.setContractNo(mortgageDeductionQueryCondition.getContractNo().trim());
+        mortgageDeductionQueryCondition.setCustomerName(mortgageDeductionQueryCondition.getCustomerName().trim());
+        Workbook workbook = mortgageDeductionService.exportXLS(mortgageDeductionQueryCondition);
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddss");
         String fileName = "扣款结果统计报表" + format.format(new Date());
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("UTF-8");
@@ -205,6 +203,7 @@ public class MortgageDeductionController {
 
     /**
      * 手动触发代扣入账文件上传
+     *
      * @return
      */
     @RequestMapping(value = "/mortgageDeductionController/uploadAutoAccountingFile.do")

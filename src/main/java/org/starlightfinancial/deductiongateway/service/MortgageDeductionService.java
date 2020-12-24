@@ -5,9 +5,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 import org.starlightfinancial.deductiongateway.domain.local.MortgageDeduction;
 import org.starlightfinancial.deductiongateway.utility.PageBean;
+import org.starlightfinancial.deductiongateway.vo.MortgageDeductionQueryCondition;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,16 +26,11 @@ public interface MortgageDeductionService {
     /**
      * 查询代扣数据
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
-     * @param pageBean
-     * @param type         0:已执行代扣,1:未代扣数据
-     * @param contractNo   合同编号
-     * @param creatid
+     * @param mortgageDeductionQueryCondition 查询条件
+     * @param createId 创建人
      * @return
      */
-    PageBean queryMortgageDeductionData(Date startDate, Date endDate, String customerName, PageBean pageBean, String type, String contractNo, int creatid);
+    PageBean queryMortgageDeductionData(MortgageDeductionQueryCondition mortgageDeductionQueryCondition, int createId);
 
     /**
      * 根据id查询代扣数据
@@ -48,12 +43,10 @@ public interface MortgageDeductionService {
     /**
      * 导出代扣结果excel
      *
-     * @param startDate
-     * @param endDate
-     * @param customerName
+     * @param mortgageDeductionQueryCondition 查询条件
      * @return
      */
-    Workbook exportXLS(Date startDate, Date endDate, String customerName);
+    Workbook exportXLS(MortgageDeductionQueryCondition mortgageDeductionQueryCondition);
 
     /**
      * 批量更新代扣数据
