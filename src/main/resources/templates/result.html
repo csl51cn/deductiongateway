@@ -541,7 +541,10 @@
             });
         };
         initTable();
-
+        if(staffId == 1304 ||staffId == 1194 ){
+            //财务默认勾选代扣日期
+            $("#dateType").val("1")
+        }
         function queryParams() {
             var date = formatDate(new Date())
             var starDate = $("#startDate").val();
