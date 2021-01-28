@@ -471,7 +471,7 @@ public class MortgageDeductionServiceImpl implements MortgageDeductionService {
                 cell.setCellValue("扣款失败");
             } else if (StringUtils.equals(mortgageDeduction.getIssuccess(), "1")) {
                 cell.setCellValue("扣款成功");
-            } else if (StringUtils.equals(mortgageDeduction.getIssuccess(), "2")) {
+            } else if (StringUtils.equals(mortgageDeduction.getIssuccess(), "3")) {
                 cell.setCellValue("正在处理中,稍后查询结果");
             } else {
                 cell.setCellValue("未代扣,暂无结果");
