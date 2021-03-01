@@ -892,10 +892,15 @@
                 }
             });
         }
-
         <!--新增按钮功能-->
         $("#addBtn").click(function () {
+            //清除数据
             $("#editForm")[0].reset();
+            //重置下拉框为润通相关信息
+            $("#txt_charge_company").val("润通");
+            changeBankName("润通");
+            changeRepaymentType("润通");
+            changeRepaymentMethod("润通");
             //设置模态框角色
             $("#modalRole").val("add");
             //设置模态框标题
