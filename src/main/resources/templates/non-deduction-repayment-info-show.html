@@ -12,7 +12,9 @@
     <link href="/css/uploadify.css" rel="stylesheet">
     <link href="/css/fileinput.min.css" rel="stylesheet">
     <style>
-
+        .select-wider{
+            width: 218px;
+        }
     </style>
 </head>
 <body>
@@ -140,8 +142,9 @@
                                                 <option value="本息">本息</option>
                                                 <option value="服务费">服务费</option>
                                                 <option value="调查评估费">调查评估费</option>
+                                                <option value="已核销客户还款">已核销客户还款</option>
                                                 <option value="取件费">取件费</option>
-                                                <option value="诉讼成本">诉讼成本</option>
+                                                <option value="诉讼费">诉讼费</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -158,7 +161,7 @@
                                         <input type="button" class="btn" id="exportBtn" value="导出"/>
                                         <input type="button" class="btn " id="freshBtn" value="重新尝试匹配"/>
                                         <input type="button" class="btn " id="splitBtn" value="批量拆分还款记录"/>
-                                        <input type="button" class="btn " id="importRepaymentBtn" value="导入昨日还款"/>
+                                        <input type="button" class="btn " id="importRepaymentBtn" value="导入昨日还款财务凭证数据"/>
                                         <input type="button" class="btn " id="modifyUploadStatusBtn" value="更改上传状态"/>
                                     </td>
 
@@ -266,7 +269,7 @@
                                     <tbody>
                                     <tr>
                                         <td><label class="control-label" for="txt_charge_company">入账公司</label></td>
-                                        <td><select id="txt_charge_company" name="chargeCompany">
+                                        <td><select id="txt_charge_company" name="chargeCompany"  class="select-wider">
                                             <option value="润通">润通</option>
                                             <option value="悦至渝">悦至渝</option>
                                             <option value="铠岳">铠岳</option>
@@ -288,10 +291,10 @@
                                     </tr>
                                     <tr>
                                         <td><label class="control-label" for="txt_repayment_method">还款方式</label></td>
-                                        <td><select id="txt_repayment_method" name="repaymentMethod">
+                                        <td><select id="txt_repayment_method" name="repaymentMethod"  class="select-wider">
                                         </select></td>
                                         <td><label class="control-label" for="txt_bank_name">入账银行</label></td>
-                                        <td><select id="txt_bank_name" name="bankName">
+                                        <td><select id="txt_bank_name" name="bankName"  class="select-wider">
                                             <option value="招行0366">招行0366</option>
                                             <option value="建行3504">建行3504</option>
                                             <option value="">无</option>
@@ -300,12 +303,13 @@
                                     </tr>
                                     <tr>
                                         <td><label class="control-label" for="txt_repayment_type">还款类别</label></td>
-                                        <td><select id="txt_repayment_type" name="repaymentType">
+                                        <td><select id="txt_repayment_type" name="repaymentType" class="select-wider">
                                             <option value="本息">本息</option>
                                             <option value="服务费">服务费</option>
                                             <option value="调查评估费">调查评估费</option>
+                                            <option value="已核销客户还款">已核销客户还款</option>
                                             <option value="取件费">取件费</option>
-                                            <option value="诉讼成本">诉讼成本</option>
+                                            <option value="诉讼费">诉讼费</option>
                                         </select></td>
                                         <td><label class="control-label" for="txt_repayment_amount">还款金额</label></td>
                                         <td><input type="text" name="repaymentAmount" id="txt_repayment_amount"
@@ -529,7 +533,7 @@
             source: [{value: "本息", text: "本息"}, {value: "服务费", text: "服务费"}, {
                 value: "调查评估费",
                 text: "调查评估费"
-            }, {value: "取件费", text: "取件费"}, {value: "诉讼成本", text: "诉讼成本"}],
+            }, {value: "已核销客户还款", text: "已核销客户还款"}, {value: "取件费", text: "取件费"}, {value: "诉讼费", text: "诉讼费"}],
             emptytext: "无",
             validate: function (v) {
                 if (!v) return '还款类别不能为空';
@@ -708,6 +712,13 @@
                 onDblClickRow: function (row, value, field) {
                     //双击后弹出拆分非代扣还款信息模态框,按确认后会新增一条非代扣还款信息,假设此条非代扣还款信息还款金额为X元,
                     // 然后会将原始的非代扣还款信息的还款金额相应减少X元并更新数据库记录.
+                    if(row.repaymentType ==="诉讼费"){
+                        noty({'text': '诉讼费不能进行拆分,请更改当前记录还款类型,再将诉讼费拆分出来', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                        return;
+                    } else if(row.repaymentType ==="取件费"){
+                        noty({'text': '取件费不能进行拆分,请更改当前记录还款类型,再将取件费拆分出来', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                        return;
+                    }
                     $("#editForm")[0].reset();
                     //设置模态框角色
                     $("#modalRole").val("split");
@@ -923,6 +934,13 @@
             if (ids.length != 1) {
                 $('#splitModal').modal('hide');
                 noty({'text': '请选择一条记录进行拆分', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return;
+            }
+            if(rows[0].repaymentType ==="诉讼费"){
+                noty({'text': '诉讼费不能进行拆分,请更改当前记录还款类型,再将诉讼费拆分出来', 'layout': 'center', 'type': 'error', "timeout": "5000"});
+                return;
+            } else if(rows[0].repaymentType ==="取件费"){
+                noty({'text': '取件费不能进行拆分,请更改当前记录还款类型,再将取件费拆分出来', 'layout': 'center', 'type': 'error', "timeout": "5000"});
                 return;
             }
             //为拆分的id赋值

@@ -30,9 +30,14 @@ public enum RepaymentTypeEnum {
 
 
     /**
-     * 诉讼成本
+     * 诉讼费
      */
-    LITIGATION_CAST(2105,"诉讼成本");
+    LITIGATION_CAST(2105,"诉讼费"),
+    /**
+     * 已核销客户还款
+     */
+    WROTE_OFF_BAD_LOAN_REPAYMENT(2292, "已核销客户还款")
+    ;
 
 
     /**
