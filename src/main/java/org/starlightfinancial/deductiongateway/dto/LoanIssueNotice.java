@@ -17,8 +17,8 @@ import java.util.Date;
 @Builder
 public class LoanIssueNotice implements Serializable {
 
-
     private static final long serialVersionUID = -8027739507772340736L;
+
     /**
      * 业务流水号
      */
@@ -34,27 +34,28 @@ public class LoanIssueNotice implements Serializable {
      */
     private String customerName;
 
-
     /**
      * 客户身份证号
      */
     private String identityNo;
-
 
     /**
      * 卡号
      */
     private String account;
 
-
     /**
      * 金额
      */
     private BigDecimal amount;
 
-
     /**
      * 交易时间
      */
     private Date transactionEndTime;
+
+    /**
+     * 交易合同
+     */
+    private String contractNo;
 }

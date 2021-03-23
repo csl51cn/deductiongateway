@@ -50,38 +50,29 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LoanIssueServiceImpl implements LoanIssueService {
 
-    @Autowired
-    private LoanIssueBasicInfoRepository loanIssueBasicInfoRepository;
-
-    @Autowired
-    private LoanIssueRepository loanIssueRepository;
-
-    @Autowired
-    private BusinessTransactionDao businessTransactionDao;
-
-    @Autowired
-    private BaofuConfig baofuConfig;
-
-    @Autowired
-    private LoanIssueStrategyContext loanIssueStrategyContext;
-
-    @Autowired
-    private SystemService systemService;
-
-    @Autowired
-    private LoanApplicantInfoRepository loanApplicantInfoRepository;
-
-    @Qualifier("remoteJmsTemplate")
-    @Autowired
-    private JmsTemplate jmsTemplate;
-
     private static final String CHECK_USER = "hong.li";
-
     /**
      * 导出资金代付数据表头
      */
     private static final String[] EXPORT_COLUMN_NAME = new String[]{"订单号", "业务编号", "合同编号", "收款人姓名", "收款账号", "收款账户所属银行",
             "开户行", "身份证", "手机", "放款金额", "交易结果", "生成时间", "发起交易时间", "交易结束时间"};
+    @Autowired
+    private LoanIssueBasicInfoRepository loanIssueBasicInfoRepository;
+    @Autowired
+    private LoanIssueRepository loanIssueRepository;
+    @Autowired
+    private BusinessTransactionDao businessTransactionDao;
+    @Autowired
+    private BaofuConfig baofuConfig;
+    @Autowired
+    private LoanIssueStrategyContext loanIssueStrategyContext;
+    @Autowired
+    private SystemService systemService;
+    @Autowired
+    private LoanApplicantInfoRepository loanApplicantInfoRepository;
+    @Qualifier("remoteJmsTemplate")
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
     /**
      * 保存贷款发放基本信息
@@ -443,13 +434,12 @@ public class LoanIssueServiceImpl implements LoanIssueService {
             LoanIssueNotice loanIssueNotice = LoanIssueNotice.builder().dateId(loanIssueBasicInfo.getDateId()).customerName(loanApplicantInfo.getApplicant())
                     .identityNo(loanApplicantInfo.getIdentityNo()).account(loanIssueBasicInfo.getToAccountNo())
                     .amount(loanIssueBasicInfo.getIssueAmount()).loanIssueId(loanIssueBasicInfo.getId())
-                    .transactionEndTime(theLastRecord.getTransactionEndTime()).build();
+                    .transactionEndTime(theLastRecord.getTransactionEndTime()).contractNo(loanIssueBasicInfo.getContractNo()).build();
             String s = JSONObject.toJSONString(loanIssueNotice);
             System.out.println(s);
             jmsTemplate.convertAndSend(new ActiveMQQueue("loanIssueNoticeQueue"), JSONObject.toJSONString(loanIssueNotice));
             log.info("贷款发放成功消息推送完成,合同编号:[{}],收款人:[{}]", loanIssueBasicInfo.getContractNo(), loanIssueBasicInfo.getToAccountName());
         }
-
 
     }
 
